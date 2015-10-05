@@ -1,8 +1,11 @@
 #pragma once
+#include "ColorCoding.h"
+
 class Pixel
 {
 private:
 	float data[3];
+
 
 public:
 	Pixel();
@@ -19,6 +22,9 @@ public:
 		Y = 0, Cb = 1, Cr = 2
 	};
 
+	template<ColorCoding curCoding, ColorCoding destCoding>
+	void switchColorCoding();
+
 	inline float getColorValue(int idx) const
 	{
 		return data[idx];
@@ -31,4 +37,3 @@ public:
 
 	Pixel& operator+=(const Pixel& pixel);
 };
-
