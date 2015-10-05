@@ -15,6 +15,9 @@ public:
 	void setColorValue(float value, int x, int y);
 
 	float* operator[](int idx) const;
+	int getWidth() const;
+	int getHeight() const;
+	ColorName getColorName() const;
 private:
 	ColorName colorName;
 	

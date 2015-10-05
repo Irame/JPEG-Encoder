@@ -12,7 +12,8 @@ ColorChannel::ColorChannel(ColorName colorName, int width, int height)
 	data = new float*[width];
 	for (int i = 0; i < width; i++)
 	{
-		data[i] = new float[height] {0.0f};
+		data[i] = new float[height];
+		memset(data[i], 0, height*sizeof(float));
 	}
 }
 
@@ -33,4 +34,19 @@ void ColorChannel::setColorValue(float value, int x, int y)
 float* ColorChannel::operator[](int idx) const
 {
 	return data[idx];
+}
+
+int ColorChannel::getWidth() const
+{
+	return width;
+}
+
+int ColorChannel::getHeight() const
+{
+	return height;
+}
+
+ColorName ColorChannel::getColorName() const
+{
+	return colorName;
 }

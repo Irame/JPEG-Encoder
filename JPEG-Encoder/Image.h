@@ -13,7 +13,7 @@ public:
 	static ImagePtr readPPM(std::string path);
 
 	Image();
-	Image(int width, int height);
+	Image(int width, int height, ColorCoding coding);
 	~Image();
 	
 	const ColorChannel& getColorChannel(ColorName colorName) const;
@@ -24,9 +24,9 @@ private:
 	unsigned int stepX;
 	unsigned int stepY;
 	unsigned int width;
-	unsigned int heigth;
+	unsigned int height;
 	ColorCoding colorCoding;
-	ColorChannel channel[3];
+	ColorChannel* channel[3];
 
 	template<ColorCoding, ColorCoding>
 	void switchColorCoding();

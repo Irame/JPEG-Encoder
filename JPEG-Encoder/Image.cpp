@@ -6,17 +6,17 @@
 using namespace std;
 
 Image::Image()
-	: stepX(1), stepY(1), width(0), heigth(0)
+	: stepX(1), stepY(1), width(0), height(0)
 {
 	for (int i = 0; i < 3; i++)
-		channel[i] = ColorChannel(i, width, heigth);
+		channel[i] = new ColorChannel(i, width, height);
 }
 
-Image::Image(int width, int height)
-	: stepX(1), stepY(1), width(width), heigth(heigth)
+Image::Image(int width, int height, ColorCoding coding)
+	: stepX(1), stepY(1), width(width), height(height), colorCoding(coding)
 {
 	for (int i = 0; i < 3; i++)
-		channel[i] = ColorChannel(i, width, heigth);
+		channel[i] = new ColorChannel(i, width, height);
 }
 
 Image::~Image()
@@ -25,7 +25,7 @@ Image::~Image()
 
 const ColorChannel& Image::getColorChannel(ColorName colorName) const
 {
-	return channel[colorName.rgbColorName];
+	return *channel[colorName.rgbColorName];
 }
 
 ColorCoding Image::getColorCoding() const
@@ -44,7 +44,7 @@ void Image::switchColorCoding(ColorCoding newCoding)
 	if (colorCoding == newCoding) return;
 	if (colorCoding == RGB)
 	{
-		if (newCoding == YCbC)
+		if (newCoding == YCbCr)
 		{
 			// RGB => YCbCr
 			static float transformMatrixArray[3][3]{
@@ -55,22 +55,22 @@ void Image::switchColorCoding(ColorCoding newCoding)
 			static Matrix3x3 transformMatrix(transformMatrixArray);
 			static Vector transformVector(0.0f, 0.5f, 0.5f);
 			for (int x = 0; x < width; x++) {
-				for (int y = 0; y < heigth; y++) {
+				for (int y = 0; y < height; y++) {
 					Vector color(
-						channel[R][x][y],
-						channel[G][x][y],
-						channel[B][x][y]
+							(*channel[R])[x][y],
+							(*channel[G])[x][y],
+							(*channel[B])[x][y]
 						);
 					Vector resultColor = transformMatrix * color;
 					resultColor += transformVector;
-					channel[R][x][y] = resultColor.getData()[Y];
-					channel[R][x][y] = resultColor.getData()[Cb];
-					channel[R][x][y] = resultColor.getData()[Cr];
+					(*channel[R])[x][y] = resultColor.getData()[Y];
+					(*channel[G])[x][y] = resultColor.getData()[Cb];
+					(*channel[B])[x][y] = resultColor.getData()[Cr];
 				}
 			}
 		}
 	}
-	else if (colorCoding == YCbC)
+	else if (colorCoding == YCbCr)
 	{
 		if (newCoding == RGB)
 		{
@@ -111,7 +111,7 @@ ImagePtr Image::readPPM(std::string path)
 					//break;
 				}
 			}
-			resultImage = make_shared<Image>(width, height);
+			resultImage = make_shared<Image>(width, height, RGB);
 
 			state = Size;
 		} else if (state == State::Size) {
@@ -124,7 +124,7 @@ ImagePtr Image::readPPM(std::string path)
 				if (color.length() == 0)
 					continue;
 
-				resultImage->channel[j].setColorValue(stoi(color) / maxValue, currentWidth, currentHeigth);
+				resultImage->channel[j]->setColorValue(stoi(color) / maxValue, currentWidth, currentHeigth);
 				
 				j++;
 				if (j > 2) {

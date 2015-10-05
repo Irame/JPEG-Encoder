@@ -15,8 +15,8 @@ Vector::~Vector()
 Vector& Vector::operator+=(const Vector& vec)
 {
 	data[0] += vec.data[0];
-	data[0] += vec.data[0];
-	data[0] += vec.data[0];
+	data[1] += vec.data[1];
+	data[2] += vec.data[2];
 	return *this;
 }
 
