@@ -39,6 +39,9 @@
     <ClInclude Include="ColorNames.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="Vector.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -54,6 +57,9 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="ColorChannel.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>

@@ -29,3 +29,8 @@ void ColorChannel::setColorValue(float value, int x, int y)
 {
 	data[x][y] = value;
 }
+
+float* ColorChannel::operator[](int idx) const
+{
+	return data[idx];
+}

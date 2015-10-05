@@ -1,5 +1,4 @@
 #pragma once
-#include "Pixel.h"
 #include <string>
 #include "ColorCoding.h"
 #include "ColorChannel.h"
@@ -18,8 +17,9 @@ public:
 	~Image();
 	
 	const ColorChannel& getColorChannel(ColorName colorName) const;
-	ColorCoding getColorCoding();
+	ColorCoding getColorCoding() const;
 	void setStep(unsigned int stepX, unsigned int stepY);
+	void switchColorCoding(ColorCoding newCoding);
 private:
 	unsigned int stepX;
 	unsigned int stepY;
@@ -27,5 +27,7 @@ private:
 	unsigned int heigth;
 	ColorCoding colorCoding;
 	ColorChannel channel[3];
-};
 
+	template<ColorCoding, ColorCoding>
+	void switchColorCoding();
+};

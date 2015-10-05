@@ -1,5 +1,5 @@
 #pragma once
-#include "Pixel.h"
+#include "Vector.h"
 
 class Matrix3x3
 {
@@ -10,6 +10,6 @@ public:
 	Matrix3x3(const float data[3][3]);
 	~Matrix3x3();
 
-	Pixel operator*(const Pixel& pixel);
+	Vector operator*(const Vector& v);
 };
 

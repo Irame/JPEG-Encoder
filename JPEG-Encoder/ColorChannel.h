@@ -10,6 +10,7 @@ public:
 
 	void setColorValue(float value, int x, int y);
 
+	float* operator[](int idx) const;
 private:
 	ColorName colorName;
 	

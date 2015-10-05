@@ -2,6 +2,7 @@
 #include "Image.h"
 #include <fstream>
 #include <sstream>
+#include "Matrix3x3.h"
 using namespace std;
 
 Image::Image()
@@ -27,7 +28,7 @@ const ColorChannel& Image::getColorChannel(ColorName colorName) const
 	return channel[colorName.rgbColorName];
 }
 
-ColorCoding Image::getColorCoding()
+ColorCoding Image::getColorCoding() const
 {
 	return colorCoding;
 }
@@ -38,6 +39,46 @@ void Image::setStep(unsigned int stepX, unsigned int stepY)
 	this->stepY = stepY;
 }
 
+void Image::switchColorCoding(ColorCoding newCoding)
+{
+	if (colorCoding == newCoding) return;
+	if (colorCoding == RGB)
+	{
+		if (newCoding == YCbC)
+		{
+			// RGB => YCbCr
+			static float transformMatrixArray[3][3]{
+				{ 0.299f, 0.587f, 0.114f },
+				{ -0.1687f, -0.3312f, 0.5f },
+				{ 0.5f, -0.4186f, -0.08 }
+			};
+			static Matrix3x3 transformMatrix(transformMatrixArray);
+			static Vector transformVector(0.0f, 0.5f, 0.5f);
+			for (int x = 0; x < width; x++) {
+				for (int y = 0; y < heigth; y++) {
+					Vector color(
+						channel[R][x][y],
+						channel[G][x][y],
+						channel[B][x][y]
+						);
+					Vector resultColor = transformMatrix * color;
+					resultColor += transformVector;
+					channel[R][x][y] = resultColor.getData()[Y];
+					channel[R][x][y] = resultColor.getData()[Cb];
+					channel[R][x][y] = resultColor.getData()[Cr];
+				}
+			}
+		}
+	}
+	else if (colorCoding == YCbC)
+	{
+		if (newCoding == RGB)
+		{
+			//TODO: Implementation of YCbCr => RGB
+		}
+	}
+}
+
 ImagePtr Image::readPPM(std::string path)
 {
 	ImagePtr resultImage = nullptr;
@@ -45,7 +86,7 @@ ImagePtr Image::readPPM(std::string path)
 		None, Size, Pixels
 	};
 	State state = State::None;
-	std::ifstream fileStream = std::ifstream(path);
+	ifstream fileStream = ifstream(path);
 	string line;
 	float maxValue = 1.0f;
 	int width = 0;
