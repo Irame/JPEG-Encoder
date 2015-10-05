@@ -24,9 +24,6 @@
     <ClInclude Include="targetver.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="Pixel.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
     <ClInclude Include="Image.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
@@ -34,6 +31,12 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="Matrix3x3.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorChannel.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorNames.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>
@@ -44,13 +47,13 @@
     <ClCompile Include="JPEG-Encoder.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="Pixel.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
     <ClCompile Include="Image.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="Matrix3x3.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="ColorChannel.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
