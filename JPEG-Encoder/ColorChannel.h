@@ -1,5 +1,9 @@
 #pragma once
 #include "ColorNames.h"
+#include <memory>
+
+class ColorChannel;
+typedef std::shared_ptr<ColorChannel> ColorChannelPtr;
 
 class ColorChannel
 {
@@ -19,4 +23,3 @@ private:
 	
 	float** data;
 };
-

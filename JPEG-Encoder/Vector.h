@@ -1,4 +1,9 @@
 #pragma once
+#include <memory>
+
+class Vector;
+typedef std::shared_ptr<Vector> VectorPtr;
+
 class Vector
 {
 	float data[3];
