@@ -27,6 +27,9 @@
     <ClInclude Include="Pixel.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="Matrix3x3.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -36,6 +39,9 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="Pixel.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix3x3.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
