@@ -8,7 +8,7 @@ public:
 	Image();
 	~Image();
 	
-	void getData(Pixel* data[]);
+	void getData(Pixel** data);
 	ColorCoding getColorCoding();
 	void setStep(unsigned int stepX, unsigned int stepY);
 	void readPPM(std::string path);
@@ -18,6 +18,6 @@ private:
 	unsigned int width;
 	unsigned int heigth;
 	ColorCoding colorCoding;
-	Pixel* data[];
+	Pixel** data;
 };
 
