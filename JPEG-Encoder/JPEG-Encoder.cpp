@@ -2,10 +2,13 @@
 //
 
 #include "stdafx.h"
+#include "Pixel.h"
+#include <iostream>
 
 
 int main()
 {
-    return 0;
+	Pixel pixel(0.3, 0.1, 0.5);
+	std::cout << pixel.getColorValue(Pixel::RGBColorName::G) << std::endl;
 }
 
