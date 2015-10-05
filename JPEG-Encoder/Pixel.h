@@ -28,5 +28,7 @@ public:
 	{
 		data[idx] = value;
 	}
+
+	Pixel& operator+=(const Pixel& pixel);
 };
 

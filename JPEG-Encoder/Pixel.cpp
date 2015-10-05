@@ -13,3 +13,11 @@ Pixel::Pixel(float v1, float v2, float v3) :
 
 Pixel::~Pixel()
 {}
+
+Pixel& Pixel::operator+=(const Pixel& pixel)
+{
+	data[0] += pixel.getColorValue(0);
+	data[1] += pixel.getColorValue(1);
+	data[2] += pixel.getColorValue(2);
+	return *this;
+}
