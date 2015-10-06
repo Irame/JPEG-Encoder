@@ -39,14 +39,15 @@ union ColorName
 {
 	ColorName()
 	{
-		rgbColorName = InvalidRgb;
+		index = -1;
 	}
 
 	ColorName(int i)
 	{
-		rgbColorName = static_cast<RGBColorName>(i);
+		index = i;
 	}
 
+	int index;
 	RGBColorName rgbColorName;
 	YCbCrColorName yCbCrColorName;
 };

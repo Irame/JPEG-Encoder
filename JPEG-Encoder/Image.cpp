@@ -25,7 +25,7 @@ Image::~Image()
 
 const ColorChannel& Image::getColorChannel(ColorName colorName) const
 {
-	return *channel[colorName.rgbColorName];
+	return *channel[colorName.index];
 }
 
 ColorCoding Image::getColorCoding() const
@@ -82,7 +82,7 @@ void Image::switchColorCoding(ColorCoding newCoding)
 
 void Image::scaleColor(ColorName colorName, float factor)
 {
-	(*channel[colorName.rgbColorName]).scale(factor);
+	(*channel[colorName.index]).scale(factor);
 }
 
 ImagePtr Image::readPPM(std::string path)
