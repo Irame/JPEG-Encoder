@@ -46,14 +46,23 @@ int main(int argc, char* argv[])
 	std::cout << img->getColorChannel(G) << std::endl;
 	std::cout << img->getColorChannel(B);
 
-	img->switchColorCoding(YCbCr);
-	curCoding = YCbCr;
-	std::cout << "==================================================" << std::endl;
 
-	std::cout << "ColorChannel for " << img->getColorCoding() << std::endl;
-	std::cout << img->getColorChannel(R) << std::endl;
-	std::cout << img->getColorChannel(G) << std::endl;
-	std::cout << img->getColorChannel(B) << std::endl;
+	//img->scaleColor(ColorName(RGBColorName::R), 0.25);
+	//std::cout << "ColorChannel for " << img->getColorCoding() << std::endl;
+	//std::cout << img->getColorChannel(R) << std::endl;
+	//std::cout << img->getColorChannel(G) << std::endl;
+	//std::cout << img->getColorChannel(B);
+
+
+
+	//img->switchColorCoding(YCbCr);
+	//curCoding = YCbCr;
+	//std::cout << "==================================================" << std::endl;
+
+	//std::cout << "ColorChannel for " << img->getColorCoding() << std::endl;
+	//std::cout << img->getColorChannel(R) << std::endl;
+	//std::cout << img->getColorChannel(G) << std::endl;
+	//std::cout << img->getColorChannel(B) << std::endl;
 
 	std::cout << "Press enter to exit ..." << std::endl;
 	std::cin.get();

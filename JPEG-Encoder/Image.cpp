@@ -68,6 +68,7 @@ void Image::switchColorCoding(ColorCoding newCoding)
 					(*channel[B])[x][y] = resultColor.getData()[Cr];
 				}
 			}
+			colorCoding = newCoding;
 		}
 	}
 	else if (colorCoding == YCbCr)
@@ -77,6 +78,11 @@ void Image::switchColorCoding(ColorCoding newCoding)
 			//TODO: Implementation of YCbCr => RGB
 		}
 	}
+}
+
+void Image::scaleColor(ColorName colorName, float factor)
+{
+	(*channel[colorName.rgbColorName]).scale(factor);
 }
 
 ImagePtr Image::readPPM(std::string path)

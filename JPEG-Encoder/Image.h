@@ -20,6 +20,7 @@ public:
 	ColorCoding getColorCoding() const;
 	void setStep(unsigned int stepX, unsigned int stepY);
 	void switchColorCoding(ColorCoding newCoding);
+	void scaleColor(ColorName colorName, float factor);
 private:
 	unsigned int stepX;
 	unsigned int stepY;

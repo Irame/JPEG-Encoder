@@ -18,6 +18,7 @@ public:
 	int getWidth() const;
 	int getHeight() const;
 	ColorName getColorName() const;
+	void scale(float factor);
 private:
 	ColorName colorName;
 	
