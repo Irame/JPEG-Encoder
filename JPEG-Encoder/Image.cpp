@@ -88,6 +88,8 @@ void Image::scaleColor(ColorName colorName, float factor)
 PixelPtr Image::getPixel(int x, int y) const
 {
 	// TODO: needs improvement
+	if (x >= width) x = width - 1;
+	if (y >= height) x = height - 1;
 	return make_shared<Pixel>(
 		channel[0]->calcValueAt(float(x)*channel[0]->getWidth() / width, float(y)*channel[0]->getHeight() / height),
 		channel[1]->calcValueAt(float(x)*channel[1]->getWidth() / width, float(y)*channel[1]->getHeight() / height),
