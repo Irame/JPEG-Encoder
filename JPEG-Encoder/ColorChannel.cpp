@@ -106,12 +106,32 @@ void ColorChannel::scale(float factor)
 	//clean old data
 	for (int i = 0; i < width; i++)
 	{
-		delete data[i];
+		delete[] data[i];
 	}
-	delete data;
+	delete[] data;
 
 	//set new data
 	data = newData;
 	width = newWidth;
 	height = newHeight;
+}
+
+float ColorChannel::calcValueAt(float x, float y) const
+{
+	//TODO: needs improvement
+	int lowerX = floorf(x);
+	int upperX = ceilf(x);
+	float lowerRatioX = lowerX - x;
+	float upperRatioX = upperX - x;
+
+	int lowerY = floorf(y);
+	int upperY = ceilf(y);
+	float lowerRatioY = lowerY - y;
+	float upperRatioY = upperY - y;
+
+	return
+		data[lowerX][lowerY] * sqrtf(lowerRatioX * lowerRatioX + lowerRatioY * lowerRatioY) / M_SQRT2 +
+		data[lowerX][upperY] * sqrtf(lowerRatioX * lowerRatioX + upperRatioY * upperRatioY) / M_SQRT2 +
+		data[upperX][lowerY] * sqrtf(upperRatioX * upperRatioX + lowerRatioY * lowerRatioY) / M_SQRT2 +
+		data[upperX][upperY] * sqrtf(upperRatioX * upperRatioX + upperRatioY * upperRatioY) / M_SQRT2;
 }

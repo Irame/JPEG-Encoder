@@ -85,6 +85,15 @@ void Image::scaleColor(ColorName colorName, float factor)
 	(*channel[colorName.index]).scale(factor);
 }
 
+PixelPtr Image::getPixel(int x, int y) const
+{
+	// TODO: needs improvement
+	return make_shared<Pixel>(
+		channel[0]->calcValueAt(float(x)*channel[0]->getWidth() / width, float(y)*channel[0]->getHeight() / height),
+		channel[1]->calcValueAt(float(x)*channel[1]->getWidth() / width, float(y)*channel[1]->getHeight() / height),
+		channel[2]->calcValueAt(float(x)*channel[2]->getWidth() / width, float(y)*channel[2]->getHeight() / height));
+}
+
 ImagePtr Image::readPPM(std::string path)
 {
 	ImagePtr resultImage = nullptr;

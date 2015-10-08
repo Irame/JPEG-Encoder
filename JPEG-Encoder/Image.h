@@ -3,6 +3,7 @@
 #include "ColorCoding.h"
 #include "ColorChannel.h"
 #include <memory>
+#include "Matrix3x3.h"
 
 class Image;
 typedef std::shared_ptr<Image> ImagePtr;
@@ -21,6 +22,8 @@ public:
 	void setStep(unsigned int stepX, unsigned int stepY);
 	void switchColorCoding(ColorCoding newCoding);
 	void scaleColor(ColorName colorName, float factor);
+
+	PixelPtr getPixel(int x, int y) const;
 private:
 	unsigned int stepX;
 	unsigned int stepY;

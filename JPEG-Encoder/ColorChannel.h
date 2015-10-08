@@ -19,6 +19,8 @@ public:
 	int getHeight() const;
 	ColorName getColorName() const;
 	void scale(float factor);
+
+	float calcValueAt(float x, float y) const;
 private:
 	ColorName colorName;
 	

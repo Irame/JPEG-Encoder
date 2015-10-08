@@ -20,3 +20,6 @@ public:
 		return data[idx];
 	}
 };
+
+typedef Vector Pixel;
+typedef VectorPtr PixelPtr;
