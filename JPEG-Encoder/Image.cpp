@@ -63,9 +63,9 @@ void Image::switchColorCoding(ColorCoding newCoding)
 						);
 					Vector resultColor = transformMatrix * color;
 					resultColor += transformVector;
-					(*channel[R])[x][y] = resultColor.getData()[Y];
-					(*channel[G])[x][y] = resultColor.getData()[Cb];
-					(*channel[B])[x][y] = resultColor.getData()[Cr];
+					(*channel[R])[x][y] = resultColor[Y];
+					(*channel[G])[x][y] = resultColor[Cb];
+					(*channel[B])[x][y] = resultColor[Cr];
 				}
 			}
 			colorCoding = newCoding;

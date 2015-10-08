@@ -15,5 +15,8 @@ public:
 
 	Vector& operator+=(const Vector& vec);
 
-	const float* getData() const;
+	inline float operator[](int idx) const
+	{
+		return data[idx];
+	}
 };

@@ -19,8 +19,3 @@ Vector& Vector::operator+=(const Vector& vec)
 	data[2] += vec.data[2];
 	return *this;
 }
-
-const float* Vector::getData() const
-{
-	return data;
-}
