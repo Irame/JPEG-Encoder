@@ -5,23 +5,37 @@
 
 #include <iostream>
 
+#include "Benchmark.h"
+
 #include "Image.h"
 #include "ImageLoader.h"
 
 int main(int argc, char* argv[])
 {
-	if (argc < 2) {
-		std::cerr << "Usage: " << argv[0] << " NAME" << std::endl;
+	if (argc < 3) {
+		std::cerr << "Usage: " << argv[0] << " <Source File> <Destination File>" << std::endl;
 		return 1;
 	}
 
-	std::string file(argv[1]);
+	std::string srcFile(argv[1]);
+	std::string dstFile(argv[2]);
 
-	ImagePtr image = ImageLoader::FromPPM(file);
-	image->convertToYCbCr();
+	std::cout << "Load image file: " << srcFile << std::endl;
+	ImagePtr image = nullptr;
+	
+	benchmark(1, [&]() {
+		image = ImageLoader::FromPPM(srcFile);
+	});
+
+	std::cout << "Convert image to YCbCr." << std::endl;
+	benchmark(100, [&](){
+		image->convertToYCbCr();
+	});
+
+	//image->convertToYCbCr();
 	image->applySepia();
 
-	ImageLoader::SaveToPPM("C:\\Users\\Markus\\Desktop\\Test2.ppm", image);
+	ImageLoader::SaveToPPM(dstFile, image);
 
 	return 0;
 }
