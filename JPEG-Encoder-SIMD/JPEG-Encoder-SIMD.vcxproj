@@ -149,6 +149,7 @@
     <ClInclude Include="Benchmark.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="ImageLoader.h" />
+    <ClInclude Include="lodepng.h" />
     <ClInclude Include="SIMD.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -157,6 +158,7 @@
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="ImageLoader.cpp" />
     <ClCompile Include="JPEG-Encoder-SIMD.cpp" />
+    <ClCompile Include="lodepng.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

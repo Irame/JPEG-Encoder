@@ -24,18 +24,23 @@ int main(int argc, char* argv[])
 	ImagePtr image = nullptr;
 	
 	benchmark(1, [&]() {
-		image = ImageLoader::FromPPM(srcFile);
+		image = ImageLoader::Load(srcFile);
 	});
 
 	std::cout << "Convert image to YCbCr." << std::endl;
-	benchmark(100, [&](){
+	benchmark(1, [&](){
 		image->convertToYCbCr();
 	});
 
-	//image->convertToYCbCr();
-	image->applySepia();
+	std::cout << "Apply Sebia filter" << std::endl;
+	benchmark(1, [&]() {
+		image->applySepia();
+	});
 
-	ImageLoader::SaveToPPM(dstFile, image);
+	std::cout << "Save image file: " << dstFile << std::endl;
+	benchmark(1, [&]() {
+		ImageLoader::Save(dstFile, image);
+	});
 
 	return 0;
 }

@@ -3,10 +3,12 @@
 
 #include <fstream>
 #include <sstream>
+#include <iostream>
 #include <vector>
 #include <algorithm>
 
 #include "SIMD.h"
+#include "lodepng.h"
 
 using namespace std;
 
@@ -18,7 +20,45 @@ ImageLoader::~ImageLoader()
 {
 }
 
-ImagePtr ImageLoader::FromPPM(std::string path)
+ImagePtr ImageLoader::Load(const std::string& filename)
+{
+	std::string ext = fileExtension(filename);
+
+	if (ext == "png") {
+		return LoadPNG(filename);
+	} else if (ext == "ppm") {
+		return LoadPPM(filename);
+	} else {
+		std::cout << "Failed to load image. Unknown file extension " << ext << std::endl;
+		return nullptr;
+	}
+}
+
+void ImageLoader::Save(const std::string& filename, ImagePtr image)
+{
+	std::string ext = fileExtension(filename);
+
+	if (ext == "png") {
+		return SavePNG(filename, image);
+	} else if (ext == "ppm") {
+		return SavePPM(filename, image);
+	} else {
+		std::cout << "Failed to save image. Unknown file extension " << ext << std::endl;
+	}
+}
+
+inline int ImageLoader::clamp(int lower, int x, int upper)
+{
+	return max(lower, min(x, upper));
+}
+
+inline std::string ImageLoader::fileExtension(const std::string& filename)
+{
+	return filename.substr(filename.find_last_of(".") + 1);
+}
+
+
+ImagePtr ImageLoader::LoadPPM(std::string path)
 {
 	enum State {
 		None, Size, Pixels
@@ -94,7 +134,7 @@ ImagePtr ImageLoader::FromPPM(std::string path)
 	return resultImage;
 }
 
-void ImageLoader::SaveToPPM(std::string path, ImagePtr image)
+void ImageLoader::SavePPM(std::string path, ImagePtr image)
 {
 	ofstream fileStream = ofstream(path);
 
@@ -121,7 +161,47 @@ void ImageLoader::SaveToPPM(std::string path, ImagePtr image)
 	}
 }
 
-inline int ImageLoader::clamp(int lower, int x, int upper)
+ImagePtr ImageLoader::LoadPNG(std::string path)
 {
-	return max(lower, min(x, upper));
+	std::vector<unsigned char> imgData;
+	unsigned imgWidth, imgHeight;
+
+	unsigned error = lodepng::decode(imgData, imgWidth, imgHeight, path);
+	if (error) {
+		std::cout << "Failed to decode png " << path << " with error: " << error << ": " << lodepng_error_text(error) << std::endl;
+		return nullptr;
+	}
+
+	std::vector<float> imgDataFloat;
+	imgDataFloat.reserve(imgData.size());
+
+	for (auto& c : imgData)
+	{
+		imgDataFloat.emplace_back(c / 255.0f);
+	}
+
+	ImagePtr resultImage = make_shared<Image>(imgWidth, imgHeight);
+	resultImage->setRawPixelData((float*)&imgDataFloat[0]);
+	return resultImage;
+}
+
+void ImageLoader::SavePNG(std::string path, ImagePtr image)
+{
+	const unsigned imgWidth = image->getWidth();
+	const unsigned imgHeight = image->getHeight();
+
+	std::vector<float> data(imgWidth*imgHeight*4);
+	image->getRawPixelData(&data[0]);
+
+	std::vector<unsigned char> imgData;
+	imgData.reserve(data.size());
+	for (auto& c : data)
+	{
+		imgData.emplace_back(clamp(0, static_cast<int>(c*255), 255));
+	}
+
+	unsigned error = lodepng::encode(path, imgData, imgWidth, imgHeight);
+	if (error) {
+		std::cout << "Failed to encode png " << path << " with error: " << error << ": " << lodepng_error_text(error) << std::endl;
+	}
 }
