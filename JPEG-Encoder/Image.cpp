@@ -6,14 +6,14 @@
 using namespace std;
 
 Image::Image()
-	: stepX(1), stepY(1), width(0), height(0)
+	: accessibleWidth(0), accessibleHeight(0), width(0), height(0)
 {
 	for (int i = 0; i < 3; i++)
 		channel[i] = new ColorChannel(i, width, height);
 }
 
 Image::Image(int width, int height, ColorCoding coding)
-	: stepX(1), stepY(1), width(width), height(height), colorCoding(coding)
+	: accessibleWidth(0), accessibleHeight(0), width(width), height(height), colorCoding(coding)
 {
 	for (int i = 0; i < 3; i++)
 		channel[i] = new ColorChannel(i, width, height);
@@ -35,8 +35,10 @@ ColorCoding Image::getColorCoding() const
 
 void Image::setStep(unsigned int stepX, unsigned int stepY)
 {
-	this->stepX = stepX;
-	this->stepY = stepY;
+	int modX = width % stepX;
+	int modY = height % stepY;
+	this->accessibleWidth = modX == 0 ? width : width + stepX - modX;
+	this->accessibleHeight = modY == 0 ? height : height + stepY - modY;
 }
 
 void Image::switchColorCoding(ColorCoding newCoding)
@@ -88,6 +90,8 @@ void Image::scaleColor(ColorName colorName, float factor)
 PixelPtr Image::getPixel(int x, int y) const
 {
 	// TODO: needs improvement
+	if (x > accessibleWidth) throw out_of_range("Image::getPixel() x out of range");
+	if (y > accessibleHeight) throw out_of_range("Image::getPixel() y out of range");
 	if (x >= width) x = width - 1;
 	if (y >= height) x = height - 1;
 	return make_shared<Pixel>(

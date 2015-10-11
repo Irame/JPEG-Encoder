@@ -25,8 +25,8 @@ public:
 
 	PixelPtr getPixel(int x, int y) const;
 private:
-	unsigned int stepX;
-	unsigned int stepY;
+	unsigned int accessibleWidth;
+	unsigned int accessibleHeight;
 	unsigned int width;
 	unsigned int height;
 	ColorCoding colorCoding;
