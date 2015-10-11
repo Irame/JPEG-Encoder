@@ -135,7 +135,6 @@ static void matvecmult_AVX_8(PixelData32T8 &out, const Mat44 &M, const PixelData
 
 	__m256 vAdd = _mm256_broadcast_ps(&V.vals);
 
-	static int shuffleVals[4] = {0x00, 0x55, 0xaa, 0xff};
 	for (int i = 0; i < 4; i++) {
 		__m256 MRow = _mm256_broadcast_ps(&M.row[i]);
 
@@ -144,7 +143,13 @@ static void matvecmult_AVX_8(PixelData32T8 &out, const Mat44 &M, const PixelData
 		resultRow = _mm256_add_ps(resultRow, _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0xaa), V2));
 		resultRow = _mm256_add_ps(resultRow, _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0xff), V3));
 
-		resultRow = _mm256_add_ps(resultRow, _mm256_shuffle_ps(vAdd, vAdd, shuffleVals[i]));
+		switch (i)
+		{
+			case 0: resultRow = _mm256_add_ps(resultRow, _mm256_shuffle_ps(vAdd, vAdd, 0x00)); break;
+			case 1: resultRow = _mm256_add_ps(resultRow, _mm256_shuffle_ps(vAdd, vAdd, 0x55)); break;
+			case 2: resultRow = _mm256_add_ps(resultRow, _mm256_shuffle_ps(vAdd, vAdd, 0xaa)); break;
+			case 3: resultRow = _mm256_add_ps(resultRow, _mm256_shuffle_ps(vAdd, vAdd, 0xff)); break;
+		}
 
 		_mm256_storeu_ps(outF, resultRow);
 	}
