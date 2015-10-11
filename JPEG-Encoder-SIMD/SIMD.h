@@ -93,6 +93,12 @@ union Mat44 {
 	__m128 row[4];
 };
 
+union Vec4
+{
+	float v[4];
+	__m128 vals;
+};
+
 // dual linear combination using AVX instructions on YMM regs
 static inline __m256 twolincomb_AVX_8(__m256 A01, const Mat44 &B)
 {
@@ -115,4 +121,31 @@ static void matmult_AVX_8(Mat44 &out, const Mat44 &A, const Mat44 &B)
 
 	_mm256_storeu_ps(&out.m[0][0], out01x);
 	_mm256_storeu_ps(&out.m[2][0], out23x);
+}
+
+static void matvecmult_AVX_8(PixelData32T8 &out, const Mat44 &M, const PixelData32T8 &pixelBlock, const Vec4 &V)
+{
+	float* pixelBlockF = (float*)&pixelBlock;
+	float* outF = (float*)&out;
+	
+	__m256 V0 = _mm256_loadu_ps(pixelBlockF);
+	__m256 V1 = _mm256_loadu_ps(pixelBlockF + 8);
+	__m256 V2 = _mm256_loadu_ps(pixelBlockF + 16);
+	__m256 V3 = _mm256_loadu_ps(pixelBlockF + 24);
+
+	__m256 vAdd = _mm256_broadcast_ps(&V.vals);
+
+	static int shuffleVals[4] = {0x00, 0x55, 0xaa, 0xff};
+	for (int i = 0; i < 4; i++) {
+		__m256 MRow = _mm256_broadcast_ps(&M.row[i]);
+
+		__m256 resultRow = _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0x00), V0);
+		resultRow = _mm256_add_ps(resultRow, _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0x55), V1));
+		resultRow = _mm256_add_ps(resultRow, _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0xaa), V2));
+		resultRow = _mm256_add_ps(resultRow, _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0xff), V3));
+
+		resultRow = _mm256_add_ps(resultRow, _mm256_shuffle_ps(vAdd, vAdd, shuffleVals[i]));
+
+		_mm256_storeu_ps(outF, resultRow);
+	}
 }
