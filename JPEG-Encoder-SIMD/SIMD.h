@@ -125,10 +125,11 @@ static void matmult_AVX_8(Mat44 &out, const Mat44 &A, const Mat44 &B)
 
 static void convertRGBToYCbCrAVXImpl(PixelData32T8 &ref)
 {
-	static Mat44 M = { 0.2990f,  0.5870f,  0.1140f, 0.0f,
+	static Mat44 M = { 
+         0.2990f,  0.5870f,  0.1140f, 0.0f,
 		-0.1687f, -0.3312f,  0.5000f, 0.0f,
-		0.5000f, -0.4186f, -0.0813f, 0.0f,
-		0.0f,     0.0f,      0.0f,   1.0f };
+		 0.5000f, -0.4186f, -0.0813f, 0.0f,
+		 0.0f,     0.0f,     0.0f,    1.0f };
 	static Vec4 V = { 0.0f, 0.5f, 0.5f, 0.0f };
 
 	float* refFloatPtr = (float*)&ref;

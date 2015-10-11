@@ -82,9 +82,24 @@ void Image::convertToYCbCr()
 	{
 		for (int j = 0; j < 8; j++)
 		{
-			data[i].red[j]   = 0.0 +  0.2990 * data[i].red[j] +  0.5870 * data[i].green[j] +  0.1140 * data[i].blue[j];
-			data[i].green[j] = 0.5 + -0.1687 * data[i].red[j] + -0.3312 * data[i].green[j] +  0.5000 * data[i].blue[j];
-			data[i].blue[j]  = 0.5 +  0.5000 * data[i].red[j] + -0.4186 * data[i].green[j] + -0.0813 * data[i].blue[j];
+			data[i].red[j]   = 0.0f +  0.2990f * data[i].red[j] +  0.5870f * data[i].green[j] +  0.1140f * data[i].blue[j];
+			data[i].green[j] = 0.5f + -0.1687f * data[i].red[j] + -0.3312f * data[i].green[j] +  0.5000f * data[i].blue[j];
+			data[i].blue[j]  = 0.5f +  0.5000f * data[i].red[j] + -0.4186f * data[i].green[j] + -0.0813f * data[i].blue[j];
+			data[i].alpha[j] = 1.0f;
+		}
+	}
+}
+
+void Image::convertToRGB()
+{
+	for (size_t i = 0; i < this->slots; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			data[i].red[j] = 1.0f * (data[i].red[j] - 0.0f) + 0.0f     * (data[i].green[j] - 0.5f) + 1.40209f * (data[i].blue[j] - 0.5f);
+			data[i].green[j] = 1.0f * (data[i].red[j] - 0.0f) + -0.34415f * (data[i].green[j] - 0.5f) + -0.71418f * (data[i].blue[j] - 0.5f);
+			data[i].blue[j] = 1.0f * (data[i].red[j] - 0.0f) + 1.77204f * (data[i].green[j] - 0.5f) + 0.0f     * (data[i].blue[j] - 0.5f);
+			data[i].alpha[j] = 1.0f;
 		}
 	}
 }
@@ -106,4 +121,6 @@ void Image::convertToRGBAVX()
 		convertYCbCrToRGBAVXImpl(data[i]);
 	}
 }
+
+
 

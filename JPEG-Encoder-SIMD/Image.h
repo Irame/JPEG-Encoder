@@ -52,6 +52,8 @@ public:
 	void applySepia();
 	void convertToYCbCr();
 	void convertToYCbCrAVX();
+
+	void convertToRGB();
 	void convertToRGBAVX();
 private:
 	inline PixelPos GetPixelPos(uint x, uint y);
