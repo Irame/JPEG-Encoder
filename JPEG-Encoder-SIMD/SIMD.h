@@ -123,6 +123,18 @@ static void matmult_AVX_8(Mat44 &out, const Mat44 &A, const Mat44 &B)
 	_mm256_storeu_ps(&out.m[2][0], out23x);
 }
 
+template<int shuffleNum>
+static inline void calcOneRowRGBToYCbCr(float* refFloatPtr, __m128& row, __m256& V0, __m256& V1, __m256& V2, __m256& V3, __m256& vAdd)
+{
+	__m256 MRow = _mm256_broadcast_ps(&row);
+	__m256 resultRow = _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0x00), V0);
+	resultRow = _mm256_add_ps(resultRow, _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0x55), V1));
+	resultRow = _mm256_add_ps(resultRow, _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0xaa), V2));
+	resultRow = _mm256_add_ps(resultRow, _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0xff), V3));
+	resultRow = _mm256_add_ps(resultRow, _mm256_shuffle_ps(vAdd, vAdd, shuffleNum));
+	_mm256_storeu_ps(refFloatPtr, resultRow);
+}
+
 static void convertRGBToYCbCrAVXImpl(PixelData32T8 &ref)
 {
 	static Mat44 M = { 
@@ -141,24 +153,10 @@ static void convertRGBToYCbCrAVXImpl(PixelData32T8 &ref)
 
 	__m256 vAdd = _mm256_broadcast_ps(&V.vals);
 
-	for (int i = 0; i < 4; i++) {
-		__m256 MRow = _mm256_broadcast_ps(&M.row[i]);
-
-		__m256 resultRow = _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0x00), V0);
-		resultRow = _mm256_add_ps(resultRow, _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0x55), V1));
-		resultRow = _mm256_add_ps(resultRow, _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0xaa), V2));
-		resultRow = _mm256_add_ps(resultRow, _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0xff), V3));
-
-		switch (i)
-		{
-			case 0: resultRow = _mm256_add_ps(resultRow, _mm256_shuffle_ps(vAdd, vAdd, 0x00)); break;
-			case 1: resultRow = _mm256_add_ps(resultRow, _mm256_shuffle_ps(vAdd, vAdd, 0x55)); break;
-			case 2: resultRow = _mm256_add_ps(resultRow, _mm256_shuffle_ps(vAdd, vAdd, 0xaa)); break;
-			case 3: resultRow = _mm256_add_ps(resultRow, _mm256_shuffle_ps(vAdd, vAdd, 0xff)); break;
-		}
-
-		_mm256_storeu_ps(refFloatPtr + i*8, resultRow);
-	}
+	calcOneRowRGBToYCbCr<0x00>(refFloatPtr     , M.row[0], V0, V1, V2, V3, vAdd);
+	calcOneRowRGBToYCbCr<0x55>(refFloatPtr + 8 , M.row[1], V0, V1, V2, V3, vAdd);
+	calcOneRowRGBToYCbCr<0xaa>(refFloatPtr + 16, M.row[2], V0, V1, V2, V3, vAdd);
+	calcOneRowRGBToYCbCr<0xff>(refFloatPtr + 24, M.row[3], V0, V1, V2, V3, vAdd);
 }
 
 static void convertYCbCrToRGBAVXImpl(PixelData32T8 &ref)
