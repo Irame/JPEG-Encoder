@@ -146,6 +146,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Benchmark.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="ImageLoader.h" />
     <ClInclude Include="SIMD.h" />
