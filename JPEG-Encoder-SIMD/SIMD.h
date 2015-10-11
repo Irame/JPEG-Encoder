@@ -151,6 +151,6 @@ static void matvecmult_AVX_8(PixelData32T8 &out, const Mat44 &M, const PixelData
 			case 3: resultRow = _mm256_add_ps(resultRow, _mm256_shuffle_ps(vAdd, vAdd, 0xff)); break;
 		}
 
-		_mm256_storeu_ps(outF, resultRow);
+		_mm256_storeu_ps(outF + i*8, resultRow);
 	}
 }

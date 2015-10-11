@@ -27,15 +27,20 @@ int main(int argc, char* argv[])
 		image = ImageLoader::Load(srcFile);
 	});
 
-	std::cout << "Convert image to YCbCr." << std::endl;
-	benchmark(1, [&](){
-		image->convertToYCbCr();
+	//std::cout << "Convert image to YCbCr." << std::endl;
+	//benchmark(1, [&](){
+	//	image->convertToYCbCr();
+	//});
+
+	std::cout << "Convert image to YCbCr AVX." << std::endl;
+	benchmark(1, [&]() {
+		image->convertToYCbCrAVX();
 	});
 
-	std::cout << "Apply Sebia filter" << std::endl;
-	benchmark(1, [&]() {
-		image->applySepia();
-	});
+	//std::cout << "Apply Sebia filter" << std::endl;
+	//benchmark(1, [&]() {
+	//	image->applySepia();
+	//});
 
 	std::cout << "Save image file: " << dstFile << std::endl;
 	benchmark(1, [&]() {
