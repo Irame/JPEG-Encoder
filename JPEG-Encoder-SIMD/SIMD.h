@@ -123,15 +123,20 @@ static void matmult_AVX_8(Mat44 &out, const Mat44 &A, const Mat44 &B)
 	_mm256_storeu_ps(&out.m[2][0], out23x);
 }
 
-static void matvecmult_AVX_8(PixelData32T8 &out, const Mat44 &M, const PixelData32T8 &pixelBlock, const Vec4 &V)
+static void convertRGBToYCbCrAVXImpl(PixelData32T8 &ref)
 {
-	float* pixelBlockF = (float*)&pixelBlock;
-	float* outF = (float*)&out;
+	static Mat44 M = { 0.2990f,  0.5870f,  0.1140f, 0.0f,
+		-0.1687f, -0.3312f,  0.5000f, 0.0f,
+		0.5000f, -0.4186f, -0.0813f, 0.0f,
+		0.0f,     0.0f,      0.0f,   1.0f };
+	static Vec4 V = { 0.0f, 0.5f, 0.5f, 0.0f };
+
+	float* refFloatPtr = (float*)&ref;
 	
-	__m256 V0 = _mm256_loadu_ps(pixelBlockF);
-	__m256 V1 = _mm256_loadu_ps(pixelBlockF + 8);
-	__m256 V2 = _mm256_loadu_ps(pixelBlockF + 16);
-	__m256 V3 = _mm256_loadu_ps(pixelBlockF + 24);
+	__m256 V0 = _mm256_loadu_ps(refFloatPtr);
+	__m256 V1 = _mm256_loadu_ps(refFloatPtr + 8);
+	__m256 V2 = _mm256_loadu_ps(refFloatPtr + 16);
+	__m256 V3 = _mm256_loadu_ps(refFloatPtr + 24);
 
 	__m256 vAdd = _mm256_broadcast_ps(&V.vals);
 
@@ -151,6 +156,36 @@ static void matvecmult_AVX_8(PixelData32T8 &out, const Mat44 &M, const PixelData
 			case 3: resultRow = _mm256_add_ps(resultRow, _mm256_shuffle_ps(vAdd, vAdd, 0xff)); break;
 		}
 
-		_mm256_storeu_ps(outF + i*8, resultRow);
+		_mm256_storeu_ps(refFloatPtr + i*8, resultRow);
+	}
+}
+
+static void convertYCbCrToRGBAVXImpl(PixelData32T8 &ref)
+{
+	static Mat44 M = { 
+		1.0000f,  0.0000f,  1.4021f, 0.0f,
+		1.0000f, -0.3442f, -0.7142f, 0.0f,
+		1.0000f,  1.7720f,  0.0000f, 0.0f,
+		0.0f,     0.0f,      0.0f,   1.0f };
+	static Vec4 V = { 0.0f, -0.5f, -0.5f, 0.0f };
+
+	float* refFloatPtr = (float*)&ref;
+	
+	__m256 V0 = _mm256_loadu_ps(refFloatPtr);
+	__m256 V1 = _mm256_loadu_ps(refFloatPtr + 8);
+	__m256 V2 = _mm256_loadu_ps(refFloatPtr + 16);
+	__m256 V3 = _mm256_loadu_ps(refFloatPtr + 24);
+
+	__m256 vAdd = _mm256_broadcast_ps(&V.vals);
+
+	for (int i = 0; i < 4; i++) {
+		__m256 MRow = _mm256_broadcast_ps(&M.row[i]);
+
+		__m256 resultRow = _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0x00), _mm256_add_ps(V0, _mm256_shuffle_ps(vAdd, vAdd, 0x00)));
+		resultRow = _mm256_add_ps(resultRow, _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0x55), _mm256_add_ps(V1, _mm256_shuffle_ps(vAdd, vAdd, 0x55))));
+		resultRow = _mm256_add_ps(resultRow, _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0xaa), _mm256_add_ps(V2, _mm256_shuffle_ps(vAdd, vAdd, 0xaa))));
+		resultRow = _mm256_add_ps(resultRow, _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0xff), _mm256_add_ps(V3, _mm256_shuffle_ps(vAdd, vAdd, 0xff))));
+
+		_mm256_storeu_ps(refFloatPtr + i*8, resultRow);
 	}
 }
