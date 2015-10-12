@@ -107,7 +107,8 @@ void Image::convertToRGB()
 
 void Image::convertToYCbCrAVX()
 {
-	for (size_t i = 0; i < this->slots; i++)
+#pragma omp parallel for
+	for (int i = 0; i < this->slots; i++)
 	{
 		convertRGBToYCbCrAVXImpl(data[i]);
 	}
@@ -116,7 +117,8 @@ void Image::convertToYCbCrAVX()
 
 void Image::convertToRGBAVX()
 {
-	for (size_t i = 0; i < this->slots; i++)
+#pragma omp parallel for
+	for (int i = 0; i < this->slots; i++)
 	{
 		convertYCbCrToRGBAVXImpl(data[i]);
 	}
