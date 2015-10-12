@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
 		image->convertToYCbCrAVX();
 	});
 
-	std::cout << "Convert image to YCbCr AVX." << std::endl;
+	std::cout << "Convert image to RGB AVX." << std::endl;
 	benchmark(1, [&]() {
 		image->convertToRGBAVX();
 	});

@@ -29,7 +29,7 @@ static void transposeFloatSSE(float *pSrc, float *pDst, unsigned int imageSize)
 
 static void transposeFloatAVX(float *pSrc, float *pDst, unsigned int imageSize)
 {
-	if (imageSize % 32 != 0)
+	if (imageSize % 8 != 0)
 	{
 		abort();
 	}

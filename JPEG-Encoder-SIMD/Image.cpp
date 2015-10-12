@@ -21,7 +21,14 @@ Image::~Image()
 
 void Image::setRawPixelData(float* rgbaData)
 {
-	transposeFloatAVX(rgbaData, (float*)data, width*height);
+	int pixelCount = width*height;
+	int rem = pixelCount % 8;
+	int pixelForAVX = pixelCount - rem;
+	transposeFloatAVX(rgbaData, (float*)data, pixelForAVX);
+	PixelData32T8 tail;
+	memset(&tail, 0, sizeof(PixelData32T8));
+	memcpy(&tail, rgbaData + pixelForAVX * 4, rem * 4 * sizeof(float));
+	transposeFloatAVX((float*)&tail, ((float*)data) + pixelForAVX * 4, 8);
 }
 
 void Image::getRawPixelData(float* rgbaDataDest)
@@ -129,6 +136,5 @@ void Image::applySepiaAVX()
 		applySepiaFilterAVXImpl(data[i]);
 	}
 }
-
 
 
