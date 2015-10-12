@@ -98,7 +98,7 @@ ImagePtr ImageLoader::LoadPPM(std::string path)
 			state = Size;
 		}
 		else if (state == State::Size) {
-			maxValue = stoi(line);
+			maxValue = static_cast<float>(stoi(line));
 			state = State::Pixels;
 		}
 		else if (state == State::Pixels) {
@@ -172,12 +172,9 @@ ImagePtr ImageLoader::LoadPNG(std::string path)
 		return nullptr;
 	}
 
-	std::vector<float> imgDataFloat;
-	imgDataFloat.reserve(imgData.size());
-
-	for (auto& c : imgData)
-	{
-		imgDataFloat.emplace_back(c / 255.0f);
+	std::vector<float> imgDataFloat(imgData.size());
+	for (size_t i = 0; i < imgDataFloat.size(); i++) {
+		imgDataFloat[i] = imgData[i] / 255.0f;
 	}
 
 	ImagePtr resultImage = make_shared<Image>(imgWidth, imgHeight);
@@ -193,11 +190,9 @@ void ImageLoader::SavePNG(std::string path, ImagePtr image)
 	std::vector<float> data(imgWidth*imgHeight*4);
 	image->getRawPixelData(&data[0]);
 
-	std::vector<unsigned char> imgData;
-	imgData.reserve(data.size());
-	for (auto& c : data)
-	{
-		imgData.emplace_back(clamp(0, static_cast<int>(c*255), 255));
+	std::vector<unsigned char> imgData(data.size());
+	for (size_t i = 0; i < imgData.size(); i++) {
+		imgData[i] = clamp(0, static_cast<int>(data[i] * 255), 255);
 	}
 
 	unsigned error = lodepng::encode(path, imgData, imgWidth, imgHeight);
