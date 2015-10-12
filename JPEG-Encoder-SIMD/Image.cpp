@@ -58,20 +58,17 @@ inline PixelPos Image::GetPixelPos(uint x, uint y)
 
 void Image::applySepia()
 {
-	PixelData32T8* pSrc = data;
-	PixelData32T8* pDst = data;
-
 	for (size_t i = 0; i < this->slots; i++)
 	{
 		for (int j = 0; j < 8; j++)
 		{
-			pDst[i].red[j]   = 0.393f*pSrc[i].red[j] + 0.769f*pSrc[i].green[j] + 0.189f*pSrc[i].blue[j];
-			pDst[i].green[j] = 0.349f*pSrc[i].red[j] + 0.686f*pSrc[i].green[j] + 0.168f*pSrc[i].blue[j];
-			pDst[i].blue[j]  = 0.272f*pSrc[i].red[j] + 0.534f*pSrc[i].green[j] + 0.131f*pSrc[i].blue[j];
-			pDst[i].alpha[j] = pSrc[i].alpha[j];
-			if (pDst[i].red[j]   > 255) pDst[i].red[j]   = 255;
-			if (pDst[i].green[j] > 255) pDst[i].green[j] = 255;
-			if (pDst[i].blue[j]  > 255) pDst[i].blue[j]  = 255;
+			data[i].red[j]   = 0.393f*data[i].red[j] + 0.769f*data[i].green[j] + 0.189f*data[i].blue[j];
+			data[i].green[j] = 0.349f*data[i].red[j] + 0.686f*data[i].green[j] + 0.168f*data[i].blue[j];
+			data[i].blue[j]  = 0.272f*data[i].red[j] + 0.534f*data[i].green[j] + 0.131f*data[i].blue[j];
+			data[i].alpha[j] = data[i].alpha[j];
+			if (data[i].red[j]   > 255) data[i].red[j]   = 255;
+			if (data[i].green[j] > 255) data[i].green[j] = 255;
+			if (data[i].blue[j]  > 255) data[i].blue[j]  = 255;
 		}
 	}
 }
