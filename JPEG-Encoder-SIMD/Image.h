@@ -34,16 +34,20 @@ class Image
 private:
 	PixelData32T8* data;
 	size_t width, height;
+	size_t simulatedWidth, simulatedHeight;
 	uint slots;
+	uint stepX, stepY;
 public:
-	Image();
-	Image(size_t width, size_t height);
+	Image(size_t width, size_t height, size_t stepX, size_t stepY);
 	~Image();
 
 	size_t getWidth() { return width; }
 	size_t getHeight() { return height; }
+	size_t getSimulatedWidth() { return simulatedWidth; }
+	size_t getSimulatedHeight() { return simulatedHeight; }
 
 	void        setRawPixelData(float* rgbaData);
+	void setRawPixelData2(float* rgbaData);
 	void        getRawPixelData(float* rgbaDataDest);
 
 	void        SetPixel(uint x, uint y, PixelData32 color);

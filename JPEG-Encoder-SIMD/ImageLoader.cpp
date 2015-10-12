@@ -129,7 +129,7 @@ ImagePtr ImageLoader::LoadPPM(std::string path)
 		}
 	}
 
-	ImagePtr resultImage = make_shared<Image>(width, height);
+	ImagePtr resultImage = make_shared<Image>(width, height, 16, 16);
 	resultImage->setRawPixelData((float*)&data[0]);
 	return resultImage;
 }
@@ -177,15 +177,15 @@ ImagePtr ImageLoader::LoadPNG(std::string path)
 		imgDataFloat[i] = imgData[i] / 255.0f;
 	}
 
-	ImagePtr resultImage = make_shared<Image>(imgWidth, imgHeight);
+	ImagePtr resultImage = make_shared<Image>(imgWidth, imgHeight, 14, 14);
 	resultImage->setRawPixelData((float*)&imgDataFloat[0]);
 	return resultImage;
 }
 
 void ImageLoader::SavePNG(std::string path, ImagePtr image)
 {
-	const unsigned imgWidth = image->getWidth();
-	const unsigned imgHeight = image->getHeight();
+	const unsigned imgWidth = image->getSimulatedWidth();
+	const unsigned imgHeight = image->getSimulatedHeight();
 
 	std::vector<float> data(imgWidth*imgHeight*4);
 	image->getRawPixelData(&data[0]);

@@ -3,15 +3,15 @@
 
 #include "SIMD.h"
 
-Image::Image()
+Image::Image(size_t width, size_t height, size_t stepY = 1, size_t stepX = 1)
+	: data(nullptr), width(width), height(height), slots(0), stepX(stepX), stepY(stepY)
 {
-}
-
-Image::Image(size_t width, size_t height)
-	: data(nullptr), width(width), height(height), slots(0)
-{
-	slots = static_cast<uint>(ceil((width*height) / 8.0));
-	data = new PixelData32T8[slots];
+	int widthStepRem = width % stepX;
+	int heightStepRem = height % stepY;
+	simulatedWidth = widthStepRem == 0 ? width : width + stepX - widthStepRem;
+	simulatedHeight = heightStepRem == 0 ? height : height + stepY - heightStepRem;
+	slots = static_cast<uint>(ceil((simulatedWidth * simulatedHeight) / 8.0));
+	data = (PixelData32T8*)_mm_malloc(sizeof(PixelData32T8)*slots, 64);
 }
 
 Image::~Image()
@@ -19,7 +19,7 @@ Image::~Image()
 	delete[] data;
 }
 
-void Image::setRawPixelData(float* rgbaData)
+void Image::setRawPixelData2(float* rgbaData)
 {
 	int pixelCount = width*height;
 	int rem = pixelCount % 8;
@@ -31,9 +31,81 @@ void Image::setRawPixelData(float* rgbaData)
 	transposeFloatAVX((float*)&tail, ((float*)data) + pixelForAVX * 4, 8);
 }
 
+void Image::setRawPixelData(float* rgbaData)
+{
+	static const int FLOAT_SIZE = sizeof(float); // 4
+	static const int FLOATS_PER_PIXEL = sizeof(PixelData32) / FLOAT_SIZE; // 4
+	static const int PIXEL_PER_BLOCK = sizeof(PixelData32T8) / FLOATS_PER_PIXEL / FLOAT_SIZE; // 8
+
+	float* buffer = new float[FLOAT_SIZE * (2 * PIXEL_PER_BLOCK + (simulatedWidth-width) * FLOATS_PER_PIXEL)];
+	int rgbDataOffsetFloat = 0;
+	int dataOffsetFloat = 0;
+	int lineOffsetPixel = 0;
+	int bufferOffsetFloat;
+	int simulatedDataSize = simulatedWidth * simulatedHeight * FLOATS_PER_PIXEL;
+	int dataSize = width * height * FLOATS_PER_PIXEL;
+
+	while (dataOffsetFloat < simulatedDataSize)
+	{
+		int pixelsToProcess = width - lineOffsetPixel;
+		lineOffsetPixel = 0;
+		int lineRem = pixelsToProcess % PIXEL_PER_BLOCK;
+		
+		pixelsToProcess -= lineRem;
+		transposeFloatAVX(rgbaData + rgbDataOffsetFloat, (float*)data + dataOffsetFloat, pixelsToProcess);
+		rgbDataOffsetFloat += pixelsToProcess * FLOATS_PER_PIXEL;
+		dataOffsetFloat += pixelsToProcess * FLOATS_PER_PIXEL;
+		memcpy(buffer, rgbaData + rgbDataOffsetFloat, lineRem * FLOATS_PER_PIXEL * FLOAT_SIZE);
+		rgbDataOffsetFloat += lineRem * FLOATS_PER_PIXEL;
+		bufferOffsetFloat = lineRem * FLOATS_PER_PIXEL;
+
+		for (int i = 0; i < (simulatedWidth - width); i++)
+		{
+			memcpy(buffer + bufferOffsetFloat, rgbaData + rgbDataOffsetFloat - FLOATS_PER_PIXEL, FLOATS_PER_PIXEL * FLOAT_SIZE);
+			bufferOffsetFloat += 4;
+		}
+		
+		int bufferAlignRem = bufferOffsetFloat % (PIXEL_PER_BLOCK * FLOATS_PER_PIXEL);
+		
+		if (bufferAlignRem != 0)
+		{
+			int floatsToCopy = PIXEL_PER_BLOCK * FLOATS_PER_PIXEL - bufferAlignRem;
+		
+			if (rgbDataOffsetFloat < dataSize) {
+				memcpy(buffer + bufferOffsetFloat, rgbaData + rgbDataOffsetFloat, floatsToCopy * FLOAT_SIZE);
+			} 
+			else
+			{
+				memcpy(buffer + bufferOffsetFloat, rgbaData + rgbDataOffsetFloat - width * FLOATS_PER_PIXEL, floatsToCopy * FLOAT_SIZE);
+			}
+			rgbDataOffsetFloat += floatsToCopy;
+
+			bufferOffsetFloat += floatsToCopy;
+			lineOffsetPixel = floatsToCopy / FLOATS_PER_PIXEL;
+		}
+		
+		transposeFloatAVX(buffer, (float*)data + dataOffsetFloat, bufferOffsetFloat / FLOATS_PER_PIXEL);
+		dataOffsetFloat += bufferOffsetFloat;
+
+		if (rgbDataOffsetFloat >= dataSize) {
+			rgbDataOffsetFloat -= width * FLOATS_PER_PIXEL;
+		}
+	}
+
+
+	//int simulatedLineSize = simulatedWidth * FLOATS_PER_PIXEL;
+	//int heightRem = simulatedHeight - height;
+	//for (int i = 0; i < heightRem; i++)
+	//{
+	//	memcpy((float*)data + simulatedDataSize + i * simulatedLineSize, (float*)data + simulatedDataSize - simulatedLineSize, simulatedLineSize * FLOAT_SIZE);
+	//}
+
+	delete[] buffer;
+}
+
 void Image::getRawPixelData(float* rgbaDataDest)
 {
-	transposeFloatAVX_reverse((float*)data, rgbaDataDest, width*height);
+	transposeFloatAVX_reverse((float*)data, rgbaDataDest, simulatedWidth*simulatedHeight);
 }
 
 void Image::SetPixel(uint x, uint y, PixelData32 color)

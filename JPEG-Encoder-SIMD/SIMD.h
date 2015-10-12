@@ -39,10 +39,10 @@ static void transposeFloatAVX(float *pSrc, float *pDst, unsigned int imageSize)
 	__m256 up0, up1, up2, up3;
 	for (unsigned int i = 0; i<imageSize * 4; i += 32)
 	{
-		ld0 = _mm256_load_ps(pSrc + i);
-		ld1 = _mm256_load_ps(pSrc + i + 8);
-		ld2 = _mm256_load_ps(pSrc + i + 16);
-		ld3 = _mm256_load_ps(pSrc + i + 24);
+		ld0 = _mm256_loadu_ps(pSrc + i);
+		ld1 = _mm256_loadu_ps(pSrc + i + 8);
+		ld2 = _mm256_loadu_ps(pSrc + i + 16);
+		ld3 = _mm256_loadu_ps(pSrc + i + 24);
 		pm0 = _mm256_permute2f128_ps(ld0, ld2, 0x20); // R0G0B0A0 R4G4B4A4
 		pm1 = _mm256_permute2f128_ps(ld1, ld3, 0x20); // R2G2B2A2 R6G6B6A6
 		pm2 = _mm256_permute2f128_ps(ld0, ld2, 0x31); // R1G1B1A1 R5G5B5A5
@@ -69,22 +69,18 @@ static void transposeFloatAVX_reverse(float *pSrc, float *pDst, unsigned int ima
 		ld1 = _mm256_load_ps(pSrc + i + 8);
 		ld2 = _mm256_load_ps(pSrc + i + 16);
 		ld3 = _mm256_load_ps(pSrc + i + 24);
-		up0 = _mm256_unpacklo_ps(ld0, ld2); // R0B0R1B1 R4B4R5B5
-		up1 = _mm256_unpackhi_ps(ld0, ld2); // R2B2R3B3 R6B6R7B7
-		up2 = _mm256_unpacklo_ps(ld1, ld3); // G0A0G1A1 G4A4G5A5
-		up3 = _mm256_unpackhi_ps(ld1, ld3); // G2A2G3A3 G6A6G7A7
+		up0 = _mm256_unpacklo_ps(ld0, ld2);  // R0B0R1B1 R4B4R5B5
+		up1 = _mm256_unpackhi_ps(ld0, ld2);  // R2B2R3B3 R6B6R7B7
+		up2 = _mm256_unpacklo_ps(ld1, ld3);  // G0A0G1A1 G4A4G5A5
+		up3 = _mm256_unpackhi_ps(ld1, ld3);  // G2A2G3A3 G6A6G7A7
 		upb0 = _mm256_unpacklo_ps(up0, up2); // R0G0B0A0 R4G4B4A4
 		upb1 = _mm256_unpackhi_ps(up0, up2); // R1G1B1A1 R5G5B5A5
 		upb2 = _mm256_unpacklo_ps(up1, up3); // R2G2B2A2 R6G6B6A6
 		upb3 = _mm256_unpackhi_ps(up1, up3); // R3G3B3A3 R7G7B7A7
-											 // R0G0B0A0 R1G1B1A1
-		_mm256_store_ps(pDst + i, _mm256_permute2f128_ps(upb0, upb1, 0x20));
-		// R2G2B2A2 R3G3B3A3
-		_mm256_store_ps(pDst + i + 8, _mm256_permute2f128_ps(upb2, upb3, 0x20));
-		// R4G4B4A4 R5G5B5A5
-		_mm256_store_ps(pDst + i + 16, _mm256_permute2f128_ps(upb0, upb1, 0x31));
-		// R6G6B6A6 R7G7B7A7
-		_mm256_store_ps(pDst + i + 24, _mm256_permute2f128_ps(upb2, upb3, 0x31));
+		_mm256_storeu_ps(pDst + i, _mm256_permute2f128_ps(upb0, upb1, 0x20));      // R0G0B0A0 R1G1B1A1
+		_mm256_storeu_ps(pDst + i + 8, _mm256_permute2f128_ps(upb2, upb3, 0x20));  // R2G2B2A2 R3G3B3A3
+		_mm256_storeu_ps(pDst + i + 16, _mm256_permute2f128_ps(upb0, upb1, 0x31)); // R4G4B4A4 R5G5B5A5
+		_mm256_storeu_ps(pDst + i + 24, _mm256_permute2f128_ps(upb2, upb3, 0x31)); // R6G6B6A6 R7G7B7A7
 	}
 }
 
