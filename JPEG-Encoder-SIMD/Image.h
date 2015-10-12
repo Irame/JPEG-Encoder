@@ -55,6 +55,7 @@ public:
 
 	void convertToRGB();
 	void convertToRGBAVX();
+	void applySepiaAVX();
 private:
 	inline PixelPos GetPixelPos(uint x, uint y);
 };

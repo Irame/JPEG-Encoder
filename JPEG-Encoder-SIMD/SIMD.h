@@ -188,3 +188,30 @@ static void convertYCbCrToRGBAVXImpl(PixelData32T8 &ref)
 		_mm256_storeu_ps(refFloatPtr + i*8, resultRow);
 	}
 }
+
+static void applySepiaFilterAVXImpl(PixelData32T8 &ref)
+{
+	static Mat44 M = {
+		0.3930f,  0.7690f,  0.1890f, 0.0f,
+		0.3490f,  0.6860f,  0.1680f, 0.0f,
+		0.2720f,  0.5340f,  0.1310f, 0.0f,
+		0.0f,     0.0f,     0.0f,    1.0f };
+
+	float* refFloatPtr = (float*)&ref;
+
+	__m256 V0 = _mm256_loadu_ps(refFloatPtr);
+	__m256 V1 = _mm256_loadu_ps(refFloatPtr + 8);
+	__m256 V2 = _mm256_loadu_ps(refFloatPtr + 16);
+	__m256 V3 = _mm256_loadu_ps(refFloatPtr + 24);
+
+	for (int i = 0; i < 4; i++) {
+		__m256 MRow = _mm256_broadcast_ps(&M.row[i]);
+
+		__m256 resultRow = _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0x00), V0);
+		resultRow = _mm256_add_ps(resultRow, _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0x55), V1));
+		resultRow = _mm256_add_ps(resultRow, _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0xaa), V2));
+		resultRow = _mm256_add_ps(resultRow, _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0xff), V3));
+
+		_mm256_storeu_ps(refFloatPtr + i * 8, resultRow);
+	}
+}

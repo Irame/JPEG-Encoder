@@ -123,4 +123,13 @@ void Image::convertToRGBAVX()
 }
 
 
+void Image::applySepiaAVX()
+{
+	for (size_t i = 0; i < this->slots; i++)
+	{
+		applySepiaFilterAVXImpl(data[i]);
+	}
+}
+
+
 

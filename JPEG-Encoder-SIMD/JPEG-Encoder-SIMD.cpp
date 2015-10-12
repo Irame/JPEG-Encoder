@@ -33,6 +33,11 @@ int main(int argc, char* argv[])
 	//	image->convertToYCbCr();
 	//});
 	
+	//std::cout << "Convert image to YCbCr AVX." << std::endl;
+	//benchmark(1, [&]() {
+	//	image->applySepia();
+	//});
+	
 	std::cout << "Convert image to YCbCr AVX." << std::endl;
 	benchmark(1, [&]() {
 		image->convertToYCbCrAVX();
