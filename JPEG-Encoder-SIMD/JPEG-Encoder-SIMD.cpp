@@ -33,9 +33,9 @@ int main(int argc, char* argv[])
 	//	image->convertToYCbCr();
 	//});
 	
-	//std::cout << "Convert image to YCbCr AVX." << std::endl;
+	//std::cout << "Aplying Sepia Filter." << std::endl;
 	//benchmark(1, [&]() {
-	//	image->applySepia();
+	//	image->applySepiaAVX();
 	//});
 	
 	std::cout << "Convert image to YCbCr AVX." << std::endl;
