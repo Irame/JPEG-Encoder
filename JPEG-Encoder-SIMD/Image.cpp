@@ -2,6 +2,7 @@
 #include "Image.h"
 
 #include "SIMD.h"
+#include <algorithm>
 
 Image::Image(size_t width, size_t height, size_t stepY = 1, size_t stepX = 1)
 	: data(nullptr), width(width), height(height), slots(0), stepX(stepX), stepY(stepY)
@@ -37,59 +38,40 @@ void Image::setRawPixelData(float* rgbaData)
 	static const int FLOATS_PER_PIXEL = sizeof(PixelData32) / FLOAT_SIZE; // 4
 	static const int PIXEL_PER_BLOCK = sizeof(PixelData32T8) / FLOATS_PER_PIXEL / FLOAT_SIZE; // 8
 
-	float* buffer = new float[FLOAT_SIZE * (2 * PIXEL_PER_BLOCK + (simulatedWidth-width) * FLOATS_PER_PIXEL)];
+	float* buffer = new float[FLOAT_SIZE * (2 * PIXEL_PER_BLOCK + (simulatedWidth-width)) * FLOATS_PER_PIXEL];
 	int rgbDataOffsetFloat = 0;
 	int dataOffsetFloat = 0;
 	int lineOffsetPixel = 0;
-	int bufferOffsetFloat;
 	int simulatedDataSize = simulatedWidth * simulatedHeight * FLOATS_PER_PIXEL;
 	int dataSize = width * height * FLOATS_PER_PIXEL;
 
 	while (dataOffsetFloat < simulatedDataSize)
 	{
 		int pixelsToProcess = width - lineOffsetPixel;
-		lineOffsetPixel = 0;
 		int lineRem = pixelsToProcess % PIXEL_PER_BLOCK;
 		
 		pixelsToProcess -= lineRem;
 		transposeFloatAVX(rgbaData + rgbDataOffsetFloat, (float*)data + dataOffsetFloat, pixelsToProcess);
 		rgbDataOffsetFloat += pixelsToProcess * FLOATS_PER_PIXEL;
 		dataOffsetFloat += pixelsToProcess * FLOATS_PER_PIXEL;
-		memcpy(buffer, rgbaData + rgbDataOffsetFloat, lineRem * FLOATS_PER_PIXEL * FLOAT_SIZE);
-		rgbDataOffsetFloat += lineRem * FLOATS_PER_PIXEL;
-		bufferOffsetFloat = lineRem * FLOATS_PER_PIXEL;
+		
+		int pixelsToFillLine = lineRem + simulatedWidth - width;
+		int pixelsForBuffer = pixelsToFillLine + PIXEL_PER_BLOCK - pixelsToFillLine % PIXEL_PER_BLOCK;
+		lineOffsetPixel = (pixelsForBuffer - pixelsToFillLine) % simulatedWidth;
 
-		for (int i = 0; i < (simulatedWidth - width); i++)
+		int floatsForBuffer = pixelsForBuffer * FLOATS_PER_PIXEL;
+		for (int bufferFloatOffset = 0; bufferFloatOffset < floatsForBuffer; bufferFloatOffset += FLOATS_PER_PIXEL)
 		{
-			memcpy(buffer + bufferOffsetFloat, rgbaData + rgbDataOffsetFloat - FLOATS_PER_PIXEL, FLOATS_PER_PIXEL * FLOAT_SIZE);
-			bufferOffsetFloat += 4;
+			if (((dataOffsetFloat + bufferFloatOffset) / FLOATS_PER_PIXEL) % simulatedWidth >= width)
+				rgbDataOffsetFloat -= FLOATS_PER_PIXEL;
+			if (rgbDataOffsetFloat >= dataSize)
+				rgbDataOffsetFloat -= width * FLOATS_PER_PIXEL;
+			memcpy(buffer + bufferFloatOffset, rgbaData + rgbDataOffsetFloat, FLOATS_PER_PIXEL * FLOAT_SIZE);
+			rgbDataOffsetFloat += FLOATS_PER_PIXEL;
 		}
-		
-		int bufferAlignRem = bufferOffsetFloat % (PIXEL_PER_BLOCK * FLOATS_PER_PIXEL);
-		
-		if (bufferAlignRem != 0)
-		{
-			int floatsToCopy = PIXEL_PER_BLOCK * FLOATS_PER_PIXEL - bufferAlignRem;
-		
-			if (rgbDataOffsetFloat < dataSize) {
-				memcpy(buffer + bufferOffsetFloat, rgbaData + rgbDataOffsetFloat, floatsToCopy * FLOAT_SIZE);
-			} 
-			else
-			{
-				memcpy(buffer + bufferOffsetFloat, rgbaData + rgbDataOffsetFloat - width * FLOATS_PER_PIXEL, floatsToCopy * FLOAT_SIZE);
-			}
-			rgbDataOffsetFloat += floatsToCopy;
 
-			bufferOffsetFloat += floatsToCopy;
-			lineOffsetPixel = floatsToCopy / FLOATS_PER_PIXEL;
-		}
-		
-		transposeFloatAVX(buffer, (float*)data + dataOffsetFloat, bufferOffsetFloat / FLOATS_PER_PIXEL);
-		dataOffsetFloat += bufferOffsetFloat;
-
-		if (rgbDataOffsetFloat >= dataSize) {
-			rgbDataOffsetFloat -= width * FLOATS_PER_PIXEL;
-		}
+		transposeFloatAVX(buffer, (float*)data + dataOffsetFloat, pixelsForBuffer);
+		dataOffsetFloat += floatsForBuffer;
 	}
 
 
