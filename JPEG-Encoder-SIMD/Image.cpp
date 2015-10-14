@@ -16,7 +16,7 @@ Image::Image(size_t width, size_t height, size_t stepY = 1, size_t stepX = 1)
 
 Image::~Image()
 {
-	delete[] data;
+	_mm_free(data);
 }
 
 void Image::setRawPixelData2(float* rgbaData)
@@ -103,9 +103,11 @@ void Image::setRawPixelData(float* rgbaData)
 	delete[] buffer;
 }
 
-void Image::getRawPixelData(float* rgbaDataDest)
+ImageDataPtr Image::getRawPixelData()
 {
-	transposeFloatAVX_reverse((float*)data, rgbaDataDest, simulatedWidth*simulatedHeight);
+	ImageDataPtr imageData = std::make_shared<std::vector<float>>(slots * 32);
+	transposeFloatAVX_reverse((float*)data, &imageData->operator[](0), simulatedWidth*simulatedHeight);
+	return imageData;
 }
 
 void Image::SetPixel(uint x, uint y, PixelData32 color)
@@ -208,5 +210,3 @@ void Image::applySepiaAVX()
 		applySepiaFilterAVXImpl(data[i]);
 	}
 }
-
-

@@ -187,12 +187,11 @@ void ImageLoader::SavePNG(std::string path, ImagePtr image)
 	const unsigned imgWidth = image->getSimulatedWidth();
 	const unsigned imgHeight = image->getSimulatedHeight();
 
-	std::vector<float> data(imgWidth*imgHeight*4);
-	image->getRawPixelData(&data[0]);
+	ImageDataPtr imageData = image->getRawPixelData();
 
-	std::vector<unsigned char> imgData(data.size());
+	std::vector<unsigned char> imgData(imageData->size());
 	for (size_t i = 0; i < imgData.size(); i++) {
-		imgData[i] = clamp(0, static_cast<int>(data[i] * 255), 255);
+		imgData[i] = clamp(0, static_cast<int>(imageData->operator[](i) * 255), 255);
 	}
 
 	unsigned error = lodepng::encode(path, imgData, imgWidth, imgHeight);

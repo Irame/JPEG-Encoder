@@ -4,6 +4,7 @@
 #include <memory>
 
 typedef unsigned int uint;
+typedef std::shared_ptr<std::vector<float>> ImageDataPtr;
 
 struct PixelPos {
 	int slot;
@@ -47,8 +48,8 @@ public:
 	size_t getSimulatedHeight() { return simulatedHeight; }
 
 	void        setRawPixelData(float* rgbaData);
+	ImageDataPtr getRawPixelData();
 	void setRawPixelData2(float* rgbaData);
-	void        getRawPixelData(float* rgbaDataDest);
 
 	void        SetPixel(uint x, uint y, PixelData32 color);
 	PixelData32 GetPixel(uint x, uint y);
