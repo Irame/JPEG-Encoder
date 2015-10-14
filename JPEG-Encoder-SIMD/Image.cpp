@@ -38,8 +38,10 @@ void Image::setRawPixelData(float* rgbaData)
 	static const int FLOATS_PER_PIXEL = sizeof(PixelData32) / FLOAT_SIZE; // 4
 	static const int PIXEL_PER_BLOCK = sizeof(PixelData32T8) / FLOATS_PER_PIXEL / FLOAT_SIZE; // 8
 
-	if (stepX == 1 && stepY == 1)
+	if (stepX == 1 && stepY == 1) {
 		setRawPixelDataDirect(rgbaData);
+		return;
+	}
 
 	float* buffer = new float[FLOAT_SIZE * (2 * PIXEL_PER_BLOCK + (simulatedWidth-width)) * FLOATS_PER_PIXEL];
 	int rgbaDataOffsetFloat = 0;
