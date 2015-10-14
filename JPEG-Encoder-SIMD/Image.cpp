@@ -199,3 +199,8 @@ void Image::applySepiaAVX()
 		applySepiaFilterAVXImpl(data[i]);
 	}
 }
+
+void Image::multiplyColorChannelByAVX(int colorChannel, float val)
+{
+	multiplyAVX((float*)data + colorChannel * 8, val, this->slots * 32);
+}

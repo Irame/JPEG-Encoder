@@ -62,6 +62,7 @@ public:
 
 	void applySepia();
 	void applySepiaAVX();
+	void multiplyColorChannelByAVX(int colorChannel, float val);
 private:
 	inline PixelPos GetPixelPos(uint x, uint y);
 	void setRawPixelDataDirect(float* rgbaData);

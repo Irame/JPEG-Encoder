@@ -211,3 +211,17 @@ static void applySepiaFilterAVXImpl(PixelData32T8 &ref)
 		_mm256_storeu_ps(refFloatPtr + i * 8, resultRow);
 	}
 }
+
+static void multiplyAVX(float* ref, float val, int dataSize)
+{
+	__m128 supportArray = { val, val, val, val };
+
+
+	__m256 valSpread = _mm256_broadcast_ps(&supportArray);
+
+	for (int i = 0; i < dataSize; i += 32)
+	{
+		__m256 data = _mm256_loadu_ps((float*)(ref + i));
+		_mm256_storeu_ps((float*)(ref + i), _mm256_mul_ps(data, valSpread));
+	}
+}

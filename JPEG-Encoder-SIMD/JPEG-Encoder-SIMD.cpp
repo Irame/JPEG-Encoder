@@ -37,16 +37,22 @@ int main(int argc, char* argv[])
 	//benchmark(1, [&]() {
 	//	image->applySepiaAVX();
 	//});
-	
-	std::cout << "Convert image to YCbCr AVX." << std::endl;
+
+	//std::cout << "Convert image to YCbCr AVX." << std::endl;
+	//benchmark(1, [&]() {
+	//	image->convertToYCbCrAVX();
+	//});
+
+	std::cout << "Cancle out Cb and Cr Channel." << std::endl;
 	benchmark(1, [&]() {
-		image->convertToYCbCrAVX();
+		image->multiplyColorChannelByAVX(1, 0.75);
+		image->multiplyColorChannelByAVX(2, 0.5);
 	});
 
-	std::cout << "Convert image to RGB AVX." << std::endl;
-	benchmark(1, [&]() {
-		image->convertToRGBAVX();
-	});
+	//std::cout << "Convert image to RGB AVX." << std::endl;
+	//benchmark(1, [&]() {
+	//	image->convertToRGBAVX();
+	//});
 
 	//std::cout << "Convert image to RGB." << std::endl;
 	//benchmark(1, [&]() {
