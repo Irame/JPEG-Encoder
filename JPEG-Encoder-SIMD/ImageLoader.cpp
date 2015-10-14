@@ -145,15 +145,17 @@ void ImageLoader::SavePPM(std::string path, ImagePtr image)
 	fileStream << "P3" << endl;
 	fileStream << width << " " << height << endl;
 	fileStream << maxVal << endl;
+
+	PixelData32 pixel;
 	
 	for (size_t y = 0; y < height; y++)
 	{
 		for (size_t x = 0; x < width; x++)
 		{
-			PixelData32& p = image->GetPixel(x, y);
-			const int r = clamp(0, static_cast<int>(p.R * maxVal), maxVal);
-			const int g = clamp(0, static_cast<int>(p.G * maxVal), maxVal);
-			const int b = clamp(0, static_cast<int>(p.B * maxVal), maxVal);
+			image->GetPixel(pixel, x, y);
+			const int r = clamp(0, static_cast<int>(pixel.R * maxVal), maxVal);
+			const int g = clamp(0, static_cast<int>(pixel.G * maxVal), maxVal);
+			const int b = clamp(0, static_cast<int>(pixel.B * maxVal), maxVal);
 
 			fileStream << r << " " << g << " " << b << "  ";
 		}

@@ -52,7 +52,7 @@ public:
 	ImageDataPtr getRawPixelData();
 
 	void SetPixel(uint x, uint y, PixelData32 color);
-	PixelData32 GetPixel(uint x, uint y);
+	void GetPixel(PixelData32& ref, uint x, uint y);
 
 	void convertToYCbCr();
 	void convertToYCbCrAVX();

@@ -109,15 +109,14 @@ void Image::SetPixel(uint x, uint y, PixelData32 color)
 	data[pos.slot].alpha[pos.index] = color.A;
 }
 
-PixelData32 Image::GetPixel(uint x, uint y)
+void Image::GetPixel(PixelData32& ref, uint x, uint y)
 {
 	PixelPos pos = GetPixelPos(x, y);
 
-	return PixelData32(
-		data[pos.slot].red[pos.index], 
-		data[pos.slot].green[pos.index],
-		data[pos.slot].blue[pos.index], 
-		data[pos.slot].alpha[pos.index]);
+	ref.R = data[pos.slot].red[pos.index];
+	ref.G = data[pos.slot].green[pos.index];
+	ref.B = data[pos.slot].blue[pos.index];
+	ref.A = data[pos.slot].alpha[pos.index];
 }
 
 inline PixelPos Image::GetPixelPos(uint x, uint y)
