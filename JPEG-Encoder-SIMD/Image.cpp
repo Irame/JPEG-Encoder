@@ -34,48 +34,71 @@ void Image::setRawPixelDataDirect(float* rgbaData)
 
 void Image::setRawPixelData(float* rgbaData)
 {
+	// frequently used values
 	static const int FLOAT_SIZE = sizeof(float); // 4
 	static const int FLOATS_PER_PIXEL = sizeof(PixelData32) / FLOAT_SIZE; // 4
 	static const int PIXEL_PER_BLOCK = sizeof(PixelData32T8) / FLOATS_PER_PIXEL / FLOAT_SIZE; // 8
 
+	// if the step is 1 we dont have to do any extra stuff
 	if (stepX == 1 && stepY == 1) {
 		setRawPixelDataDirect(rgbaData);
 		return;
 	}
 
+	// buffer we fill maually
 	float* buffer = new float[FLOAT_SIZE * (2 * PIXEL_PER_BLOCK + (simulatedWidth-width)) * FLOATS_PER_PIXEL];
-	int rgbaDataOffsetFloat = 0;
-	int dataOffsetFloat = 0;
-	int lineOffsetPixel = 0;
+
+	// offsets to keep track of the position in buffers
+	int rgbaDataOffsetFloat = 0;		// offset in 'rgbaData'
+	int dataOffsetFloat = 0;			// offset in 'data'
+	int lineOffsetPixel = 0;			// offset in the current line
+
+	// size of the data which should be accessable due to the step size
 	int simulatedDataSize = simulatedWidth * simulatedHeight * FLOATS_PER_PIXEL;
+	// the size of the real data we have
 	int dataSize = width * height * FLOATS_PER_PIXEL;
 
 	while (dataOffsetFloat < simulatedDataSize)
 	{
+		// number of pixels which will be processed directly from the 'rgbaData' array
 		int pixelsToProcess = width - lineOffsetPixel;
+		// pixels that are in the last block (or 0)
 		int lineRem = pixelsToProcess % PIXEL_PER_BLOCK;
 		
+		// adjust pixels to process so that they align with the block size (8)
 		pixelsToProcess -= lineRem;
+		// process the pixels directly from 'rgbaData'
 		transposeFloatAVX(rgbaData + rgbaDataOffsetFloat, (float*)data + dataOffsetFloat, pixelsToProcess);
+		// update offsets
 		rgbaDataOffsetFloat += pixelsToProcess * FLOATS_PER_PIXEL;
 		dataOffsetFloat += pixelsToProcess * FLOATS_PER_PIXEL;
 		
+		// pixels which are needed to fill one line to a total width of 'simulatedWidth'
 		int pixelsToFillLine = lineRem + simulatedWidth - width;
+		// total number of pixels that be written to 'buffer'
 		int pixelsForBuffer = pixelsToFillLine + PIXEL_PER_BLOCK - pixelsToFillLine % PIXEL_PER_BLOCK;
+		// update offset
 		lineOffsetPixel = (pixelsForBuffer - pixelsToFillLine) % simulatedWidth;
 
+		// total number of float values that be written to 'buffer'
 		int floatsForBuffer = pixelsForBuffer * FLOATS_PER_PIXEL;
 		for (int bufferFloatOffset = 0; bufferFloatOffset < floatsForBuffer; bufferFloatOffset += FLOATS_PER_PIXEL)
 		{
+			// if we are on the right side of the pictiure and outside the real data 
+			// remove one pixel from the 'rgbaDataOffsetFloat' so we copy the right most pixel
 			if (((dataOffsetFloat + bufferFloatOffset) / FLOATS_PER_PIXEL) % simulatedWidth >= width)
 				rgbaDataOffsetFloat -= FLOATS_PER_PIXEL;
+			// if we are at the end of the real data we have to go one line back to copy the last line
 			if (rgbaDataOffsetFloat >= dataSize)
 				rgbaDataOffsetFloat -= width * FLOATS_PER_PIXEL;
 			memcpy(buffer + bufferFloatOffset, rgbaData + rgbaDataOffsetFloat, FLOATS_PER_PIXEL * FLOAT_SIZE);
+			// update offset
 			rgbaDataOffsetFloat += FLOATS_PER_PIXEL;
 		}
 
+		// transpose the date of the the manually filled buffer
 		transposeFloatAVX(buffer, (float*)data + dataOffsetFloat, pixelsForBuffer);
+		// update offset
 		dataOffsetFloat += floatsForBuffer;
 	}
 
