@@ -47,22 +47,24 @@ public:
 	size_t getSimulatedWidth() { return simulatedWidth; }
 	size_t getSimulatedHeight() { return simulatedHeight; }
 
-	void        setRawPixelData(float* rgbaData);
+	void setRawPixelData(float* rgbaData);
+	ImageDataPtr getRawPixelDataSimulated();
 	ImageDataPtr getRawPixelData();
-	void setRawPixelData2(float* rgbaData);
 
-	void        SetPixel(uint x, uint y, PixelData32 color);
+	void SetPixel(uint x, uint y, PixelData32 color);
 	PixelData32 GetPixel(uint x, uint y);
 
-	void applySepia();
 	void convertToYCbCr();
 	void convertToYCbCrAVX();
 
 	void convertToRGB();
 	void convertToRGBAVX();
+
+	void applySepia();
 	void applySepiaAVX();
 private:
 	inline PixelPos GetPixelPos(uint x, uint y);
+	void setRawPixelDataDirect(float* rgbaData);
 };
 
 typedef std::shared_ptr<Image> ImagePtr;

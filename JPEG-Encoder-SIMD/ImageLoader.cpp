@@ -187,7 +187,7 @@ void ImageLoader::SavePNG(std::string path, ImagePtr image)
 	const unsigned imgWidth = image->getSimulatedWidth();
 	const unsigned imgHeight = image->getSimulatedHeight();
 
-	ImageDataPtr imageData = image->getRawPixelData();
+	ImageDataPtr imageData = image->getRawPixelDataSimulated();
 
 	std::vector<unsigned char> imgData(imageData->size());
 	for (size_t i = 0; i < imgData.size(); i++) {

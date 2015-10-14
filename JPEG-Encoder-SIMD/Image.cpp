@@ -20,7 +20,7 @@ Image::~Image()
 	_mm_free(data);
 }
 
-void Image::setRawPixelData2(float* rgbaData)
+void Image::setRawPixelDataDirect(float* rgbaData)
 {
 	int pixelCount = width*height;
 	int rem = pixelCount % 8;
@@ -38,8 +38,11 @@ void Image::setRawPixelData(float* rgbaData)
 	static const int FLOATS_PER_PIXEL = sizeof(PixelData32) / FLOAT_SIZE; // 4
 	static const int PIXEL_PER_BLOCK = sizeof(PixelData32T8) / FLOATS_PER_PIXEL / FLOAT_SIZE; // 8
 
+	if (stepX == 1 && stepY == 1)
+		setRawPixelDataDirect(rgbaData);
+
 	float* buffer = new float[FLOAT_SIZE * (2 * PIXEL_PER_BLOCK + (simulatedWidth-width)) * FLOATS_PER_PIXEL];
-	int rgbDataOffsetFloat = 0;
+	int rgbaDataOffsetFloat = 0;
 	int dataOffsetFloat = 0;
 	int lineOffsetPixel = 0;
 	int simulatedDataSize = simulatedWidth * simulatedHeight * FLOATS_PER_PIXEL;
@@ -51,8 +54,8 @@ void Image::setRawPixelData(float* rgbaData)
 		int lineRem = pixelsToProcess % PIXEL_PER_BLOCK;
 		
 		pixelsToProcess -= lineRem;
-		transposeFloatAVX(rgbaData + rgbDataOffsetFloat, (float*)data + dataOffsetFloat, pixelsToProcess);
-		rgbDataOffsetFloat += pixelsToProcess * FLOATS_PER_PIXEL;
+		transposeFloatAVX(rgbaData + rgbaDataOffsetFloat, (float*)data + dataOffsetFloat, pixelsToProcess);
+		rgbaDataOffsetFloat += pixelsToProcess * FLOATS_PER_PIXEL;
 		dataOffsetFloat += pixelsToProcess * FLOATS_PER_PIXEL;
 		
 		int pixelsToFillLine = lineRem + simulatedWidth - width;
@@ -63,33 +66,37 @@ void Image::setRawPixelData(float* rgbaData)
 		for (int bufferFloatOffset = 0; bufferFloatOffset < floatsForBuffer; bufferFloatOffset += FLOATS_PER_PIXEL)
 		{
 			if (((dataOffsetFloat + bufferFloatOffset) / FLOATS_PER_PIXEL) % simulatedWidth >= width)
-				rgbDataOffsetFloat -= FLOATS_PER_PIXEL;
-			if (rgbDataOffsetFloat >= dataSize)
-				rgbDataOffsetFloat -= width * FLOATS_PER_PIXEL;
-			memcpy(buffer + bufferFloatOffset, rgbaData + rgbDataOffsetFloat, FLOATS_PER_PIXEL * FLOAT_SIZE);
-			rgbDataOffsetFloat += FLOATS_PER_PIXEL;
+				rgbaDataOffsetFloat -= FLOATS_PER_PIXEL;
+			if (rgbaDataOffsetFloat >= dataSize)
+				rgbaDataOffsetFloat -= width * FLOATS_PER_PIXEL;
+			memcpy(buffer + bufferFloatOffset, rgbaData + rgbaDataOffsetFloat, FLOATS_PER_PIXEL * FLOAT_SIZE);
+			rgbaDataOffsetFloat += FLOATS_PER_PIXEL;
 		}
 
 		transposeFloatAVX(buffer, (float*)data + dataOffsetFloat, pixelsForBuffer);
 		dataOffsetFloat += floatsForBuffer;
 	}
 
-
-	//int simulatedLineSize = simulatedWidth * FLOATS_PER_PIXEL;
-	//int heightRem = simulatedHeight - height;
-	//for (int i = 0; i < heightRem; i++)
-	//{
-	//	memcpy((float*)data + simulatedDataSize + i * simulatedLineSize, (float*)data + simulatedDataSize - simulatedLineSize, simulatedLineSize * FLOAT_SIZE);
-	//}
-
 	delete[] buffer;
 }
 
-ImageDataPtr Image::getRawPixelData()
+ImageDataPtr Image::getRawPixelDataSimulated()
 {
 	ImageDataPtr imageData = std::make_shared<std::vector<float>>(slots * 32);
 	transposeFloatAVX_reverse((float*)data, &imageData->operator[](0), simulatedWidth*simulatedHeight);
 	return imageData;
+}
+
+ImageDataPtr Image::getRawPixelData()
+{
+	if (stepX == 1 && stepY == 1)
+	{
+		return getRawPixelDataSimulated();
+	}
+
+	// TODO: implement
+
+	return nullptr;
 }
 
 void Image::SetPixel(uint x, uint y, PixelData32 color)
@@ -115,7 +122,7 @@ PixelData32 Image::GetPixel(uint x, uint y)
 
 inline PixelPos Image::GetPixelPos(uint x, uint y)
 {
-	div_t tmp = div(y*width + x, 8);
+	div_t tmp = div(y*simulatedWidth + x, 8);
 	return PixelPos(tmp.quot, tmp.rem);
 }
 
