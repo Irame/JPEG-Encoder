@@ -29,15 +29,15 @@ static void transposeFloatSSE(float *pSrc, float *pDst, unsigned int imageSize)
 
 static void transposeFloatAVX(float *pSrc, float *pDst, unsigned int imageSize)
 {
-	if (imageSize % 8 != 0)
-	{
-		abort();
-	}
+	size_t size = imageSize * 4; // per Pixel: RGBA
+	size_t i = 0;
 
 	__m256 ld0, ld1, ld2, ld3;
 	__m256 pm0, pm1, pm2, pm3;
 	__m256 up0, up1, up2, up3;
-	for (unsigned int i = 0; i<imageSize * 4; i += 32)
+
+	// (size & ~0x1F) sorgt dafür, dass size durch 32 teilbar ist, indem die "Rest-Bits" verworfen werden
+	for (; i < (size & ~0x1F); i += 32)
 	{
 		ld0 = _mm256_loadu_ps(pSrc + i);
 		ld1 = _mm256_loadu_ps(pSrc + i + 8);
@@ -56,14 +56,25 @@ static void transposeFloatAVX(float *pSrc, float *pDst, unsigned int imageSize)
 		_mm256_store_ps(pDst + i + 16, _mm256_unpacklo_ps(up1, up3)); // B0B1B2B3 B4B5B6B7
 		_mm256_store_ps(pDst + i + 24, _mm256_unpackhi_ps(up1, up3)); // A0A1A2A3 A4A5A6A7
 	}
+
+	for (; i < size; i += 4)
+	{
+		pDst[i] = pSrc[i];
+		pDst[i +  8] = pSrc[i + 1];
+		pDst[i + 16] = pSrc[i + 2];
+		pDst[i + 24] = pSrc[i + 3];
+	}
 }
 
 static void transposeFloatAVX_reverse(float *pSrc, float *pDst, unsigned int imageSize)
 {
+	size_t size = imageSize * 4;
+	size_t i = 0;
+
 	__m256 ld0, ld1, ld2, ld3;
 	__m256 up0, up1, up2, up3;
 	__m256 upb0, upb1, upb2, upb3;
-	for (unsigned int i = 0; i<imageSize * 4; i += 32)
+	for (; i < (size & ~0x1F); i += 32)
 	{
 		ld0 = _mm256_load_ps(pSrc + i);
 		ld1 = _mm256_load_ps(pSrc + i + 8);
@@ -81,6 +92,14 @@ static void transposeFloatAVX_reverse(float *pSrc, float *pDst, unsigned int ima
 		_mm256_storeu_ps(pDst + i + 8, _mm256_permute2f128_ps(upb2, upb3, 0x20));  // R2G2B2A2 R3G3B3A3
 		_mm256_storeu_ps(pDst + i + 16, _mm256_permute2f128_ps(upb0, upb1, 0x31)); // R4G4B4A4 R5G5B5A5
 		_mm256_storeu_ps(pDst + i + 24, _mm256_permute2f128_ps(upb2, upb3, 0x31)); // R6G6B6A6 R7G7B7A7
+	}
+
+	for (; i < size; i += 4)
+	{
+		pDst[i] = pSrc[i];
+		pDst[i+1] = pSrc[i +  8];
+		pDst[i+2] = pSrc[i + 16];
+		pDst[i+3] = pSrc[i + 24];
 	}
 }
 

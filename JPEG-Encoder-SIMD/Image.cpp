@@ -23,13 +23,7 @@ Image::~Image()
 void Image::setRawPixelDataDirect(float* rgbaData)
 {
 	int pixelCount = width*height;
-	int rem = pixelCount % 8;
-	int pixelForAVX = pixelCount - rem;
-	transposeFloatAVX(rgbaData, (float*)data, pixelForAVX);
-	PixelData32T8 tail;
-	memset(&tail, 0, sizeof(PixelData32T8));
-	memcpy(&tail, rgbaData + pixelForAVX * 4, rem * 4 * sizeof(float));
-	transposeFloatAVX((float*)&tail, ((float*)data) + pixelForAVX * 4, 8);
+	transposeFloatAVX(rgbaData, (float*)data, pixelCount);
 }
 
 void Image::setRawPixelData(float* rgbaData)
@@ -105,14 +99,17 @@ void Image::setRawPixelData(float* rgbaData)
 	delete[] buffer;
 }
 
-ImageDataPtr Image::getRawPixelDataSimulated()
+std::vector<float> Image::getRawPixelDataSimulated()
 {
-	ImageDataPtr imageData = std::make_shared<std::vector<float>>(slots * 32);
-	transposeFloatAVX_reverse((float*)data, &imageData->operator[](0), simulatedWidth*simulatedHeight);
+	//ImageDataPtr imageData = std::make_shared<std::vector<float>>(simulatedWidth*simulatedHeight*4);
+	//transposeFloatAVX_reverse((float*)data, &imageData->operator[](0), simulatedWidth*simulatedHeight);
+
+	std::vector<float> imageData(simulatedWidth*simulatedHeight * 4);
+	transposeFloatAVX_reverse((float*)data, &imageData[0], simulatedWidth*simulatedHeight);
 	return imageData;
 }
 
-ImageDataPtr Image::getRawPixelData()
+std::vector<float> Image::getRawPixelData()
 {
 	if (stepX == 1 && stepY == 1)
 	{
@@ -121,7 +118,7 @@ ImageDataPtr Image::getRawPixelData()
 
 	// TODO: implement
 
-	return nullptr;
+	return std::vector<float>();
 }
 
 void Image::SetPixel(uint x, uint y, PixelData32 color)

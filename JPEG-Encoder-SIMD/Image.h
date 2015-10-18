@@ -48,8 +48,8 @@ public:
 	size_t getSimulatedHeight() { return simulatedHeight; }
 
 	void setRawPixelData(float* rgbaData);
-	ImageDataPtr getRawPixelDataSimulated();
-	ImageDataPtr getRawPixelData();
+	std::vector<float> getRawPixelDataSimulated();
+	std::vector<float> getRawPixelData();
 
 	void SetPixel(uint x, uint y, PixelData32 color);
 	void GetPixel(PixelData32& ref, uint x, uint y);

@@ -9,6 +9,7 @@
 
 #include "SIMD.h"
 #include "lodepng.h"
+#include "Benchmark.h"
 
 using namespace std;
 
@@ -189,11 +190,11 @@ void ImageLoader::SavePNG(std::string path, ImagePtr image)
 	const unsigned imgWidth = image->getSimulatedWidth();
 	const unsigned imgHeight = image->getSimulatedHeight();
 
-	ImageDataPtr imageData = image->getRawPixelDataSimulated();
+	std::vector<float> imageData = image->getRawPixelDataSimulated();
 
-	std::vector<unsigned char> imgData(imageData->size());
+	std::vector<unsigned char> imgData(imageData.size());
 	for (size_t i = 0; i < imgData.size(); i++) {
-		imgData[i] = clamp(0, static_cast<int>(imageData->operator[](i) * 255), 255);
+		imgData[i] = clamp(0, static_cast<int>(imageData[i] * 255), 255);
 	}
 
 	unsigned error = lodepng::encode(path, imgData, imgWidth, imgHeight);
