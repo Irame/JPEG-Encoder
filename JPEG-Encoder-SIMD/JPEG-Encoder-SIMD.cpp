@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 	ImagePtr image = nullptr;
 	
 	benchmark(1, [&]() {
-		image = ImageLoader::Load(srcFile);
+		image = ImageLoader::Load(srcFile, 16, 16);
 	});
 
 

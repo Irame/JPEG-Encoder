@@ -21,14 +21,14 @@ ImageLoader::~ImageLoader()
 {
 }
 
-ImagePtr ImageLoader::Load(const std::string& filename)
+ImagePtr ImageLoader::Load(const std::string& filename, size_t stepX = 1, size_t stepY = 1)
 {
 	std::string ext = fileExtension(filename);
 
 	if (ext == "png") {
-		return LoadPNG(filename);
+		return LoadPNG(filename, stepX, stepY);
 	} else if (ext == "ppm") {
-		return LoadPPM(filename);
+		return LoadPPM(filename, stepX, stepY);
 	} else {
 		std::cout << "Failed to load image. Unknown file extension " << ext << std::endl;
 		return nullptr;
@@ -59,7 +59,7 @@ inline std::string ImageLoader::fileExtension(const std::string& filename)
 }
 
 
-ImagePtr ImageLoader::LoadPPM(std::string path)
+ImagePtr ImageLoader::LoadPPM(std::string path, size_t stepX, size_t stepY)
 {
 	enum State {
 		None, Size, Pixels
@@ -130,7 +130,7 @@ ImagePtr ImageLoader::LoadPPM(std::string path)
 		}
 	}
 
-	ImagePtr resultImage = make_shared<Image>(width, height, 16, 16);
+	ImagePtr resultImage = make_shared<Image>(width, height, stepX, stepY);
 	resultImage->setRawPixelData((float*)&data[0]);
 	return resultImage;
 }
@@ -164,7 +164,7 @@ void ImageLoader::SavePPM(std::string path, ImagePtr image)
 	}
 }
 
-ImagePtr ImageLoader::LoadPNG(std::string path)
+ImagePtr ImageLoader::LoadPNG(std::string path, size_t stepX, size_t stepY)
 {
 	std::vector<unsigned char> imgData;
 	unsigned imgWidth, imgHeight;
@@ -180,7 +180,7 @@ ImagePtr ImageLoader::LoadPNG(std::string path)
 		imgDataFloat[i] = imgData[i] / 255.0f;
 	}
 
-	ImagePtr resultImage = make_shared<Image>(imgWidth, imgHeight, 14, 14);
+	ImagePtr resultImage = make_shared<Image>(imgWidth, imgHeight, stepX, stepY);
 	resultImage->setRawPixelData((float*)&imgDataFloat[0]);
 	return resultImage;
 }
