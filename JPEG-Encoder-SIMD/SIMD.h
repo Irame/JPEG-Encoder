@@ -27,6 +27,8 @@ static void transposeFloatSSE(float *pSrc, float *pDst, unsigned int imageSize)
 	}
 }
 
+/// Transforms a Pixel stream (RGBA RGBA RGBA ...) 
+/// into blocks of 8 pixels (RRRRRRRR GGGGGGGG ...)
 static void transposeFloatAVX(float *pSrc, float *pDst, unsigned int imageSize)
 {
 	size_t size = imageSize * 4; // per Pixel: RGBA
@@ -66,6 +68,8 @@ static void transposeFloatAVX(float *pSrc, float *pDst, unsigned int imageSize)
 	}
 }
 
+/// Transforms blocks of 8 pixels (RRRRRRRR GGGGGGGG ...)
+/// into a Pixel stream (RGBA RGBA RGBA ...) 
 static void transposeFloatAVX_reverse(float *pSrc, float *pDst, unsigned int imageSize)
 {
 	size_t size = imageSize * 4;
@@ -103,18 +107,20 @@ static void transposeFloatAVX_reverse(float *pSrc, float *pDst, unsigned int ima
 	}
 }
 
+/// representation of a 4x4 matrix
 union Mat44 {
 	float m[4][4];
 	__m128 row[4];
 };
 
+/// representation of a 4x1 vector
 union Vec4
 {
 	float v[4];
 	__m128 vals;
 };
 
-// dual linear combination using AVX instructions on YMM regs
+/// dual linear combination using AVX instructions on YMM regs
 static inline __m256 twolincomb_AVX_8(__m256 A01, const Mat44 &B)
 {
 	__m256 result;

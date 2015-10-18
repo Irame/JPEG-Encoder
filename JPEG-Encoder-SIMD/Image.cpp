@@ -40,7 +40,7 @@ void Image::setRawPixelData(float* rgbaData)
 	}
 
 	// buffer we fill maually
-	float* buffer = new float[FLOAT_SIZE * (2 * PIXEL_PER_BLOCK + (simulatedWidth-width)) * FLOATS_PER_PIXEL];
+	float* buffer = new float[(2 * PIXEL_PER_BLOCK + (simulatedWidth-width)) * FLOATS_PER_PIXEL];
 
 	// offsets to keep track of the position in buffers
 	int rgbaDataOffsetFloat = 0;		// offset in 'rgbaData'
@@ -69,8 +69,10 @@ void Image::setRawPixelData(float* rgbaData)
 		
 		// pixels which are needed to fill one line to a total width of 'simulatedWidth'
 		int pixelsToFillLine = lineRem + simulatedWidth - width;
+
+		int pixelsToFillLineRem = pixelsToFillLine % PIXEL_PER_BLOCK;
 		// total number of pixels that be written to 'buffer'
-		int pixelsForBuffer = pixelsToFillLine + PIXEL_PER_BLOCK - pixelsToFillLine % PIXEL_PER_BLOCK;
+		int pixelsForBuffer = (pixelsToFillLineRem == 0 ? pixelsToFillLine : pixelsToFillLine + PIXEL_PER_BLOCK - pixelsToFillLineRem);
 		// update offset
 		lineOffsetPixel = (pixelsForBuffer - pixelsToFillLine) % simulatedWidth;
 
@@ -89,6 +91,9 @@ void Image::setRawPixelData(float* rgbaData)
 			// update offset
 			rgbaDataOffsetFloat += FLOATS_PER_PIXEL;
 		}
+		// if we are at the end of the real data we have to go one line back to copy the last line
+		if (rgbaDataOffsetFloat >= dataSize)
+			rgbaDataOffsetFloat -= width * FLOATS_PER_PIXEL;
 
 		// transpose the date of the the manually filled buffer
 		transposeFloatAVX(buffer, (float*)data + dataOffsetFloat, pixelsForBuffer);
