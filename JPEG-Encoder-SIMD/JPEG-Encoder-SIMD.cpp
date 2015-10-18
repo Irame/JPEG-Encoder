@@ -23,7 +23,8 @@ int main(int argc, char* argv[])
 	std::cout << "Load image file: " << srcFile << std::endl;
 	ImagePtr image = nullptr;
 	
-	benchmark(1, [&]() {
+
+	benchmark("ImageLoader::Load()",1, [&]() {
 		image = ImageLoader::Load(srcFile, 16, 16);
 	});
 
@@ -44,7 +45,7 @@ int main(int argc, char* argv[])
 	//});
 
 	std::cout << "Cancle out Cb and Cr Channel." << std::endl;
-	benchmark(1, [&]() {
+	benchmark("multiplyColorChannelByAVX",1, [&]() {
 		image->multiplyColorChannelByAVX(1, 0.75);
 		image->multiplyColorChannelByAVX(2, 0.5);
 	});
@@ -65,7 +66,7 @@ int main(int argc, char* argv[])
 	//});
 
 	std::cout << "Save image file: " << dstFile << std::endl;
-	benchmark(1, [&]() {
+	benchmark("ImageLoader::Save()", 1, [&]() {
 		ImageLoader::Save(dstFile, image);
 	});
 
