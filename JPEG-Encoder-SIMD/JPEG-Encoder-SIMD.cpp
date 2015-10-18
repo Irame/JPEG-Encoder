@@ -23,8 +23,9 @@ int main(int argc, char* argv[])
 	std::cout << "Load image file: " << srcFile << std::endl;
 	ImagePtr image = nullptr;
 	
+
 	benchmark("ImageLoader::Load()",1, [&]() {
-		image = ImageLoader::Load(srcFile);
+		image = ImageLoader::Load(srcFile, 16, 16);
 	});
 
 
