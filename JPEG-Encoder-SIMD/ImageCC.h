@@ -8,10 +8,10 @@ struct ColorBlock
 
 class ImageCC
 {
-	std::vector<ColorBlock> channel[4];
+	std::vector<ColorBlock> channels[3];
 
-	float channelWidthRatio[4];
-	float channelHeightRatio[4];
+	float channelWidthRatio[3];
+	float channelHeightRatio[3];
 
 	const int width, height;
 	const int stepX, stepY;

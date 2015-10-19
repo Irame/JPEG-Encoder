@@ -250,3 +250,22 @@ static void multiplyAVX(float* ref, float val, int dataSize)
 		_mm256_storeu_ps((float*)(ref + i), _mm256_mul_ps(data, valSpread));
 	}
 }
+
+static void halfWidthResolution(float* buff1, float* buff2, float* resultBuff)
+{
+	// doesn't work for any image resolution
+	// works for even width
+	static const __m256 normVec{ 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f };
+
+	__m256 b1 = _mm256_loadu_ps(buff1); // 0a 0b 1a 1b 2a 2b 3a 3b 
+	__m256 b2 = _mm256_loadu_ps(buff2); // 4a 4b 5a 5b 6a 6b 7a 7b
+
+	__m256 r1 = _mm256_permute2f128_ps(b1, b2, _MM_SHUFFLE(0, 2, 0, 0)); // 0a 0b 1a 1b 2a 2b 3a 3b | 4a 4b 5a 5b 6a 6b 7a 7b => 0a 0b 1a 1b 4a 4b 5a 5b
+	__m256 r2 = _mm256_permute2f128_ps(b1, b2, _MM_SHUFFLE(0, 3, 0, 1)); // 0a 0b 1a 1b 2a 2b 3a 3b | 4a 4b 5a 5b 6a 6b 7a 7b => 2a 2b 3a 3b 6a 6b 7a 7b
+
+	__m256 l1 = _mm256_shuffle_ps(r1, r2, _MM_SHUFFLE(2, 0, 2, 0)); // 0a 0b 1a 1b 4a 4b 5a 5b | 2a 2b 3a 3b 6a 6b 7a 7b => 0a 1a 2a 3a 4a 5a 6a 7a
+	__m256 l2 = _mm256_shuffle_ps(r1, r2, _MM_SHUFFLE(3, 1, 3, 1)); // 0a 0b 1a 1b 4a 4b 5a 5b | 2a 2b 3a 3b 6a 6b 7a 7b => 0b 1b 2b 3b 4b 5b 6b 7b
+
+	__m256 sum = _mm256_add_ps(l1, l2); // 0a 1a 2a 3a 4a 5a 6a 7a | 0b 1b 2b 3b 4b 5b 6b 7b => 0a+b 1a+b 2a+b 3a+b 4a+b 5a+b 6a+b 7a+b
+	_mm256_storeu_ps(resultBuff, _mm256_div_ps(sum, normVec)); // 0a+b 1a+b 2a+b 3a+b 4a+b 5a+b 6a+b 7a+b => 0 1 2 3 4 5 6 7
+}
