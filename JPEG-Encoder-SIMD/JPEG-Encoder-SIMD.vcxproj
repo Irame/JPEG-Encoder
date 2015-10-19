@@ -155,6 +155,7 @@
   <ItemGroup>
     <ClInclude Include="Benchmark.h" />
     <ClInclude Include="Image.h" />
+    <ClInclude Include="ImageCC.h" />
     <ClInclude Include="ImageLoader.h" />
     <ClInclude Include="lodepng.h" />
     <ClInclude Include="SIMD.h" />
@@ -163,6 +164,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Image.cpp" />
+    <ClCompile Include="ImageCC.cpp" />
     <ClCompile Include="ImageLoader.cpp" />
     <ClCompile Include="JPEG-Encoder-SIMD.cpp" />
     <ClCompile Include="lodepng.cpp" />
