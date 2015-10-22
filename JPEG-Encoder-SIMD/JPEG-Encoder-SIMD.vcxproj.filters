@@ -33,10 +33,10 @@
     <ClInclude Include="lodepng.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImageCC.h">
+    <ClInclude Include="SamplingScheme.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SamplingScheme.h">
+    <ClInclude Include="Image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,11 +53,14 @@
     <ClCompile Include="lodepng.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImageCC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SamplingScheme.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Image.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
 </Project>

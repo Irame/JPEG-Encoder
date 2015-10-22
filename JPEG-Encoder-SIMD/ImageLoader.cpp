@@ -130,7 +130,7 @@ ImageCCPtr ImageLoader::LoadPPM(std::string path, SamplingScheme scheme)
 		}
 	}
 
-	ImageCCPtr resultImage = make_shared<ImageCC>(width, height, scheme);
+	ImageCCPtr resultImage = make_shared<Image>(width, height, scheme);
 	resultImage->setRawPixelData((float*)&data[0]);
 	return resultImage;
 }
@@ -180,7 +180,7 @@ ImageCCPtr ImageLoader::LoadPNG(std::string path, SamplingScheme samplingScheme)
 		imgDataFloat[i] = imgData[i] / 255.0f;
 	}
 
-	ImageCCPtr resultImage = make_shared<ImageCC>(imgWidth, imgHeight, samplingScheme);
+	ImageCCPtr resultImage = make_shared<Image>(imgWidth, imgHeight, samplingScheme);
 	resultImage->setRawPixelData((float*)&imgDataFloat[0]);
 	return resultImage;
 }

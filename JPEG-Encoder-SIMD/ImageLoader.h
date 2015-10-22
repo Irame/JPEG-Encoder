@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "ImageCC.h"
+#include "Image.h"
 
 
 class ImageLoader
