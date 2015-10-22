@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <memory>
 
 struct ColorBlock
 {
@@ -18,8 +19,9 @@ class ImageCC
 	const int simulatedWidth, simulatedHeight;
 
 public:
-	ImageCC(int width, int height, int stepX, int stepY);
+	ImageCC(int width, int height);
 
 	void setChannel(int channelIndex, std::vector<ColorBlock> chan, int width, int height);
 };
 
+typedef std::shared_ptr<ImageCC> ImageCCPtr;

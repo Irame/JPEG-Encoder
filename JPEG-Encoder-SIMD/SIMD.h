@@ -269,3 +269,14 @@ static void halfWidthResolution(float* buff1, float* buff2, float* resultBuff)
 	__m256 sum = _mm256_add_ps(l1, l2); // 0a 1a 2a 3a 4a 5a 6a 7a | 0b 1b 2b 3b 4b 5b 6b 7b => 0a+b 1a+b 2a+b 3a+b 4a+b 5a+b 6a+b 7a+b
 	_mm256_storeu_ps(resultBuff, _mm256_div_ps(sum, normVec)); // 0a+b 1a+b 2a+b 3a+b 4a+b 5a+b 6a+b 7a+b => 0 1 2 3 4 5 6 7
 }
+
+static void halfHeightResolution(float* buff1, float* buff2, float* resultBuff)
+{
+	static const __m256 normVec{ 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f };
+
+	__m256 b1 = _mm256_loadu_ps(buff1); 
+	__m256 b2 = _mm256_loadu_ps(buff2);
+
+	__m256 sum = _mm256_add_ps(b1, b2);
+	_mm256_storeu_ps(resultBuff, _mm256_div_ps(sum, normVec));
+}
