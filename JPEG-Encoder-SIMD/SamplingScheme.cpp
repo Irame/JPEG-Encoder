@@ -19,8 +19,8 @@ const SamplingScheme SamplingScheme::Scheme411(
 
 const SamplingScheme SamplingScheme::Scheme420(
 	ChannelReductionOptions{ 1, Subsampling, 1, Subsampling },		// y
-	ChannelReductionOptions{ 2, Average, 2, Average },		// cb
-	ChannelReductionOptions{ 2, Average, 2, Average });		// br
+	ChannelReductionOptions{ 2, Average, 2, Average },				// cb
+	ChannelReductionOptions{ 2, Average, 2, Average });				// br
 
 SamplingScheme::SamplingScheme(ChannelReductionOptions yReductionOptions, ChannelReductionOptions cbReductionOptions, ChannelReductionOptions crReductionOptions)
 	: yReductionOptions(yReductionOptions),cbReductionOptions(cbReductionOptions),crReductionOptions(crReductionOptions)

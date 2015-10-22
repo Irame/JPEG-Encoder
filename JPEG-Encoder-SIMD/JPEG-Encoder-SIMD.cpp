@@ -7,7 +7,6 @@
 
 #include "Benchmark.h"
 
-#include "Image.h"
 #include "ImageLoader.h"
 
 int main(int argc, char* argv[])
@@ -23,7 +22,7 @@ int main(int argc, char* argv[])
 	SamplingScheme scheme = SamplingScheme::Scheme422;
 
 	std::cout << "Load image file: " << srcFile << std::endl;
-	ImagePtr image = nullptr;
+	ImageCCPtr image = nullptr;
 	
 
 	benchmark("ImageLoader::Load()",1, [&]() {

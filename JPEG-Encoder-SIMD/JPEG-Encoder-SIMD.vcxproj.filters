@@ -21,9 +21,6 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Image.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ImageLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -48,9 +45,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="JPEG-Encoder-SIMD.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ImageLoader.cpp">

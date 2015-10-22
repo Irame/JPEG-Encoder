@@ -21,7 +21,7 @@ ImageLoader::~ImageLoader()
 {
 }
 
-ImagePtr ImageLoader::Load(const std::string& filename, SamplingScheme scheme)
+ImageCCPtr ImageLoader::Load(const std::string& filename, SamplingScheme scheme)
 {
 	std::string ext = fileExtension(filename);
 
@@ -35,7 +35,7 @@ ImagePtr ImageLoader::Load(const std::string& filename, SamplingScheme scheme)
 	}
 }
 
-void ImageLoader::Save(const std::string& filename, ImagePtr image)
+void ImageLoader::Save(const std::string& filename, ImageCCPtr image)
 {
 	std::string ext = fileExtension(filename);
 
@@ -59,7 +59,7 @@ inline std::string ImageLoader::fileExtension(const std::string& filename)
 }
 
 
-ImagePtr ImageLoader::LoadPPM(std::string path, SamplingScheme scheme)
+ImageCCPtr ImageLoader::LoadPPM(std::string path, SamplingScheme scheme)
 {
 	enum State {
 		None, Size, Pixels
@@ -130,12 +130,12 @@ ImagePtr ImageLoader::LoadPPM(std::string path, SamplingScheme scheme)
 		}
 	}
 
-	ImagePtr resultImage = make_shared<Image>(width, height, scheme);
+	ImageCCPtr resultImage = make_shared<ImageCC>(width, height, scheme);
 	resultImage->setRawPixelData((float*)&data[0]);
 	return resultImage;
 }
 
-void ImageLoader::SavePPM(std::string path, ImagePtr image)
+void ImageLoader::SavePPM(std::string path, ImageCCPtr image)
 {
 	ofstream fileStream = ofstream(path);
 
@@ -164,7 +164,7 @@ void ImageLoader::SavePPM(std::string path, ImagePtr image)
 	}
 }
 
-ImagePtr ImageLoader::LoadPNG(std::string path, SamplingScheme samplingScheme)
+ImageCCPtr ImageLoader::LoadPNG(std::string path, SamplingScheme samplingScheme)
 {
 	std::vector<unsigned char> imgData;
 	unsigned imgWidth, imgHeight;
@@ -180,12 +180,12 @@ ImagePtr ImageLoader::LoadPNG(std::string path, SamplingScheme samplingScheme)
 		imgDataFloat[i] = imgData[i] / 255.0f;
 	}
 
-	ImagePtr resultImage = make_shared<Image>(imgWidth, imgHeight, samplingScheme);
+	ImageCCPtr resultImage = make_shared<ImageCC>(imgWidth, imgHeight, samplingScheme);
 	resultImage->setRawPixelData((float*)&imgDataFloat[0]);
 	return resultImage;
 }
 
-void ImageLoader::SavePNG(std::string path, ImagePtr image)
+void ImageLoader::SavePNG(std::string path, ImageCCPtr image)
 {
 	const unsigned imgWidth = image->getSimulatedWidth();
 	const unsigned imgHeight = image->getSimulatedHeight();
