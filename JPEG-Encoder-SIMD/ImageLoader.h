@@ -10,11 +10,11 @@ public:
 	ImageLoader();
 	~ImageLoader();
 
-	static ImagePtr Load(const std::string& filename, size_t stepX, size_t stepY);
+	static ImagePtr Load(const std::string& filename, SamplingScheme scheme);
 	static void     Save(const std::string& filename, ImagePtr image);
 
-	static ImagePtr LoadPPM(std::string path, size_t stepX, size_t stepY);
-	static ImagePtr LoadPNG(std::string path, size_t stepX, size_t stepY);
+	static ImagePtr LoadPPM(std::string path, SamplingScheme scheme);
+	static ImagePtr LoadPNG(std::string path, SamplingScheme scheme);
 
 	static void SavePPM(std::string path, ImagePtr image);
 	static void SavePNG(std::string path, ImagePtr image);

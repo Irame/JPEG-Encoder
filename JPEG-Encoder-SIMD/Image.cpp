@@ -4,14 +4,13 @@
 #include "SIMD.h"
 #include <algorithm>
 
-Image::Image(size_t width, size_t height, size_t stepY = 1, size_t stepX = 1)
-	: data(nullptr), width(width), height(height), slots(0), stepX(stepX), stepY(stepY)
+Image::Image(size_t width, size_t height, SamplingScheme samplingScheme)
+	: data(nullptr), width(width), height(height), 
+	stepX(samplingScheme.calcWidthStepSize()), stepY(samplingScheme.calcHeightStepSize()), 
+	simulatedWidth(width % stepX == 0 ? width : width + stepX - width % stepX), 
+	simulatedHeight(height % stepY == 0 ? height : height + stepY - height % stepY),
+	slots(static_cast<uint>(ceil((simulatedWidth * simulatedHeight) / 8.0)))
 {
-	int widthStepRem = width % stepX;
-	int heightStepRem = height % stepY;
-	simulatedWidth = widthStepRem == 0 ? width : width + stepX - widthStepRem;
-	simulatedHeight = heightStepRem == 0 ? height : height + stepY - heightStepRem;
-	slots = static_cast<uint>(ceil((simulatedWidth * simulatedHeight) / 8.0));
 	data = (PixelData32T8*)_mm_malloc(sizeof(PixelData32T8)*slots, 64);
 }
 

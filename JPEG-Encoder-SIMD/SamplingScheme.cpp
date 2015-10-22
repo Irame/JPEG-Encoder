@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "SamplingScheme.h"
+#include <algorithm>
 
 const SamplingScheme SamplingScheme::Scheme444(
 	ChannelReductionOptions{ 1, Subsampling, 1, Subsampling },		// y
@@ -25,3 +26,15 @@ SamplingScheme::SamplingScheme(ChannelReductionOptions yReductionOptions, Channe
 	: yReductionOptions(yReductionOptions),cbReductionOptions(cbReductionOptions),crReductionOptions(crReductionOptions)
 
 {}
+
+int SamplingScheme::calcWidthStepSize()
+{
+	return std::max(yReductionOptions.widthFactor, 
+		std::max(cbReductionOptions.widthFactor, crReductionOptions.widthFactor)) * 8;
+}
+
+int SamplingScheme::calcHeightStepSize()
+{
+	return std::max(yReductionOptions.heightFactor,
+		std::max(cbReductionOptions.heightFactor, crReductionOptions.heightFactor)) * 8;
+}

@@ -22,5 +22,8 @@ public:
 	static const SamplingScheme Scheme444, Scheme422, Scheme411, Scheme420;
 
 	const ChannelReductionOptions yReductionOptions, cbReductionOptions, crReductionOptions;
+
+	int calcWidthStepSize();
+	int calcHeightStepSize();
 };
 

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <memory>
+#include "SamplingScheme.h"
 
 typedef unsigned int uint;
 typedef std::shared_ptr<std::vector<float>> ImageDataPtr;
@@ -34,12 +35,12 @@ class Image
 {
 private:
 	PixelData32T8* data;
-	size_t width, height;
-	size_t simulatedWidth, simulatedHeight;
-	uint slots;
-	uint stepX, stepY;
+	const size_t width, height;
+	const uint stepX, stepY;
+	const size_t simulatedWidth, simulatedHeight;
+	const uint slots;
 public:
-	Image(size_t width, size_t height, size_t stepX, size_t stepY);
+	Image(size_t width, size_t height, SamplingScheme samplingScheme);
 	~Image();
 
 	size_t getWidth() { return width; }

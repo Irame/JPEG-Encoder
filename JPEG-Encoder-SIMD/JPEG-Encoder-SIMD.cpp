@@ -20,12 +20,14 @@ int main(int argc, char* argv[])
 	std::string srcFile(argv[1]);
 	std::string dstFile(argv[2]);
 
+	SamplingScheme scheme = SamplingScheme::Scheme422;
+
 	std::cout << "Load image file: " << srcFile << std::endl;
 	ImagePtr image = nullptr;
 	
 
 	benchmark("ImageLoader::Load()",1, [&]() {
-		image = ImageLoader::Load(srcFile, 16, 16);
+		image = ImageLoader::Load(srcFile, scheme);
 	});
 
 
