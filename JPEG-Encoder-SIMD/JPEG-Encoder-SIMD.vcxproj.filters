@@ -39,6 +39,9 @@
     <ClInclude Include="ImageCC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SamplingScheme.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -57,6 +60,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ImageCC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SamplingScheme.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
