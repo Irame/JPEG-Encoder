@@ -102,6 +102,7 @@ public:
 	void multiplyColorChannelByAVX(int colorChannel, float val);
 	void reduceWidthResolutionColorChannel(int channel, int factor, ReductionMethod method);
 	void reduceHeightResolutionColorChannel(int channelIdx, int factor, ReductionMethod method);
+	void reduceResolutionBySchema();
 	const Dimension2D& getImageSize() const;
 	const Dimension2D& getSimulatedSize() const;
 };

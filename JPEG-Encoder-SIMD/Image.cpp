@@ -285,6 +285,17 @@ void Image::reduceHeightResolutionColorChannel(int channelIdx, int factor, Reduc
 	}
 }
 
+void Image::reduceResolutionBySchema()
+{
+	reduceWidthResolutionColorChannel(0, samplingScheme.yReductionOptions.widthFactor, samplingScheme.yReductionOptions.widthMethod);
+	reduceWidthResolutionColorChannel(1, samplingScheme.cbReductionOptions.widthFactor, samplingScheme.cbReductionOptions.widthMethod);
+	reduceWidthResolutionColorChannel(2, samplingScheme.crReductionOptions.widthFactor, samplingScheme.crReductionOptions.widthMethod);
+
+	reduceHeightResolutionColorChannel(0, samplingScheme.yReductionOptions.heightFactor, samplingScheme.yReductionOptions.heightMethod);
+	reduceHeightResolutionColorChannel(1, samplingScheme.cbReductionOptions.heightFactor, samplingScheme.cbReductionOptions.heightMethod);
+	reduceHeightResolutionColorChannel(2, samplingScheme.crReductionOptions.heightFactor, samplingScheme.crReductionOptions.heightMethod);
+}
+
 const Dimension2D& Image::getImageSize() const
 {
 	return imageSize;
