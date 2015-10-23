@@ -139,19 +139,18 @@ void ImageLoader::SavePPM(std::string path, ImageCCPtr image)
 {
 	ofstream fileStream = ofstream(path);
 
-	const size_t width = image->getWidth();
-	const size_t height = image->getHeight();
+	const Dimension2D& imageSize = image->getImageSize();
 	const int maxVal = 255;
 
 	fileStream << "P3" << endl;
-	fileStream << width << " " << height << endl;
+	fileStream << imageSize.width << " " << imageSize.height << endl;
 	fileStream << maxVal << endl;
 
 	PixelData32 pixel;
 	
-	for (size_t y = 0; y < height; y++)
+	for (size_t y = 0; y < imageSize.height; y++)
 	{
-		for (size_t x = 0; x < width; x++)
+		for (size_t x = 0; x < imageSize.width; x++)
 		{
 			image->GetPixel(pixel, x, y);
 			const int r = clamp(0, static_cast<int>(pixel.R * maxVal), maxVal);
@@ -187,8 +186,7 @@ ImageCCPtr ImageLoader::LoadPNG(std::string path, SamplingScheme samplingScheme)
 
 void ImageLoader::SavePNG(std::string path, ImageCCPtr image)
 {
-	const unsigned imgWidth = image->getSimulatedWidth();
-	const unsigned imgHeight = image->getSimulatedHeight();
+	const Dimension2D& simulatedSize = image->getSimulatedSize();
 
 	std::vector<float> imageData = image->getRawPixelDataSimulated();
 
@@ -197,7 +195,7 @@ void ImageLoader::SavePNG(std::string path, ImageCCPtr image)
 		imgData[i] = clamp(0, static_cast<int>(imageData[i] * 255), 255);
 	}
 
-	unsigned error = lodepng::encode(path, imgData, imgWidth, imgHeight);
+	unsigned error = lodepng::encode(path, imgData, simulatedSize.width, simulatedSize.height);
 	if (error) {
 		std::cout << "Failed to encode png " << path << " with error: " << error << ": " << lodepng_error_text(error) << std::endl;
 	}

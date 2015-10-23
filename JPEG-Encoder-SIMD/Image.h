@@ -19,6 +19,21 @@ struct PixelData32 {
 	{}
 };
 
+struct Dimension2D
+{
+	size_t width;
+	size_t height;
+
+	Dimension2D(size_t width, size_t height)
+		: width(width), height(height)
+	{}
+
+	bool operator==(const Dimension2D& other) const
+	{
+		return other.width == width && other.height == height;
+	}
+};
+
 struct ColorBlock
 {
 	float colVal[8];
@@ -32,8 +47,8 @@ private:
 	ColorBlock *b;
 
 public:
-	ImageData(size_t width, size_t height) {
-		size_t dataSizeInBytes = width * height * sizeof(float);
+	ImageData(Dimension2D size) {
+		size_t dataSizeInBytes = size.width * size.height * sizeof(float);
 		assert(dataSizeInBytes % (8 * sizeof(float)) == 0);
 
 		r = static_cast<ColorBlock*>(_mm_malloc(dataSizeInBytes, 32));
@@ -61,14 +76,12 @@ class Image
 {
 	std::unique_ptr<ImageData> channels;
 
-	float channelWidthRatio[3];
-	float channelHeightRatio[3];
-
-	const size_t width, height;
-	const size_t stepX, stepY;
-	const size_t simulatedWidth, simulatedHeight;
+	const Dimension2D imageSize;
+	const Dimension2D stepSize;
+	const Dimension2D simulatedSize;
 
 	int blocksPerChannel[3];
+	Dimension2D channelSizes[3];
 
 	const SamplingScheme samplingScheme;
 
@@ -82,14 +95,13 @@ public:
 	std::vector<float> getRawPixelData();
 	void SetPixel(uint x, uint y, const PixelData32& color);
 	void GetPixel(PixelData32& ref, uint x, uint y) const;
+	size_t getPizelPos(int channelIdx, uint x, uint y) const;
 	void convertToYCbCrAVX();
 	void convertToRGBAVX();
 	void applySepiaAVX();
 	void multiplyColorChannelByAVX(int colorChannel, float val);
 	void reduceWidthResolutionColorChannel(int channel, int factor, ReductionMethod method);
 	void reduceHeightResolutionColorChannel(int channelIdx, int factor, ReductionMethod method);
-	size_t getWidth() const;
-	size_t getHeight() const;
-	size_t getSimulatedWidth() const;
-	size_t getSimulatedHeight() const;
+	const Dimension2D& getImageSize() const;
+	const Dimension2D& getSimulatedSize() const;
 };
