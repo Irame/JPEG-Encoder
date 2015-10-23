@@ -74,7 +74,7 @@ void Image::setRawPixelData(float* rgbaData)
 		int floatsForBuffer = pixelsForBuffer * FLOATS_PER_PIXEL;
 		for (int bufferFloatOffset = 0; bufferFloatOffset < floatsForBuffer; bufferFloatOffset += FLOATS_PER_PIXEL)
 		{
-			// if we are on the right side of the pictiure and outside the real data 
+			// if we are on the right side of the picture and outside the real data 
 			// remove one pixel from the 'rgbaDataOffsetFloat' so we copy the right most pixel
 			if ((dataPixelOffset + (bufferFloatOffset) / FLOATS_PER_PIXEL) % simulatedSize.width >= imageSize.width)
 				rgbaDataOffsetFloat -= FLOATS_PER_PIXEL;
@@ -89,7 +89,7 @@ void Image::setRawPixelData(float* rgbaData)
 		if (rgbaDataOffsetFloat >= dataSize)
 			rgbaDataOffsetFloat -= imageSize.width * FLOATS_PER_PIXEL;
 
-		// transpose the date of the the manually filled buffer
+		// transpose the data of the the manually filled buffer
 		transposeFloatAVX(buffer, channels->red(dataPixelOffset), channels->green(dataPixelOffset), channels->blue(dataPixelOffset), pixelsForBuffer);
 		// update offset
 		dataPixelOffset += pixelsForBuffer;
@@ -121,20 +121,20 @@ std::vector<float> Image::getRawPixelData()
 
 void Image::SetPixel(uint x, uint y, const PixelData32& color)
 {
-	*channels->red(getPizelPos(0, x, y)) = color.R;
-	*channels->green(getPizelPos(1, x, y)) = color.G;
-	*channels->blue(getPizelPos(2, x, y)) = color.B;
+	*channels->red(getPixelPos(0, x, y)) = color.R;
+	*channels->green(getPixelPos(1, x, y)) = color.G;
+	*channels->blue(getPixelPos(2, x, y)) = color.B;
 }
 
 void Image::GetPixel(PixelData32& ref, uint x, uint y) const
 {
-	ref.R = *channels->red(getPizelPos(0, x, y));
-	ref.G = *channels->green(getPizelPos(1, x, y));
-	ref.B = *channels->blue(getPizelPos(2, x, y));
+	ref.R = *channels->red(getPixelPos(0, x, y));
+	ref.G = *channels->green(getPixelPos(1, x, y));
+	ref.B = *channels->blue(getPixelPos(2, x, y));
 	ref.A = 1.0f;
 }
 
-inline size_t Image::getPizelPos(int channelIdx, uint x, uint y) const
+inline size_t Image::getPixelPos(int channelIdx, uint x, uint y) const
 {
 	return channelSizes[channelIdx].width * y + x * simulatedSize.width / channelSizes[channelIdx].width;
 }

@@ -95,7 +95,7 @@ public:
 	std::vector<float> getRawPixelData();
 	void SetPixel(uint x, uint y, const PixelData32& color);
 	void GetPixel(PixelData32& ref, uint x, uint y) const;
-	size_t getPizelPos(int channelIdx, uint x, uint y) const;
+	size_t getPixelPos(int channelIdx, uint x, uint y) const;
 	void convertToYCbCrAVX();
 	void convertToRGBAVX();
 	void applySepiaAVX();
