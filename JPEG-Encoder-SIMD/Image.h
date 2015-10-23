@@ -86,6 +86,8 @@ public:
 	void convertToRGBAVX();
 	void applySepiaAVX();
 	void multiplyColorChannelByAVX(int colorChannel, float val);
+	void reduceWidthResolutionColorChannel(int channel, int factor, ReductionMethod method);
+	void reduceHeightResolutionColorChannel(int channelIdx, int factor, ReductionMethod method);
 	size_t getWidth() const;
 	size_t getHeight() const;
 	size_t getSimulatedWidth() const;

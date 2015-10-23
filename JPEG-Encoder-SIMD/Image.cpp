@@ -173,6 +173,109 @@ void Image::multiplyColorChannelByAVX(int colorChannel, float val)
 	multiplyAVX(channels->getChannel(colorChannel), val, blocksPerChannel[colorChannel] * 8);
 }
 
+void Image::reduceWidthResolutionColorChannel(int channelIdx, int factor, ReductionMethod method)
+{
+	if (factor == 1) return;
+
+	float* channel = channels->getChannel(channelIdx);
+	size_t channelDataSize = blocksPerChannel[channelIdx] * 8;
+	
+	//TODO: implement AVX code paths
+
+	if (method == Subsampling)
+	{
+		for (size_t srcOffset = 0, dstOffset = 0; srcOffset < channelDataSize; srcOffset += factor)
+		{
+			channel[dstOffset++] = channel[srcOffset];
+		}
+	}
+	else if (method == Average)
+	{
+		float sum = 0.0f;
+		for (size_t srcOffset = 0, dstOffset = 0; srcOffset < channelDataSize; )
+		{
+			sum += channel[srcOffset++];
+			if (srcOffset % factor == 0) {
+				channel[dstOffset++] = sum / factor;
+				sum = 0.0f;
+			}
+		}
+	}
+}
+
+void Image::reduceHeightResolutionColorChannel(int channelIdx, int factor, ReductionMethod method)
+{
+	if (factor == 1) return;
+
+	float* channel = channels->getChannel(channelIdx);
+	size_t channelDataSize = blocksPerChannel[channelIdx] * 8;
+
+	size_t newChannelDataSize = channelDataSize / factor;
+	size_t newWidth = simulatedWidth / factor;
+	size_t newHeight = simulatedHeight / factor;
+
+	//TODO: implement AVX code paths
+
+	if (method == Average && factor == 2)
+	{
+		size_t srcOffset = 0, dstOffset = 0;
+		while (srcOffset < channelDataSize + simulatedWidth)
+		{
+			srcOffset %= channelDataSize;
+			dstOffset %= newChannelDataSize;
+
+			halfHeightResolutionAVX(&channel[srcOffset], &channel[srcOffset += simulatedWidth], &channel[dstOffset]);
+
+			srcOffset += simulatedWidth;
+			dstOffset += newWidth;
+
+			if (srcOffset / simulatedWidth == simulatedHeight) srcOffset += 8;
+			if (srcOffset / newWidth == newHeight) srcOffset += 8;
+		}
+	} 
+	else if (method == Subsampling) 
+	{
+		size_t srcOffset = 0, dstOffset = 0;
+		while (srcOffset < channelDataSize + simulatedWidth)
+		{
+			srcOffset %= channelDataSize;
+			dstOffset %= newChannelDataSize;
+
+			channel[dstOffset] = channel[srcOffset];
+
+			srcOffset += simulatedWidth * factor;
+			dstOffset += newWidth;
+
+			if (srcOffset / simulatedWidth == simulatedHeight) srcOffset++;
+			if (srcOffset / newWidth == newHeight) srcOffset++;
+		}
+	}
+	else if (method == Average)
+	{
+		float sum = 0.0f;
+		size_t srcOffset = 0, dstOffset = 0, valCount = 0;
+		while (srcOffset < channelDataSize + simulatedWidth)
+		{
+			srcOffset %= channelDataSize;
+			dstOffset %= newChannelDataSize;
+
+			sum += channel[srcOffset];
+			valCount++;
+			if (valCount == factor)
+			{
+				channel[dstOffset] = sum / factor;
+				sum = 0.0f;
+				valCount = 0;
+				dstOffset += newWidth;
+			}
+			srcOffset += simulatedWidth;
+
+			if (srcOffset / simulatedWidth == simulatedHeight) srcOffset++;
+			if (srcOffset / newWidth == newHeight) srcOffset++;
+		}
+	}
+}
+
 size_t Image::getWidth() const
 {
 	return width;
