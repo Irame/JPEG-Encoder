@@ -100,10 +100,26 @@ void Image::setRawPixelData(float* rgbaData)
 
 std::vector<float> Image::getRawPixelDataSimulated()
 {
-	assert(simulatedSize == channelSizes[0] && simulatedSize == channelSizes[1] && simulatedSize == channelSizes[2]);
-
 	std::vector<float> imageData(simulatedSize.width*simulatedSize.height * 4);
-	transposeFloatAVX_reverse(channels->red(), channels->green(), channels->blue(), &imageData[0], simulatedSize.width*simulatedSize.height);
+
+	if (simulatedSize == channelSizes[0] && simulatedSize == channelSizes[1] && simulatedSize == channelSizes[2]) {
+		transposeFloatAVX_reverse(channels->red(), channels->green(), channels->blue(), &imageData[0], simulatedSize.width*simulatedSize.height);
+	} 
+	else // easy non AVX implementation
+	{
+		size_t offset = 0;
+		PixelData32 pixel;
+		for (uint y = 0; y < simulatedSize.height; y++)
+		{
+			for (uint x = 0; x < simulatedSize.width; x++)
+			{
+				GetPixel(pixel, x, y);
+				memcpy(imageData.data() + offset, &pixel, sizeof(PixelData32));
+				offset += sizeof(PixelData32) / sizeof(float);
+			}
+		}
+	}
+
 	return imageData;
 }
 
@@ -113,10 +129,22 @@ std::vector<float> Image::getRawPixelData()
 	{
 		return getRawPixelDataSimulated();
 	}
-
-	// TODO: implement
-
-	return std::vector<float>();
+	else // easy non AVX implementation
+	{
+		std::vector<float> imageData(imageSize.width*imageSize.height * 4);
+		size_t offset = 0;
+		PixelData32 pixel;
+		for (uint y = 0; y < imageSize.height; y++)
+		{
+			for (uint x = 0; x < imageSize.width; x++)
+			{
+				GetPixel(pixel, x, y);
+				memcpy(imageData.data() + offset, &pixel, sizeof(PixelData32));
+				offset += sizeof(PixelData32) / sizeof(float);
+			}
+		}
+		return imageData;
+	}
 }
 
 void Image::SetPixel(uint x, uint y, const PixelData32& color)
