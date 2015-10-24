@@ -21,6 +21,10 @@ private:
 public:
 	static const SamplingScheme Scheme444, Scheme422, Scheme411, Scheme420;
 
+	// For Testing
+	static const SamplingScheme Scheme422Average, Scheme422Height, Scheme422HeightAverage;
+
+
 	const ChannelReductionOptions yReductionOptions, cbReductionOptions, crReductionOptions;
 
 	int calcWidthStepSize();

@@ -40,21 +40,28 @@ int main(int argc, char* argv[])
 	//	image->applySepiaAVX();
 	//});
 
-	std::cout << "Convert image to YCbCr AVX." << std::endl;
-	benchmark("convertToYCbCrAVX",1, [&]() {
-		image->convertToYCbCrAVX();
+	//std::cout << "Convert image to YCbCr AVX." << std::endl;
+	//benchmark("convertToYCbCrAVX",1, [&]() {
+	//	image->convertToYCbCrAVX();
+	//});
+
+
+	std::cout << "Reduce channel resolution for scheme." << std::endl;
+	benchmark("reduceResolutionBySchema", 1, [&]() {
+		image->reduceResolutionBySchema();
 	});
 
-	/*std::cout << "Cancle out Cb and Cr Channel." << std::endl;
-	benchmark("multiplyColorChannelByAVX",1, [&]() {
-		image->multiplyColorChannelByAVX(1, 0.75);
-		image->multiplyColorChannelByAVX(2, 0.5);
-	});*/
 
-	std::cout << "Convert image to RGB AVX." << std::endl;
-	benchmark("convertToRGBAVX",1, [&]() {
-		image->convertToRGBAVX();
-	});
+	//std::cout << "Cancle out Cb and Cr Channel." << std::endl;
+	//benchmark("multiplyColorChannelByAVX",1, [&]() {
+	//	image->multiplyColorChannelByAVX(0, 0);
+	//	image->multiplyColorChannelByAVX(1, 0);
+	//});
+
+	//std::cout << "Convert image to RGB AVX." << std::endl;
+	//benchmark("convertToRGBAVX",1, [&]() {
+	//	image->convertToRGBAVX();
+	//});
 
 	//std::cout << "Convert image to RGB." << std::endl;
 	//benchmark("convertToRGB",1, [&]() {

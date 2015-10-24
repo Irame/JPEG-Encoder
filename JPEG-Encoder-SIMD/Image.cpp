@@ -136,7 +136,8 @@ void Image::GetPixel(PixelData32& ref, uint x, uint y) const
 
 inline size_t Image::getPixelPos(int channelIdx, uint x, uint y) const
 {
-	return channelSizes[channelIdx].width * y + x * simulatedSize.width / channelSizes[channelIdx].width;
+	return channelSizes[channelIdx].width * (y * channelSizes[channelIdx].height / simulatedSize.height) 
+		+ x * channelSizes[channelIdx].width / simulatedSize.width;
 }
 
 void Image::convertToYCbCrAVX()
@@ -183,7 +184,7 @@ void Image::reduceWidthResolutionColorChannel(int channelIdx, int factor, Reduct
 	size_t channelDataSize = blocksPerChannel[channelIdx] * 8;
 
 	blocksPerChannel[channelIdx] /= factor;
-	channelSizes[channelIdx].height /= factor;
+	channelSizes[channelIdx].width /= factor;
 
 	//TODO: implement AVX code paths
 
@@ -233,13 +234,13 @@ void Image::reduceHeightResolutionColorChannel(int channelIdx, int factor, Reduc
 			srcOffset %= channelDataSize;
 			dstOffset %= newChannelDataSize;
 
-			halfHeightResolutionAverageAVX(&channel[srcOffset], &channel[srcOffset += oldchannelSize.width], &channel[dstOffset]);
+			halfHeightResolutionAverageAVX(&channel[srcOffset], &channel[srcOffset + oldchannelSize.width], &channel[dstOffset]);
 
-			srcOffset += oldchannelSize.width;
+			srcOffset += oldchannelSize.width * 2;
 			dstOffset += oldchannelSize.width;
 
 			if (srcOffset / oldchannelSize.width == oldchannelSize.height) srcOffset += 8;
-			if (srcOffset / oldchannelSize.width == newChannelHeight) srcOffset += 8;
+			if (dstOffset / oldchannelSize.width == newChannelHeight) dstOffset += 8;
 		}
 	} 
 	else if (method == Subsampling) 
@@ -256,7 +257,7 @@ void Image::reduceHeightResolutionColorChannel(int channelIdx, int factor, Reduc
 			dstOffset += oldchannelSize.width;
 
 			if (srcOffset / oldchannelSize.width == oldchannelSize.height) srcOffset++;
-			if (srcOffset / oldchannelSize.width == newChannelHeight) srcOffset++;
+			if (dstOffset / oldchannelSize.width == newChannelHeight) dstOffset++;
 		}
 	}
 	else if (method == Average)
@@ -280,7 +281,7 @@ void Image::reduceHeightResolutionColorChannel(int channelIdx, int factor, Reduc
 			srcOffset += oldchannelSize.width;
 
 			if (srcOffset / oldchannelSize.width == oldchannelSize.height) srcOffset++;
-			if (srcOffset / oldchannelSize.width == newChannelHeight) srcOffset++;
+			if (dstOffset / oldchannelSize.width == newChannelHeight) dstOffset++;
 		}
 	}
 }
