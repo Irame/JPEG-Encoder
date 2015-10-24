@@ -216,7 +216,25 @@ void Image::reduceWidthResolutionColorChannel(int channelIdx, int factor, Reduct
 
 	//TODO: implement AVX code paths
 
-	if (method == Subsampling)
+	if (method == Average && factor == 2)
+	{
+		for (size_t srcOffset = 0, dstOffset = 0; srcOffset < channelDataSize; )
+		{
+			halfWidthResolutionAverageAVX(&channel[srcOffset], &channel[srcOffset + 8], &channel[dstOffset]);
+			srcOffset += 16;
+			dstOffset += 8;
+		}
+	}
+	else if (method == Subsampling && factor == 2)
+	{
+		for (size_t srcOffset = 0, dstOffset = 0; srcOffset < channelDataSize; )
+		{
+			halfWidthResolutionSubsamplingAVX(&channel[srcOffset], &channel[srcOffset + 8], &channel[dstOffset]);
+			srcOffset += 16;
+			dstOffset += 8;
+		}
+	}
+	else if (method == Subsampling)
 	{
 		for (size_t srcOffset = 0, dstOffset = 0; srcOffset < channelDataSize; srcOffset += factor)
 		{
