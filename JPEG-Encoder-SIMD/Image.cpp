@@ -292,18 +292,12 @@ void Image::reduceHeightResolutionColorChannel(int channelIdx, int factor, Reduc
 	else if (method == Subsampling) 
 	{
 		size_t srcOffset = 0, dstOffset = 0;
-		while (srcOffset < channelDataSize + oldchannelSize.width)
+		while (srcOffset < channelDataSize)
 		{
-			srcOffset %= channelDataSize;
-			dstOffset %= newChannelDataSize;
-
-			channel[dstOffset] = channel[srcOffset];
+			memcpy(&channel[dstOffset], &channel[srcOffset], oldchannelSize.width * sizeof(float));
 
 			srcOffset += oldchannelSize.width * factor;
 			dstOffset += oldchannelSize.width;
-
-			if (srcOffset / oldchannelSize.width == oldchannelSize.height) srcOffset++;
-			if (dstOffset / oldchannelSize.width == newChannelHeight) dstOffset++;
 		}
 	}
 	else if (method == Average)
