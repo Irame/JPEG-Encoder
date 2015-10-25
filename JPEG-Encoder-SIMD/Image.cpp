@@ -221,11 +221,11 @@ void Image::reduceWidthResolutionColorChannel(int channelIdx, int factor, Reduct
 	// factor 1 => no reduction necessary
 	if (factor == 1) return;
 
-	// get channel data and inforamtion
+	// get channel data and information
 	float* channel = channels->getChannel(channelIdx);
 	size_t channelDataSize = blocksPerChannel[channelIdx] * 8;
 
-	// adjust the channel inforamtion
+	// adjust the channel information
 	blocksPerChannel[channelIdx] /= factor;
 	channelSizes[channelIdx].width /= factor;
 
@@ -279,14 +279,14 @@ void Image::reduceHeightResolutionColorChannel(int channelIdx, int factor, Reduc
 	// factor 1 => no reduction necessary
 	if (factor == 1) return;
 
-	// get channel data and inforamtion
+	// get channel data and information
 	float* channel = channels->getChannel(channelIdx);
 	size_t channelDataSize = blocksPerChannel[channelIdx] * 8;
 
 	// save old channel info
 	Dimension2D oldchannelSize = channelSizes[channelIdx];
 
-	// calc new cahnnel info
+	// calc new channel info
 	size_t newChannelDataSize = channelDataSize / factor;
 	size_t newChannelHeight = oldchannelSize.height / factor;
 	blocksPerChannel[channelIdx] /= factor;
