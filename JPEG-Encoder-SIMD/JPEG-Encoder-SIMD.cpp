@@ -36,13 +36,13 @@ int main(int argc, char* argv[])
 	//});
 	
 	//std::cout << "Aplying Sepia Filter." << std::endl;
-	//benchmark("applySepiaAVX",1, [&]() {
-	//	image->applySepiaAVX();
+	//benchmark("applySepia",1, [&]() {
+	//	image->applySepia();
 	//});
 
 	//std::cout << "Convert image to YCbCr AVX." << std::endl;
-	//benchmark("convertToYCbCrAVX",1, [&]() {
-	//	image->convertToYCbCrAVX();
+	//benchmark("convertToYCbCr",1, [&]() {
+	//	image->convertToYCbCr();
 	//});
 
 
@@ -53,14 +53,14 @@ int main(int argc, char* argv[])
 
 
 	//std::cout << "Cancle out Cb and Cr Channel." << std::endl;
-	//benchmark("multiplyColorChannelByAVX",1, [&]() {
-	//	image->multiplyColorChannelByAVX(0, 0);
-	//	image->multiplyColorChannelByAVX(1, 0);
+	//benchmark("multiplyColorChannelBy",1, [&]() {
+	//	image->multiplyColorChannelBy(0, 0);
+	//	image->multiplyColorChannelBy(1, 0);
 	//});
 
 	//std::cout << "Convert image to RGB AVX." << std::endl;
-	//benchmark("convertToRGBAVX",1, [&]() {
-	//	image->convertToRGBAVX();
+	//benchmark("convertToRGB",1, [&]() {
+	//	image->convertToRGB();
 	//});
 
 	//std::cout << "Convert image to RGB." << std::endl;

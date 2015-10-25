@@ -152,7 +152,7 @@ void ImageLoader::SavePPM(std::string path, ImageCCPtr image)
 	{
 		for (size_t x = 0; x < imageSize.width; x++)
 		{
-			image->GetPixel(pixel, x, y);
+			image->getPixel(pixel, x, y);
 			const int r = clamp(0, static_cast<int>(pixel.R * maxVal), maxVal);
 			const int g = clamp(0, static_cast<int>(pixel.G * maxVal), maxVal);
 			const int b = clamp(0, static_cast<int>(pixel.B * maxVal), maxVal);

@@ -87,22 +87,29 @@ class Image
 
 	void setRawPixelDataDirect(float* rgbaData);
 
+	size_t getPixelPos(int channelIdx, uint x, uint y) const;
+
+	void reduceWidthResolutionColorChannel(int channel, int factor, ReductionMethod method);
+	void reduceHeightResolutionColorChannel(int channelIdx, int factor, ReductionMethod method);
+
 public:
 	Image(size_t width, size_t height, SamplingScheme scheme);
 
-	void setRawPixelData(float* rgbaData);
-	std::vector<float> getRawPixelDataSimulated();
-	std::vector<float> getRawPixelData();
-	void SetPixel(uint x, uint y, const PixelData32& color);
-	void GetPixel(PixelData32& ref, uint x, uint y) const;
-	size_t getPixelPos(int channelIdx, uint x, uint y) const;
-	void convertToYCbCrAVX();
-	void convertToRGBAVX();
-	void applySepiaAVX();
-	void multiplyColorChannelByAVX(int colorChannel, float val);
-	void reduceWidthResolutionColorChannel(int channel, int factor, ReductionMethod method);
-	void reduceHeightResolutionColorChannel(int channelIdx, int factor, ReductionMethod method);
-	void reduceResolutionBySchema();
 	const Dimension2D& getImageSize() const;
 	const Dimension2D& getSimulatedSize() const;
+
+	void setRawPixelData(float* rgbaData);
+
+	std::vector<float> getRawPixelDataSimulated();
+	std::vector<float> getRawPixelData();
+
+	void setPixel(uint x, uint y, const PixelData32& color);
+	void getPixel(PixelData32& ref, uint x, uint y) const;
+
+	void convertToYCbCr();
+	void convertToRGB();
+	void applySepia();
+	void multiplyColorChannelBy(int colorChannel, float val);
+
+	void reduceResolutionBySchema();
 };

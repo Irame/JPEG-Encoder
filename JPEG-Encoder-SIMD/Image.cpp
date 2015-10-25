@@ -7,11 +7,21 @@ Image::Image(size_t width, size_t height, SamplingScheme scheme)
 	simulatedSize(
 		width + (width % stepSize.width == 0 ? 0 : stepSize.width - width % stepSize.width),
 		height + (height % stepSize.height == 0 ? 0 : stepSize.height - height % stepSize.height)),
-	samplingScheme(scheme),
-	channelSizes { Dimension2D(simulatedSize) , Dimension2D(simulatedSize) , Dimension2D(simulatedSize) }
+	channelSizes { Dimension2D(simulatedSize) , Dimension2D(simulatedSize) , Dimension2D(simulatedSize) },
+	samplingScheme(scheme)
 {
 	channels = std::make_unique<ImageData>(simulatedSize);
 	blocksPerChannel[0] = blocksPerChannel[1] = blocksPerChannel[2] = simulatedSize.width * simulatedSize.height / 8;
+}
+
+const Dimension2D& Image::getImageSize() const
+{
+	return imageSize;
+}
+
+const Dimension2D& Image::getSimulatedSize() const
+{
+	return simulatedSize;
 }
 
 void Image::setRawPixelDataDirect(float* rgbaData)
@@ -41,7 +51,7 @@ void Image::setRawPixelData(float* rgbaData)
 	int dataPixelOffset = 0;			// offset in 'data'
 	int lineOffsetPixel = 0;			// offset in the current line
 
-										// size of the data which should be accessable due to the step size
+	// size of the data which should be accessable due to the step size
 	int simulatedDataSize = simulatedSize.width * simulatedSize.height;
 	// the size of the real data we have
 	int dataSize = imageSize.width * imageSize.height * FLOATS_PER_PIXEL;
@@ -113,7 +123,7 @@ std::vector<float> Image::getRawPixelDataSimulated()
 		{
 			for (uint x = 0; x < simulatedSize.width; x++)
 			{
-				GetPixel(pixel, x, y);
+				getPixel(pixel, x, y);
 				memcpy(imageData.data() + offset, &pixel, sizeof(PixelData32));
 				offset += sizeof(PixelData32) / sizeof(float);
 			}
@@ -138,7 +148,7 @@ std::vector<float> Image::getRawPixelData()
 		{
 			for (uint x = 0; x < imageSize.width; x++)
 			{
-				GetPixel(pixel, x, y);
+				getPixel(pixel, x, y);
 				memcpy(imageData.data() + offset, &pixel, sizeof(PixelData32));
 				offset += sizeof(PixelData32) / sizeof(float);
 			}
@@ -147,14 +157,20 @@ std::vector<float> Image::getRawPixelData()
 	}
 }
 
-void Image::SetPixel(uint x, uint y, const PixelData32& color)
+inline size_t Image::getPixelPos(int channelIdx, uint x, uint y) const
+{
+	return channelSizes[channelIdx].width * (y * channelSizes[channelIdx].height / simulatedSize.height)
+		+ x * channelSizes[channelIdx].width / simulatedSize.width;
+}
+
+void Image::setPixel(uint x, uint y, const PixelData32& color)
 {
 	*channels->red(getPixelPos(0, x, y)) = color.R;
 	*channels->green(getPixelPos(1, x, y)) = color.G;
 	*channels->blue(getPixelPos(2, x, y)) = color.B;
 }
 
-void Image::GetPixel(PixelData32& ref, uint x, uint y) const
+void Image::getPixel(PixelData32& ref, uint x, uint y) const
 {
 	ref.R = *channels->red(getPixelPos(0, x, y));
 	ref.G = *channels->green(getPixelPos(1, x, y));
@@ -162,13 +178,7 @@ void Image::GetPixel(PixelData32& ref, uint x, uint y) const
 	ref.A = 1.0f;
 }
 
-inline size_t Image::getPixelPos(int channelIdx, uint x, uint y) const
-{
-	return channelSizes[channelIdx].width * (y * channelSizes[channelIdx].height / simulatedSize.height) 
-		+ x * channelSizes[channelIdx].width / simulatedSize.width;
-}
-
-void Image::convertToYCbCrAVX()
+void Image::convertToYCbCr()
 {
 	//#pragma omp parallel for
 	assert(blocksPerChannel[0] == blocksPerChannel[1] && blocksPerChannel[0] == blocksPerChannel[2]);
@@ -179,7 +189,7 @@ void Image::convertToYCbCrAVX()
 }
 
 
-void Image::convertToRGBAVX()
+void Image::convertToRGB()
 {
 	//#pragma omp parallel for
 	assert(blocksPerChannel[0] == blocksPerChannel[1] && blocksPerChannel[0] == blocksPerChannel[2]);
@@ -190,7 +200,7 @@ void Image::convertToRGBAVX()
 }
 
 
-void Image::applySepiaAVX()
+void Image::applySepia()
 {
 	assert(blocksPerChannel[0] == blocksPerChannel[1] && blocksPerChannel[0] == blocksPerChannel[2]);
 	for (size_t i = 0; i < blocksPerChannel[0]; i += 8)
@@ -199,23 +209,29 @@ void Image::applySepiaAVX()
 	}
 }
 
-void Image::multiplyColorChannelByAVX(int colorChannel, float val)
+void Image::multiplyColorChannelBy(int colorChannel, float val)
 {
 	multiplyAVX(channels->getChannel(colorChannel), val, blocksPerChannel[colorChannel] * 8);
 }
 
 void Image::reduceWidthResolutionColorChannel(int channelIdx, int factor, ReductionMethod method)
 {
+	assert(channelSizes[channelIdx].width % factor == 0);
+
+	// factor 1 => no reduction necessary
 	if (factor == 1) return;
 
+	// get channel data and inforamtion
 	float* channel = channels->getChannel(channelIdx);
 	size_t channelDataSize = blocksPerChannel[channelIdx] * 8;
 
+	// adjust the channel inforamtion
 	blocksPerChannel[channelIdx] /= factor;
 	channelSizes[channelIdx].width /= factor;
 
 	//TODO: implement AVX code paths
 
+	// use special AVX codepath for higher perfomance if the factor is 2
 	if (method == Average && factor == 2)
 	{
 		for (size_t srcOffset = 0, dstOffset = 0; srcOffset < channelDataSize; )
@@ -234,6 +250,7 @@ void Image::reduceWidthResolutionColorChannel(int channelIdx, int factor, Reduct
 			dstOffset += 8;
 		}
 	}
+	// otherwise use a general implementation
 	else if (method == Subsampling)
 	{
 		for (size_t srcOffset = 0, dstOffset = 0; srcOffset < channelDataSize; srcOffset += factor)
@@ -257,21 +274,27 @@ void Image::reduceWidthResolutionColorChannel(int channelIdx, int factor, Reduct
 
 void Image::reduceHeightResolutionColorChannel(int channelIdx, int factor, ReductionMethod method)
 {
+	assert(channelSizes[channelIdx].height % factor == 0);
+
+	// factor 1 => no reduction necessary
 	if (factor == 1) return;
 
+	// get channel data and inforamtion
 	float* channel = channels->getChannel(channelIdx);
 	size_t channelDataSize = blocksPerChannel[channelIdx] * 8;
 
-	size_t newChannelDataSize = channelDataSize / factor;
-	blocksPerChannel[channelIdx] /= factor;
-
+	// save old channel info
 	Dimension2D oldchannelSize = channelSizes[channelIdx];
 
+	// calc new cahnnel info
+	size_t newChannelDataSize = channelDataSize / factor;
 	size_t newChannelHeight = oldchannelSize.height / factor;
+	blocksPerChannel[channelIdx] /= factor;
 	channelSizes[channelIdx].height = newChannelHeight;
 
 	//TODO: implement AVX code paths
 
+	// use special AVX codepath for higher perfomance if the factor is 2 and method is Average
 	if (method == Average && factor == 2)
 	{
 		size_t srcOffset = 0, dstOffset = 0;
@@ -288,7 +311,8 @@ void Image::reduceHeightResolutionColorChannel(int channelIdx, int factor, Reduc
 			if (srcOffset / oldchannelSize.width == oldchannelSize.height) srcOffset += 8;
 			if (dstOffset / oldchannelSize.width == newChannelHeight) dstOffset += 8;
 		}
-	} 
+	}
+	// otherwise use a general implementation
 	else if (method == Subsampling) 
 	{
 		size_t srcOffset = 0, dstOffset = 0;
@@ -335,14 +359,4 @@ void Image::reduceResolutionBySchema()
 	reduceHeightResolutionColorChannel(0, samplingScheme.yReductionOptions.heightFactor, samplingScheme.yReductionOptions.heightMethod);
 	reduceHeightResolutionColorChannel(1, samplingScheme.cbReductionOptions.heightFactor, samplingScheme.cbReductionOptions.heightMethod);
 	reduceHeightResolutionColorChannel(2, samplingScheme.crReductionOptions.heightFactor, samplingScheme.crReductionOptions.heightMethod);
-}
-
-const Dimension2D& Image::getImageSize() const
-{
-	return imageSize;
-}
-
-const Dimension2D& Image::getSimulatedSize() const
-{
-	return simulatedSize;
 }
