@@ -295,19 +295,23 @@ void Image::reduceHeightResolutionColorChannel(int channelIdx, int factor, Reduc
 	//TODO: implement AVX code paths
 
 	// use special AVX codepath for higher perfomance if the factor is 2 and method is Average
+	// Processes the image in columns of size 8 from up to down
 	if (method == Average && factor == 2)
 	{
 		size_t srcOffset = 0, dstOffset = 0;
-		while (srcOffset < channelDataSize + oldchannelSize.width)
+		while (srcOffset < channelDataSize + oldchannelSize.width) // stop at end of the image
 		{
+			// start from the beginning if height is reached
 			srcOffset %= channelDataSize;
 			dstOffset %= newChannelDataSize;
 
 			halfHeightResolutionAverageAVX(&channel[srcOffset], &channel[srcOffset + oldchannelSize.width], &channel[dstOffset]);
 
+			// go ahead two source lines and one destination line
 			srcOffset += oldchannelSize.width * 2;
 			dstOffset += oldchannelSize.width;
 
+			// move to next blog
 			if (srcOffset / oldchannelSize.width == oldchannelSize.height) srcOffset += 8;
 			if (dstOffset / oldchannelSize.width == newChannelHeight) dstOffset += 8;
 		}
