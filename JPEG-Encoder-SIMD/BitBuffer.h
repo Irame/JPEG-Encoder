@@ -11,13 +11,16 @@ class BitBuffer
 
 	size_t dataBitOffset;		// position in 'data' in bits
 
+	void growBuffer();
+	byte joinTwoBytes(byte leftByte, byte rightByte, size_t leftCount);
+
 public:
 	BitBuffer(size_t initialBufferSize);
 	
+	void pushBit(bool val);
 	void pushBits(size_t numOfBits, byte* buffer);
-	void growBuffer();
+
 	size_t bufferSizeInByte();
-	byte joinTwoBytes(byte leftByte, byte rightByte, size_t leftCount);
 	
 	void writeToFile(std::string file);
 

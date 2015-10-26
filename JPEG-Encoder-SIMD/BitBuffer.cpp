@@ -11,6 +11,17 @@ BitBuffer::BitBuffer(size_t initialBufferSizeInBit)
 	memset(data.get(), 0, sizeInByte);
 }
 
+void BitBuffer::pushBit(bool val)
+{
+	if (val)
+	{
+		size_t dataByteOffset = dataBitOffset / 8;
+		byte curByteBitOffset = dataBitOffset % 8;
+		data[dataByteOffset] |= 1 << 7 - curByteBitOffset;
+	}
+	dataBitOffset++;
+}
+
 void BitBuffer::pushBits(size_t numOfBits, byte* srcBuffer)
 {
 	if (dataBitOffset + numOfBits > bufferSize)
@@ -81,6 +92,8 @@ void BitBuffer::writeToFile(std::string filePath)
 
 	fileStream.open(filePath, std::ios::out | std::ios::trunc | std::ios::binary);
 	fileStream.write(reinterpret_cast<char*>(data.get()), (dataBitOffset + 7) / 8);
+	fileStream.flush();
+	fileStream.close();
 }
 
 std::ostream& operator<<(std::ostream& strm, const BitBuffer& bitBuffer)
