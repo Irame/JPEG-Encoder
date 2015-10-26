@@ -295,25 +295,13 @@ void Image::reduceHeightResolutionColorChannel(int channelIdx, int factor, Reduc
 	//TODO: implement AVX code paths
 
 	// use special AVX codepath for higher perfomance if the factor is 2 and method is Average
-	// Processes the image in columns of width 8 from up to down
 	if (method == Average && factor == 2)
 	{
-		size_t srcOffset = 0, dstOffset = 0;
-		while (srcOffset < channelDataSize + oldchannelSize.width) // stop at end of the image
-		{
-			// start from the top if the bottom is reached
-			srcOffset %= channelDataSize;
-			dstOffset %= newChannelDataSize;
-
-			halfHeightResolutionAverageAVX(&channel[srcOffset], &channel[srcOffset + oldchannelSize.width], &channel[dstOffset]);
-
-			// go ahead two source lines and one destination line
-			srcOffset += oldchannelSize.width * 2;
-			dstOffset += oldchannelSize.width;
-
-			// move to next column
-			if (srcOffset / oldchannelSize.width == oldchannelSize.height) srcOffset += 8;
-			if (dstOffset / oldchannelSize.width == newChannelHeight) dstOffset += 8;
+		// Processes the image in columns of width 8 from top to bottom
+		for (size_t x = 0; x < oldchannelSize.width; x += 8) {
+			for (size_t srcOffset = x, destOffset = x; srcOffset < channelDataSize; srcOffset += oldchannelSize.width * 2, destOffset += oldchannelSize.width) {
+				halfHeightResolutionAverageAVX(&channel[srcOffset], &channel[srcOffset + oldchannelSize.width], &channel[destOffset]);
+			}
 		}
 	}
 	// otherwise use a general implementation
@@ -331,25 +319,19 @@ void Image::reduceHeightResolutionColorChannel(int channelIdx, int factor, Reduc
 	else if (method == Average)
 	{
 		float sum = 0.0f;
-		size_t srcOffset = 0, dstOffset = 0, valCount = 0;
-		while (srcOffset < channelDataSize + oldchannelSize.width)
-		{
-			srcOffset %= channelDataSize;
-			dstOffset %= newChannelDataSize;
-
-			sum += channel[srcOffset];
-			valCount++;
-			if (valCount == factor)
-			{
-				channel[dstOffset] = sum / factor;
-				sum = 0.0f;
-				valCount = 0;
-				dstOffset += oldchannelSize.width;
+		size_t valCount = 0;
+		for (size_t x = 0; x < oldchannelSize.width; x++) {
+			for (size_t srcOffset = x, destOffset = x; srcOffset < channelDataSize; srcOffset += oldchannelSize.width) {
+				sum += channel[srcOffset];
+				valCount++;
+				if (valCount == factor)
+				{
+					channel[destOffset] = sum / factor;
+					destOffset += oldchannelSize.width;
+					sum = 0.0f;
+					valCount = 0;
+				}
 			}
-			srcOffset += oldchannelSize.width;
-
-			if (srcOffset / oldchannelSize.width == oldchannelSize.height) srcOffset++;
-			if (dstOffset / oldchannelSize.width == newChannelHeight) dstOffset++;
 		}
 	}
 }
