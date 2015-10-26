@@ -216,7 +216,7 @@ void Image::multiplyColorChannelBy(ColorChannelName colorChannel, float val)
 
 void Image::reduceWidthResolutionColorChannel(ColorChannelName channelName, int factor, ReductionMethod method)
 {
-	assert(channelSizes[channelIdx].width % factor == 0);
+	assert(channelSizes[channelName].width % factor == 0);
 
 	// factor 1 => no reduction necessary
 	if (factor == 1) return;
@@ -274,7 +274,7 @@ void Image::reduceWidthResolutionColorChannel(ColorChannelName channelName, int 
 
 void Image::reduceHeightResolutionColorChannel(ColorChannelName channelName, int factor, ReductionMethod method)
 {
-	assert(channelSizes[channelIdx].height % factor == 0);
+	assert(channelSizes[channelName].height % factor == 0);
 
 	// factor 1 => no reduction necessary
 	if (factor == 1) return;
