@@ -39,6 +39,11 @@ const SamplingScheme SamplingScheme::Scheme422HeightAverage(
 	ChannelReductionOptions{ 1, Subsampling, 2, Average },		// cb
 	ChannelReductionOptions{ 1, Subsampling, 2, Average });		// br
 
+const SamplingScheme SamplingScheme::Scheme311(
+	ChannelReductionOptions{ 1, Subsampling, 1, Subsampling },		// y
+	ChannelReductionOptions{ 3, Subsampling, 1, Subsampling },		// cb
+	ChannelReductionOptions{ 3, Subsampling, 1, Subsampling });		// br
+
 SamplingScheme::SamplingScheme(ChannelReductionOptions yReductionOptions, ChannelReductionOptions cbReductionOptions, ChannelReductionOptions crReductionOptions)
 	: yReductionOptions(yReductionOptions),cbReductionOptions(cbReductionOptions),crReductionOptions(crReductionOptions)
 

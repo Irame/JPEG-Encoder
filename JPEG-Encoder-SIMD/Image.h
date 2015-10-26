@@ -3,6 +3,7 @@
 #include <memory>
 #include <cassert>
 #include "SamplingScheme.h"
+#include "ColorNames.h"
 
 class Image;
 
@@ -69,7 +70,7 @@ public:
 
 	float* blue(size_t offset = 0) { return reinterpret_cast<float*>(b) + offset; }
 
-	float* getChannel(int channel) { return *(reinterpret_cast<float**>(this) + channel); }
+	float* getChannel(ColorChannelName channel) { return *(reinterpret_cast<float**>(this) + channel); }
 };
 
 class Image
@@ -87,10 +88,10 @@ class Image
 
 	void setRawPixelDataDirect(float* rgbaData);
 
-	size_t getPixelPos(int channelIdx, uint x, uint y) const;
+	size_t getPixelPos(ColorChannelName channelIdx, uint x, uint y) const;
 
-	void reduceWidthResolutionColorChannel(int channel, int factor, ReductionMethod method);
-	void reduceHeightResolutionColorChannel(int channelIdx, int factor, ReductionMethod method);
+	void reduceWidthResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
+	void reduceHeightResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
 
 public:
 	Image(size_t width, size_t height, SamplingScheme scheme);
@@ -109,7 +110,7 @@ public:
 	void convertToYCbCr();
 	void convertToRGB();
 	void applySepia();
-	void multiplyColorChannelBy(int colorChannel, float val);
+	void multiplyColorChannelBy(ColorChannelName colorChannel, float val);
 
 	void reduceResolutionBySchema();
 };

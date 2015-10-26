@@ -157,7 +157,7 @@ std::vector<float> Image::getRawPixelData()
 	}
 }
 
-inline size_t Image::getPixelPos(int channelIdx, uint x, uint y) const
+inline size_t Image::getPixelPos(ColorChannelName channelIdx, uint x, uint y) const
 {
 	return channelSizes[channelIdx].width * (y * channelSizes[channelIdx].height / simulatedSize.height)
 		+ x * channelSizes[channelIdx].width / simulatedSize.width;
@@ -165,16 +165,16 @@ inline size_t Image::getPixelPos(int channelIdx, uint x, uint y) const
 
 void Image::setPixel(uint x, uint y, const PixelData32& color)
 {
-	*channels->red(getPixelPos(0, x, y)) = color.R;
-	*channels->green(getPixelPos(1, x, y)) = color.G;
-	*channels->blue(getPixelPos(2, x, y)) = color.B;
+	*channels->red(getPixelPos(R, x, y)) = color.R;
+	*channels->green(getPixelPos(G, x, y)) = color.G;
+	*channels->blue(getPixelPos(B, x, y)) = color.B;
 }
 
 void Image::getPixel(PixelData32& ref, uint x, uint y) const
 {
-	ref.R = *channels->red(getPixelPos(0, x, y));
-	ref.G = *channels->green(getPixelPos(1, x, y));
-	ref.B = *channels->blue(getPixelPos(2, x, y));
+	ref.R = *channels->red(getPixelPos(R, x, y));
+	ref.G = *channels->green(getPixelPos(G, x, y));
+	ref.B = *channels->blue(getPixelPos(B, x, y));
 	ref.A = 1.0f;
 }
 
@@ -209,12 +209,12 @@ void Image::applySepia()
 	}
 }
 
-void Image::multiplyColorChannelBy(int colorChannel, float val)
+void Image::multiplyColorChannelBy(ColorChannelName colorChannel, float val)
 {
 	multiplyAVX(channels->getChannel(colorChannel), val, blocksPerChannel[colorChannel] * 8);
 }
 
-void Image::reduceWidthResolutionColorChannel(int channelIdx, int factor, ReductionMethod method)
+void Image::reduceWidthResolutionColorChannel(ColorChannelName channelName, int factor, ReductionMethod method)
 {
 	assert(channelSizes[channelIdx].width % factor == 0);
 
@@ -222,12 +222,12 @@ void Image::reduceWidthResolutionColorChannel(int channelIdx, int factor, Reduct
 	if (factor == 1) return;
 
 	// get channel data and information
-	float* channel = channels->getChannel(channelIdx);
-	size_t channelDataSize = blocksPerChannel[channelIdx] * 8;
+	float* channel = channels->getChannel(channelName);
+	size_t channelDataSize = blocksPerChannel[channelName] * 8;
 
 	// adjust the channel information
-	blocksPerChannel[channelIdx] /= factor;
-	channelSizes[channelIdx].width /= factor;
+	blocksPerChannel[channelName] /= factor;
+	channelSizes[channelName].width /= factor;
 
 	//TODO: implement AVX code paths
 
@@ -272,7 +272,7 @@ void Image::reduceWidthResolutionColorChannel(int channelIdx, int factor, Reduct
 	}
 }
 
-void Image::reduceHeightResolutionColorChannel(int channelIdx, int factor, ReductionMethod method)
+void Image::reduceHeightResolutionColorChannel(ColorChannelName channelName, int factor, ReductionMethod method)
 {
 	assert(channelSizes[channelIdx].height % factor == 0);
 
@@ -280,17 +280,17 @@ void Image::reduceHeightResolutionColorChannel(int channelIdx, int factor, Reduc
 	if (factor == 1) return;
 
 	// get channel data and information
-	float* channel = channels->getChannel(channelIdx);
-	size_t channelDataSize = blocksPerChannel[channelIdx] * 8;
+	float* channel = channels->getChannel(channelName);
+	size_t channelDataSize = blocksPerChannel[channelName] * 8;
 
 	// save old channel info
-	Dimension2D oldchannelSize = channelSizes[channelIdx];
+	Dimension2D oldchannelSize = channelSizes[channelName];
 
 	// calc new channel info
 	size_t newChannelDataSize = channelDataSize / factor;
 	size_t newChannelHeight = oldchannelSize.height / factor;
-	blocksPerChannel[channelIdx] /= factor;
-	channelSizes[channelIdx].height = newChannelHeight;
+	blocksPerChannel[channelName] /= factor;
+	channelSizes[channelName].height = newChannelHeight;
 
 	//TODO: implement AVX code paths
 
@@ -338,11 +338,11 @@ void Image::reduceHeightResolutionColorChannel(int channelIdx, int factor, Reduc
 
 void Image::reduceResolutionBySchema()
 {
-	reduceWidthResolutionColorChannel(0, samplingScheme.yReductionOptions.widthFactor, samplingScheme.yReductionOptions.widthMethod);
-	reduceWidthResolutionColorChannel(1, samplingScheme.cbReductionOptions.widthFactor, samplingScheme.cbReductionOptions.widthMethod);
-	reduceWidthResolutionColorChannel(2, samplingScheme.crReductionOptions.widthFactor, samplingScheme.crReductionOptions.widthMethod);
+	reduceWidthResolutionColorChannel(Y, samplingScheme.yReductionOptions.widthFactor, samplingScheme.yReductionOptions.widthMethod);
+	reduceWidthResolutionColorChannel(Cb, samplingScheme.cbReductionOptions.widthFactor, samplingScheme.cbReductionOptions.widthMethod);
+	reduceWidthResolutionColorChannel(Cr, samplingScheme.crReductionOptions.widthFactor, samplingScheme.crReductionOptions.widthMethod);
 
-	reduceHeightResolutionColorChannel(0, samplingScheme.yReductionOptions.heightFactor, samplingScheme.yReductionOptions.heightMethod);
-	reduceHeightResolutionColorChannel(1, samplingScheme.cbReductionOptions.heightFactor, samplingScheme.cbReductionOptions.heightMethod);
-	reduceHeightResolutionColorChannel(2, samplingScheme.crReductionOptions.heightFactor, samplingScheme.crReductionOptions.heightMethod);
+	reduceHeightResolutionColorChannel(Y, samplingScheme.yReductionOptions.heightFactor, samplingScheme.yReductionOptions.heightMethod);
+	reduceHeightResolutionColorChannel(Cb, samplingScheme.cbReductionOptions.heightFactor, samplingScheme.cbReductionOptions.heightMethod);
+	reduceHeightResolutionColorChannel(Cr, samplingScheme.crReductionOptions.heightFactor, samplingScheme.crReductionOptions.heightMethod);
 }
