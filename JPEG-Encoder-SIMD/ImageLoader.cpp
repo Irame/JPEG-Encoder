@@ -153,9 +153,9 @@ void ImageLoader::SavePPM(std::string path, ImageCCPtr image)
 		for (size_t x = 0; x < imageSize.width; x++)
 		{
 			image->getPixel(pixel, x, y);
-			const int r = clamp(0, static_cast<int>(pixel.R * maxVal), maxVal);
-			const int g = clamp(0, static_cast<int>(pixel.G * maxVal), maxVal);
-			const int b = clamp(0, static_cast<int>(pixel.B * maxVal), maxVal);
+			const int r = clamp(0, static_cast<int>(pixel.R * maxVal + 0.5f), maxVal);
+			const int g = clamp(0, static_cast<int>(pixel.G * maxVal + 0.5f), maxVal);
+			const int b = clamp(0, static_cast<int>(pixel.B * maxVal + 0.5f), maxVal);
 
 			fileStream << r << " " << g << " " << b << "  ";
 		}
@@ -192,7 +192,7 @@ void ImageLoader::SavePNG(std::string path, ImageCCPtr image)
 
 	std::vector<unsigned char> imgData(imageData.size());
 	for (size_t i = 0; i < imgData.size(); i++) {
-		imgData[i] = clamp(0, static_cast<int>(imageData[i] * 255), 255);
+		imgData[i] = clamp(0, static_cast<int>(imageData[i] * 255 + 0.5f), 255);
 	}
 
 	unsigned error = lodepng::encode(path, imgData, simulatedSize.width, simulatedSize.height);
