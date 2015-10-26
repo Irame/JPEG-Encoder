@@ -8,6 +8,24 @@
 #include "Benchmark.h"
 
 #include "ImageLoader.h"
+#include "BitBuffer.h"
+
+void bitBufferTest(string filePath)
+{
+	BitBuffer bitBuffer(1 << 16);
+	
+	unsigned char test[2]{ 0xff, 0x55 };
+
+	bitBuffer.pushBits(10, test);
+	cout << bitBuffer << endl;
+	bitBuffer.pushBits(12, test);
+	cout << bitBuffer << endl;
+	bitBuffer.pushBits(14, test);
+
+	bitBuffer.writeToFile(filePath);
+
+	cout << bitBuffer << endl;
+}
 
 int main(int argc, char* argv[])
 {

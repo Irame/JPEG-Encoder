@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "BitBuffer.h"
 #include <algorithm>
+#include <fstream>
 
 BitBuffer::BitBuffer(size_t initialBufferSizeInBit) 
-	: bufferSize(initialBufferSizeInBit), data(nullptr), bitPos(0)
+	: bufferSize(initialBufferSizeInBit), data(nullptr), dataBitOffset(0)
 {
 	size_t sizeInByte = bufferSizeInByte();
 	data = std::unique_ptr<byte[]>(new byte[sizeInByte]);
@@ -12,23 +13,23 @@ BitBuffer::BitBuffer(size_t initialBufferSizeInBit)
 
 void BitBuffer::pushBits(size_t numOfBits, byte* srcBuffer)
 {
-	if (bitPos + numOfBits > bufferSize)
+	if (dataBitOffset + numOfBits > bufferSize)
 		growBuffer();
 
-	byte freeBits = 8 - bitPos % 8; // number of bits to fill data up to byte boundary
-	byte byteOffset = bitPos / 8;
+	byte freeBits = 8 - dataBitOffset % 8; // number of bits to fill data up to byte boundary
+	byte byteOffset = dataBitOffset / 8;
 
 	if (numOfBits < freeBits)
 	{
 		// copy source to dest and reset overlaped bits back to 0
 		data[byteOffset] |= (srcBuffer[0] >> (8 - freeBits)) & byte(0xff << (freeBits - numOfBits));
-		bitPos += numOfBits;
+		dataBitOffset += numOfBits;
 	}
 	else
 	{
 		// fill current data byte
 		data[byteOffset++] |= (srcBuffer[0] >> (8 - freeBits));
-		bitPos += freeBits;
+		dataBitOffset += freeBits;
 
 		if (numOfBits - freeBits == 0)
 			return;
@@ -39,12 +40,11 @@ void BitBuffer::pushBits(size_t numOfBits, byte* srcBuffer)
 		while (srcOffset < numOfBits)
 		{
 			data[byteOffset++] = joinTwoBytes(srcBuffer[srcByteOffset++], srcBuffer[srcByteOffset], leftCount);
-			bitPos += 8;
+			dataBitOffset += 8;
 			srcOffset += 8;
-			leftCount = 8 - leftCount;
 		}
 		data[byteOffset - 1] &= 0xff << (srcOffset - numOfBits);
-		bitPos -= (srcOffset - numOfBits);
+		dataBitOffset -= (srcOffset - numOfBits);
 	}
 }
 
@@ -73,4 +73,32 @@ byte BitBuffer::joinTwoBytes(byte leftByte, byte rightByte, size_t leftCount)
 	byte rightMask = 0xff >> leftCount;
 
 	return leftByte & leftMask | rightByte & rightMask;
+}
+
+void BitBuffer::writeToFile(std::string filePath)
+{
+	std::ofstream fileStream;
+
+	fileStream.open(filePath, std::ios::out | std::ios::trunc | std::ios::binary);
+	fileStream.write(reinterpret_cast<char*>(data.get()), (dataBitOffset + 7) / 8);
+}
+
+std::ostream& operator<<(std::ostream& strm, const BitBuffer& bitBuffer)
+{
+	size_t bytes = (bitBuffer.dataBitOffset + 7) / 8;
+	size_t byteCounter = 0;
+	for (int byteOffset = 0; byteOffset < bytes; byteOffset++)
+	{
+		byte curByte = bitBuffer.data[byteOffset];
+		for (int bitMask = 0b10000000; bitMask != 0; bitMask >>= 1)
+		{
+			if (byteCounter == bitBuffer.dataBitOffset) break;
+			strm << (curByte & bitMask ? "1" : "0");
+			byteCounter++;
+			if (bitMask == 0b10000) strm << " ";
+		}
+		strm << "  ";
+	}
+
+	return strm;
 }
