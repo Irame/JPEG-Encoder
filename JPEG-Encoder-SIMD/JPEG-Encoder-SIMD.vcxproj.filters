@@ -42,6 +42,9 @@
     <ClInclude Include="ColorNames.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="JPEGSegments.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="BitBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>

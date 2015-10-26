@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <tchar.h>
 
+typedef unsigned char byte;
 
 
 // TODO: reference additional headers your program requires here

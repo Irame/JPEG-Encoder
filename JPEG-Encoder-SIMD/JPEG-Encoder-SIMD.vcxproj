@@ -162,6 +162,7 @@
     <ClInclude Include="ColorNames.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="ImageLoader.h" />
+    <ClInclude Include="JPEGSegments.h" />
     <ClInclude Include="lodepng.h" />
     <ClInclude Include="SamplingScheme.h" />
     <ClInclude Include="SIMD.h" />
