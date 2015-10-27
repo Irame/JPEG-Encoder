@@ -18,7 +18,7 @@ public:
 	BitBuffer(size_t initialBufferSize);
 	
 	void pushBit(bool val);
-	void pushBits(size_t numOfBits, byte* buffer);
+	void pushBits(size_t numOfBits, byte* buffer, size_t offset = 0);
 
 	size_t bufferSizeInByte();
 	

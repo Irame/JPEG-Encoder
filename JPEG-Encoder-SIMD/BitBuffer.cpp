@@ -22,7 +22,7 @@ void BitBuffer::pushBit(bool val)
 	dataBitOffset++;
 }
 
-void BitBuffer::pushBits(size_t numOfBits, byte* srcBuffer)
+void BitBuffer::pushBits(size_t numOfBits, byte* srcBuffer, size_t offset)
 {
 	if (dataBitOffset + numOfBits > bufferSize)
 		growBuffer();
@@ -30,7 +30,42 @@ void BitBuffer::pushBits(size_t numOfBits, byte* srcBuffer)
 	byte freeBits = 8 - dataBitOffset % 8; // number of bits to fill data up to byte boundary
 	byte byteOffset = dataBitOffset / 8;
 
-	if (numOfBits < freeBits)
+	// needs improvement
+	if (offset != 0) {
+		srcBuffer += offset / 8;
+		offset %= 8;
+
+		size_t bitsToSrcByteBoundary = 8 - offset;
+		size_t bitsToWrite = std::min(bitsToSrcByteBoundary, numOfBits);
+
+		if (freeBits < bitsToWrite)
+		{
+			data[byteOffset++] |= (srcBuffer[0] & (0xff >> offset)) >> (8 - freeBits - offset);
+			numOfBits -= freeBits;
+			bitsToWrite -= freeBits;
+			dataBitOffset += freeBits;
+			freeBits = 8;
+			if (bitsToWrite > 0)
+			{
+				data[byteOffset] |= srcBuffer[0] << 8 - bitsToWrite;
+				numOfBits -= bitsToWrite;
+				dataBitOffset += bitsToWrite;
+				freeBits -= bitsToWrite;
+			}
+		}
+		else if (freeBits >= bitsToWrite)
+		{
+			data[byteOffset] |= (srcBuffer[0] & (0xff >> offset)) << offset >> (8 - freeBits);
+			numOfBits -= bitsToWrite;
+			dataBitOffset += bitsToWrite;
+			freeBits = 8 - dataBitOffset % 8;
+			byteOffset = dataBitOffset / 8;
+			data[byteOffset] &= 0xff << freeBits;
+		}
+		srcBuffer++;
+	}
+
+	if (numOfBits <= freeBits)
 	{
 		// copy source to dest and reset overlaped bits back to 0
 		data[byteOffset] |= (srcBuffer[0] >> (8 - freeBits)) & byte(0xff << (freeBits - numOfBits));
