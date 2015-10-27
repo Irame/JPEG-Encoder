@@ -32,11 +32,12 @@ void BitBuffer::pushBit(bool val)
 	dataBitOffset++;
 }
 
-void BitBuffer::pushBits(size_t numOfBits, byte* srcBuffer, size_t offset)
+void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 {
 	if (dataBitOffset + numOfBits > bufferSize)
 		growBuffer();
 
+	byte* srcBuffer = static_cast<byte*>(srcBufferVoid);
 	byte freeBits = 8 - dataBitOffset % 8; // number of bits to fill data up to byte boundary
 	byte byteOffset = dataBitOffset / 8;
 

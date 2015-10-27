@@ -9,6 +9,7 @@
 
 #include "ImageLoader.h"
 #include "BitBuffer.h"
+#include "JPEGSegments.h"
 
 void bitBufferTest(string filePath)
 {
@@ -49,10 +50,29 @@ void bitBufferTest(string filePath)
 	//bitBuffer.pushBit(false);
 	//bitBuffer.pushBit(true);
 
-	for (int i = 0; i < 10000000; i++)
-	{
-		bitBuffer.pushBit(i);
-	}
+	JPEGSegments::StartOfImage startOfImage;
+	JPEGSegments::APP0 app0;
+	JPEGSegments::StartOfFrame0 startOfFrame0;
+	startOfFrame0.yResolution = 900;
+	startOfFrame0.xResolution = 1600;
+	startOfFrame0.Y[1] = 0x22;
+	startOfFrame0.Y[2] = 0;
+	startOfFrame0.Cb[1] = 0x11;
+	startOfFrame0.Cb[2] = 0;
+	startOfFrame0.Cr[1] = 0x11;
+	startOfFrame0.Cr[2] = 0;
+
+	JPEGSegments::EndOfImage endOfImage;
+
+	bitBuffer.pushBits(sizeof(JPEGSegments::StartOfImage) * 8, &startOfImage);
+	bitBuffer.pushBits(sizeof(JPEGSegments::APP0) * 8, &app0);
+	bitBuffer.pushBits(sizeof(JPEGSegments::StartOfFrame0) * 8, &startOfFrame0);
+	bitBuffer.pushBits(sizeof(JPEGSegments::EndOfImage) * 8, &endOfImage);
+
+	//for (int i = 0; i < 10000000; i++)
+	//{
+	//	bitBuffer.pushBit(true);
+	//}
 
 	bitBuffer.writeToFile(filePath);
 

@@ -2,8 +2,6 @@
 #include <memory>
 #include <iostream>
 
-typedef unsigned char byte;
-
 class BitBuffer
 {
 	size_t bufferSize;
@@ -21,7 +19,7 @@ public:
 	size_t getCapacity() const;
 
 	void pushBit(bool val);
-	void pushBits(size_t numOfBits, byte* buffer, size_t offset = 0);
+	void pushBits(size_t numOfBits, void* buffer, size_t offset = 0);
 
 	bool getBit(size_t index) const;
 	void getBits(size_t index, byte* out, size_t numOfBits) const;
