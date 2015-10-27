@@ -11,6 +11,16 @@ BitBuffer::BitBuffer(size_t initialBufferSizeInBit)
 	memset(data.get(), 0, sizeInByte);
 }
 
+size_t BitBuffer::getSize() const
+{
+	return dataBitOffset;
+}
+
+size_t BitBuffer::getCapacity() const
+{
+	return bufferSize;
+}
+
 void BitBuffer::pushBit(bool val)
 {
 	if (val)
@@ -31,7 +41,7 @@ void BitBuffer::pushBits(size_t numOfBits, byte* srcBuffer, size_t offset)
 	byte byteOffset = dataBitOffset / 8;
 
 	// needs improvement
-	if (offset != 0) {
+	if (offset > 0) {
 		srcBuffer += offset / 8;
 		offset %= 8;
 
@@ -92,6 +102,30 @@ void BitBuffer::pushBits(size_t numOfBits, byte* srcBuffer, size_t offset)
 		data[byteOffset - 1] &= 0xff << (srcOffset - numOfBits);
 		dataBitOffset -= (srcOffset - numOfBits);
 	}
+}
+
+bool BitBuffer::getBit(size_t index) const
+{
+	auto indices = lldiv(index, 8);
+	return data[indices.quot] & (1 << (7 - indices.rem));
+}
+
+void BitBuffer::getBits(size_t index, byte* out, size_t numOfBits) const
+{
+	if (numOfBits == 0) return;
+
+	auto indices = lldiv(index, 8);
+	byte leftCount = 8 - indices.rem;
+
+	size_t bitsProcessed = 0;
+	size_t destOffset = 0; 
+	size_t byteIndex = indices.quot;
+	while (numOfBits > bitsProcessed)
+	{
+		out[destOffset++] = joinTwoBytes(data[byteIndex++], data[byteIndex], leftCount);
+		bitsProcessed += 8;
+	}
+	out[destOffset - 1] &= 0xff << (bitsProcessed - numOfBits);
 }
 
 void BitBuffer::growBuffer()

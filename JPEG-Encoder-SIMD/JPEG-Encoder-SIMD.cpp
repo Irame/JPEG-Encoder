@@ -14,10 +14,29 @@ void bitBufferTest(string filePath)
 {
 	BitBuffer bitBuffer(10000000);
 	
-	unsigned char test[2]{ 0xff, 0x55 };
+	byte test[2]{ 0xff, 0x55 };
 
-	//bitBuffer.pushBits(10, test);
+	byte testOut[1];
+
+	//bitBuffer.pushBit(false);
+	//bitBuffer.pushBit(false);
+	//bitBuffer.pushBit(false);
+	//bitBuffer.pushBit(false);
+	//bitBuffer.pushBit(false);
+	//bitBuffer.pushBit(false);
+	//bitBuffer.pushBits(10, test, 4);
+
 	//cout << bitBuffer << endl;
+
+	//bitBuffer.getBits(5, testOut, 8);
+
+	//cout << hex << int(testOut[0]) << endl;
+
+	//for (int i = 0; i < bitBuffer.getSize(); i++) {
+	//	cout << bitBuffer.getBit(i);
+	//}
+	//cout << endl;
+
 	//bitBuffer.pushBits(12, test);
 	//cout << bitBuffer << endl;
 	//bitBuffer.pushBits(14, test);
@@ -42,10 +61,10 @@ void bitBufferTest(string filePath)
 
 int main(int argc, char* argv[])
 {
-	benchmark("bitBufferTest", 1, [&]() {
-		bitBufferTest(argv[1]);
-	});
-	return  1;
+	//benchmark("bitBufferTest", 1, [&]() {
+	//	bitBufferTest(argv[1]);
+	//});
+	//return  1;
 
 	if (argc < 3) {
 		std::cerr << "Usage: " << argv[0] << " <Source File> <Destination File>" << std::endl;
