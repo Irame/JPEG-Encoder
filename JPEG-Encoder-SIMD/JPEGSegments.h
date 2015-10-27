@@ -1,5 +1,8 @@
 #pragma once
 
+// fixing alignment issues by setting the byte alignment to 1
+#pragma pack(1)
+
 struct BEushort
 {
 	BEushort() : value(0) {};
@@ -129,3 +132,6 @@ public:
 		// => Es gibt keinen Segmentmarker 0xff 0x00
 	};
 };
+
+// dont know if this is necessary
+#pragma pack()
