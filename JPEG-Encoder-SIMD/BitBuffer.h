@@ -1,19 +1,21 @@
 #pragma once
 #include <memory>
 #include <iostream>
+#include <vector>
 
 class BitBuffer
 {
-	size_t bufferSize;
-	std::unique_ptr<byte[]> data;
+	size_t bufferSizeInByte;
+	std::vector<byte> data;
 
 	size_t dataBitOffset;		// position in 'data' in bits
 
-	void growBuffer();
+	void ensureFreeSpace(size_t numOfBits);
+	
 	static byte joinTwoBytes(byte leftByte, byte rightByte, size_t leftCount);
 
 public:
-	BitBuffer(size_t initialBufferSize);
+	BitBuffer(size_t initialBufferSize = 0);
 	
 	size_t getSize() const;
 	size_t getCapacity() const;
@@ -23,8 +25,6 @@ public:
 
 	bool getBit(size_t index) const;
 	void getBits(size_t index, byte* out, size_t numOfBits) const;
-
-	size_t bufferSizeInByte();
 	
 	void writeToFile(std::string file);
 

@@ -13,7 +13,7 @@
 
 void bitBufferTest(string filePath)
 {
-	BitBuffer bitBuffer(10000000);
+	BitBuffer bitBuffer;
 	
 	byte test[2]{ 0xff, 0x55 };
 

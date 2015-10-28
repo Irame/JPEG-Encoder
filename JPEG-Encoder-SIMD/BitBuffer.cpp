@@ -4,42 +4,38 @@
 #include <fstream>
 
 BitBuffer::BitBuffer(size_t initialBufferSizeInBit) 
-	: bufferSize(initialBufferSizeInBit), data(nullptr), dataBitOffset(0)
-{
-	size_t sizeInByte = bufferSizeInByte();
-	data = std::unique_ptr<byte[]>(new byte[sizeInByte]);
-	memset(data.get(), 0, sizeInByte);
-}
+	: bufferSizeInByte((initialBufferSizeInBit + 7)/8), data(bufferSizeInByte, 0), dataBitOffset(0)
+{}
 
-size_t BitBuffer::getSize() const
+inline size_t BitBuffer::getSize() const
 {
 	return dataBitOffset;
 }
 
-size_t BitBuffer::getCapacity() const
+inline size_t BitBuffer::getCapacity() const
 {
-	return bufferSize;
+	return bufferSizeInByte * 8;
 }
 
 void BitBuffer::pushBit(bool val)
 {
+	ensureFreeSpace(1);
 	if (val)
 	{
-		size_t dataByteOffset = dataBitOffset / 8;
-		byte curByteBitOffset = dataBitOffset % 8;
-		data[dataByteOffset] |= 1 << 7 - curByteBitOffset;
+		auto indices = lldiv(dataBitOffset, 8);
+		data[indices.quot] |= 1 << 7 - indices.rem;
 	}
 	dataBitOffset++;
 }
 
 void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 {
-	if (dataBitOffset + numOfBits > bufferSize)
-		growBuffer();
+	ensureFreeSpace(numOfBits);
 
 	byte* srcBuffer = static_cast<byte*>(srcBufferVoid);
-	byte freeBits = 8 - dataBitOffset % 8; // number of bits to fill data up to byte boundary
-	byte byteOffset = dataBitOffset / 8;
+	auto indices = lldiv(dataBitOffset, 8);
+	byte freeBits = 8 - indices.rem; // number of bits to fill data up to byte boundary
+	byte byteOffset = indices.quot;
 
 	// needs improvement
 	if (offset > 0) {
@@ -69,8 +65,9 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 			data[byteOffset] |= (srcBuffer[0] & (0xff >> offset)) << offset >> (8 - freeBits);
 			numOfBits -= bitsToWrite;
 			dataBitOffset += bitsToWrite;
-			freeBits = 8 - dataBitOffset % 8;
-			byteOffset = dataBitOffset / 8;
+			indices = lldiv(dataBitOffset, 8);
+			freeBits = 8 - indices.rem;
+			byteOffset = indices.quot;
 			data[byteOffset] &= 0xff << freeBits;
 		}
 		srcBuffer++;
@@ -129,18 +126,13 @@ void BitBuffer::getBits(size_t index, byte* out, size_t numOfBits) const
 	out[destOffset - 1] &= 0xff << (bitsProcessed - numOfBits);
 }
 
-void BitBuffer::growBuffer()
+inline void BitBuffer::ensureFreeSpace(size_t numOfBits)
 {
-	// fixme: reallocate does not copy the values
-	int newBufferSize = bufferSizeInByte() * 2;
-	void* newPtr = realloc(data.get(), newBufferSize);
-	data.reset(static_cast<byte*>(newPtr));
-	bufferSize = newBufferSize * 8;
-}
-
-size_t BitBuffer::bufferSizeInByte()
-{
-	return (bufferSize + 7) / 8;
+	if (numOfBits + dataBitOffset > getCapacity())
+	{
+		bufferSizeInByte = (bufferSizeInByte + 1) * 2;
+		data.resize(bufferSizeInByte, 0);
+	}
 }
 
 byte BitBuffer::joinTwoBytes(byte leftByte, byte rightByte, size_t leftCount)
@@ -161,7 +153,7 @@ void BitBuffer::writeToFile(std::string filePath)
 	std::ofstream fileStream;
 
 	fileStream.open(filePath, std::ios::out | std::ios::trunc | std::ios::binary);
-	fileStream.write(reinterpret_cast<char*>(data.get()), (dataBitOffset + 7) / 8);
+	fileStream.write(reinterpret_cast<char*>(data.data()), (dataBitOffset + 7) / 8);
 	fileStream.flush();
 	fileStream.close();
 }
