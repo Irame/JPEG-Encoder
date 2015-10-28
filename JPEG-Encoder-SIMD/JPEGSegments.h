@@ -21,7 +21,7 @@ private:
 	unsigned short value;
 };
 
-class JPEGSegments
+namespace JPEGSegments
 {
 	enum SegmentType {
 		StartOfImageMarker = 0xd8, // SOI
@@ -45,7 +45,7 @@ class JPEGSegments
 		HeaderSegmentMarker(SegmentType headerType) : headerType(headerType) {}
 	};
 
-public:
+	// Start of JPEG segments definition
 
 	struct StartOfImage : HeaderBase {
 		const HeaderSegmentMarker marker;
