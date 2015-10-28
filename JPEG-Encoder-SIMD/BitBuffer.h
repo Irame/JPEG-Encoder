@@ -29,4 +29,19 @@ public:
 	void writeToFile(std::string file);
 
 	friend std::ostream& operator<<(std::ostream& strm, const BitBuffer& bitBuffer);
+
+
+	// Generic write method
+	template<typename T>
+	void push(T& value, size_t offset = 0)
+	{
+		pushBits(sizeof(T) * 8, &value, offset);
+	}
+
+	// specialized version for bool
+	template<>
+	void push(bool& value, size_t offset)
+	{
+		pushBit(value);
+	}
 };

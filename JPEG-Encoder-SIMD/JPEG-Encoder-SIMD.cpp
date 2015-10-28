@@ -64,10 +64,10 @@ void bitBufferTest(string filePath)
 
 	JPEGSegments::EndOfImage endOfImage;
 
-	bitBuffer.pushBits(sizeof(JPEGSegments::StartOfImage) * 8, &startOfImage);
-	bitBuffer.pushBits(sizeof(JPEGSegments::APP0) * 8, &app0);
-	bitBuffer.pushBits(sizeof(JPEGSegments::StartOfFrame0) * 8, &startOfFrame0);
-	bitBuffer.pushBits(sizeof(JPEGSegments::EndOfImage) * 8, &endOfImage);
+	bitBuffer.push(startOfImage);
+	bitBuffer.push(app0);
+	bitBuffer.push(startOfFrame0);
+	bitBuffer.push(endOfImage);
 
 	//for (int i = 0; i < 10000000; i++)
 	//{
