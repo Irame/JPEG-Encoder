@@ -23,14 +23,14 @@ private:
 
 namespace JPEGSegments
 {
-	enum SegmentType {
-		StartOfImageMarker = 0xd8, // SOI
-		EndOfImageMarker = 0xd9, // EOI
-		APP0Marker = 0xe0,
-		StartOfFrame0Marker = 0xc0, // SOF0
-		DefineHuffmannTableMarker = 0xc4, // DHT
-		DefineQuantizationTableMarker = 0xdb, // DQT
-		StartOfScanMarker = 0xda, // SOS
+	enum class SegmentType : byte {
+		StartOfImage = 0xD8, // SOI
+		EndOfImage = 0xD9, // EOI
+		APP0 = 0xE0,
+		StartOfFrame0 = 0xC0, // SOF0
+		DefineHuffmannTable = 0xC4, // DHT
+		DefineQuantizationTable = 0xDB, // DQT
+		StartOfScan = 0xDA, // SOS
 	};
 
 	struct HeaderBase {
@@ -40,7 +40,7 @@ namespace JPEGSegments
 
 	struct HeaderSegmentMarker {
 		const byte headerBegin = 0xff;
-		const byte headerType;
+		const SegmentType headerType;
 
 		HeaderSegmentMarker(SegmentType headerType) : headerType(headerType) {}
 	};
@@ -50,13 +50,13 @@ namespace JPEGSegments
 	struct StartOfImage : HeaderBase {
 		const HeaderSegmentMarker marker;
 
-		StartOfImage() : marker(SegmentType::StartOfImageMarker) {}
+		StartOfImage() : marker(SegmentType::StartOfImage) {}
 	};
 
 	struct EndOfImage : HeaderBase {
 		const HeaderSegmentMarker marker;
 
-		EndOfImage() : marker(SegmentType::EndOfImageMarker) {}
+		EndOfImage() : marker(SegmentType::EndOfImage) {}
 	};
 
 	struct APP0 : HeaderBase {
@@ -71,7 +71,7 @@ namespace JPEGSegments
 		const byte xResolutionPreview = 0x00;
 		const byte yResolutionPreview = 0x00;
 
-		APP0() : marker(SegmentType::APP0Marker) {}
+		APP0() : marker(SegmentType::APP0) {}
 	};
 
 	struct StartOfFrame0 : HeaderBase { // SOF0
@@ -85,7 +85,7 @@ namespace JPEGSegments
 		byte Cb[3]{ 0x02 };
 		byte Cr[3]{ 0x03 };
 
-		StartOfFrame0() : marker(SegmentType::StartOfFrame0Marker) {}
+		StartOfFrame0() : marker(SegmentType::StartOfFrame0) {}
 	};
 
 	struct DefineHuffmannTable : HeaderBase {
@@ -95,7 +95,7 @@ namespace JPEGSegments
 		byte symbolCount[16];
 		byte* table;
 
-		DefineHuffmannTable() : marker(SegmentType::DefineHuffmannTableMarker) {}
+		DefineHuffmannTable() : marker(SegmentType::DefineHuffmannTable) {}
 
 		// Eine DHT kann mehrere HTs enthalten, jeweils mit eigenem Informationsbyte
 		// Maximale Tiefe des Huffman - Baums ist auf 16 beschränkt
@@ -108,7 +108,7 @@ namespace JPEGSegments
 		byte info; // 0-3 bits number of QT (0-3), 4-7 accuracy of QT (0 = 8 bit, otherwise 16 bit)
 		byte* coefficients; // count = 64* (precision+1), zigzag sorted
 
-		DefineQuantizationTable() : marker(SegmentType::DefineQuantizationTableMarker) {}
+		DefineQuantizationTable() : marker(SegmentType::DefineQuantizationTable) {}
 
 		// Ein DQT-Segment kann mehrere QT enthalten
 		// Verwenden Sie nur 8 Bit QTs
@@ -125,7 +125,7 @@ namespace JPEGSegments
 		byte Cr[2]{ 0x03 };
 		const byte irrelevant[3]{ 0x00, 0x3f, 0x00 };
 
-		StartOfScan() : marker(SegmentType::StartOfScanMarker) {}
+		StartOfScan() : marker(SegmentType::StartOfScan) {}
 
 		// Kommt innerhalb eines Segmentes irgendwann das Byte 0xff vor, muss die Bytefolge 0xff 0x00 ausgegeben werden
 		// Dadurch ist ein Decoder später in der Lage, beschädigte Dateien zu dekodieren und sich auf Segmentgrenzen zu synchronisieren
