@@ -8,7 +8,8 @@ class BitBuffer
 	size_t bufferSizeInByte;
 	std::vector<byte> data;
 
-	size_t dataBitOffset;		// position in 'data' in bits
+	// position in 'data' in bits
+	size_t dataBitOffset;
 
 	void ensureFreeSpace(size_t numOfBits);
 	
@@ -17,17 +18,25 @@ class BitBuffer
 public:
 	BitBuffer(size_t initialBufferSize = 0);
 	
-	size_t getSize() const;
-	size_t getCapacity() const;
+	// Get the size in bits (number of set bits)
+	size_t getSize() const { return dataBitOffset; };
+	// Get the maximum number of bits that can be stored at the moment
+	size_t getCapacity() const { return bufferSizeInByte * 8; };
 
+	// Adds the given bit at the end of the BitBuffer
 	void pushBit(bool val);
+	// Adds a certen number of bits from a specific location with an offset
 	void pushBits(size_t numOfBits, void* buffer, size_t offset = 0);
 
+	// Returns the bit at the given index
 	bool getBit(size_t index) const;
+	// Writes the requested bits into an out byte array
 	void getBits(size_t index, byte* out, size_t numOfBits) const;
 	
+	// Writes all bits from the buffer into a file (in binary)
 	void writeToFile(std::string file);
 
+	// Converts the Buffer into a string of '0' and '1' in blocks seperated by ' ' or '  '
 	friend std::ostream& operator<<(std::ostream& strm, const BitBuffer& bitBuffer);
 
 

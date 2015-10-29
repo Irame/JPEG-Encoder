@@ -7,21 +7,12 @@ BitBuffer::BitBuffer(size_t initialBufferSizeInBit)
 	: bufferSizeInByte((initialBufferSizeInBit + 7)/8), data(bufferSizeInByte, 0), dataBitOffset(0)
 {}
 
-inline size_t BitBuffer::getSize() const
-{
-	return dataBitOffset;
-}
-
-inline size_t BitBuffer::getCapacity() const
-{
-	return bufferSizeInByte * 8;
-}
-
 void BitBuffer::pushBit(bool val)
 {
 	ensureFreeSpace(1);
 	if (val)
 	{
+		// quot is the byte offset and rem in the bit offset inside the byte
 		auto indices = lldiv(dataBitOffset, 8);
 		data[indices.quot] |= 1 << 7 - indices.rem;
 	}
@@ -33,20 +24,22 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 	ensureFreeSpace(numOfBits);
 
 	byte* srcBuffer = static_cast<byte*>(srcBufferVoid);
-	auto indices = lldiv(dataBitOffset, 8);
-	byte freeBits = 8 - indices.rem; // number of bits to fill data up to byte boundary
+	auto indices = lldiv(dataBitOffset, 8);					// quot is the byte offset and rem in the bit offset inside the byte
+	byte freeBits = 8 - indices.rem;						// number of bits to fill data up to byte boundary
 	byte byteOffset = indices.quot;
 
 	// needs improvement
 	if (offset > 0) {
+		// skip whole bytes in offset
 		srcBuffer += offset / 8;
 		offset %= 8;
 
 		size_t bitsToSrcByteBoundary = 8 - offset;
-		size_t bitsToWrite = std::min(bitsToSrcByteBoundary, numOfBits);
+		size_t bitsToWrite = std::min(bitsToSrcByteBoundary, numOfBits);		// has range 1..8
 
 		if (freeBits < bitsToWrite)
 		{
+			// fill the current data byte
 			data[byteOffset++] |= (srcBuffer[0] & (0xff >> offset)) >> (8 - freeBits - offset);
 			numOfBits -= freeBits;
 			bitsToWrite -= freeBits;
@@ -54,6 +47,7 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 			freeBits = 8;
 			if (bitsToWrite > 0)
 			{
+				// write remaining bitsToWrite to the next data byte
 				data[byteOffset] |= srcBuffer[0] << 8 - bitsToWrite;
 				numOfBits -= bitsToWrite;
 				dataBitOffset += bitsToWrite;
@@ -62,6 +56,7 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 		}
 		else if (freeBits >= bitsToWrite)
 		{
+			// write all bitsToWrite to the current data byte
 			data[byteOffset] |= (srcBuffer[0] & (0xff >> offset)) << offset >> (8 - freeBits);
 			numOfBits -= bitsToWrite;
 			dataBitOffset += bitsToWrite;
@@ -91,12 +86,15 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 		size_t srcOffset = freeBits;
 		size_t srcByteOffset = 0;
 		byte leftCount = 8 - freeBits;
+		// go through the remaining number of bits byte by byte
 		while (srcOffset < numOfBits)
 		{
+			// fill data with joined whole bytes
 			data[byteOffset++] = joinTwoBytes(srcBuffer[srcByteOffset++], srcBuffer[srcByteOffset], leftCount);
 			dataBitOffset += 8;
 			srcOffset += 8;
 		}
+		// reset overlaped bits back to 0 and adjusting offset
 		data[byteOffset - 1] &= 0xff << (srcOffset - numOfBits);
 		dataBitOffset -= (srcOffset - numOfBits);
 	}
@@ -126,6 +124,7 @@ void BitBuffer::getBits(size_t index, byte* out, size_t numOfBits) const
 	out[destOffset - 1] &= 0xff << (bitsProcessed - numOfBits);
 }
 
+// ensures that there is enought space for numOfBits in the buffer 
 inline void BitBuffer::ensureFreeSpace(size_t numOfBits)
 {
 	if (numOfBits + dataBitOffset > getCapacity())
@@ -135,6 +134,7 @@ inline void BitBuffer::ensureFreeSpace(size_t numOfBits)
 	}
 }
 
+// joins leftCount bits from the right side of the leftByte and 8-leftCount bits from the left side of the rightByte to one byte 
 byte BitBuffer::joinTwoBytes(byte leftByte, byte rightByte, size_t leftCount)
 {
 	size_t rightCount = 8 - leftCount;
@@ -158,6 +158,7 @@ void BitBuffer::writeToFile(std::string filePath)
 	fileStream.close();
 }
 
+// converts to format "([01]{4} [01]{4}  )*"
 std::ostream& operator<<(std::ostream& strm, const BitBuffer& bitBuffer)
 {
 	size_t bytes = (bitBuffer.dataBitOffset + 7) / 8;
