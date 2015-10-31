@@ -92,7 +92,8 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 		while (srcOffset < numOfBits)
 		{
 			// fill data with joined whole bytes
-			data[byteOffset++] = joinTwoBytes(srcBuffer[srcByteOffset++], srcBuffer[srcByteOffset], leftCount);
+			data[byteOffset++] = joinTwoBytes(srcBuffer[srcByteOffset], srcBuffer[srcByteOffset + 1], leftCount);
+			srcByteOffset++;
 			dataBitOffset += 8;
 			srcOffset += 8;
 		}
@@ -120,7 +121,8 @@ void BitBuffer::getBits(size_t index, byte* out, size_t numOfBits) const
 	size_t byteIndex = index / 8;
 	while (numOfBits > bitsProcessed)
 	{
-		out[destOffset++] = joinTwoBytes(data[byteIndex++], data[byteIndex], leftCount);
+		out[destOffset++] = joinTwoBytes(data[byteIndex], data[byteIndex + 1], leftCount);
+		byteIndex++;
 		bitsProcessed += 8;
 	}
 	out[destOffset - 1] &= 0xff << (bitsProcessed - numOfBits);
@@ -141,6 +143,7 @@ inline void BitBuffer::ensureFreeSpace(size_t numOfBits)
 // joins leftCount bits from the right side of the leftByte and 8-leftCount bits from the left side of the rightByte to one byte 
 byte BitBuffer::joinTwoBytes(byte leftByte, byte rightByte, size_t leftCount)
 {
+	std::cout << "joinTwoBytes: " << std::hex << (int)leftByte << ", " << std::hex << (int)rightByte << ", " << leftCount << std::endl;
 	size_t rightCount = 8 - leftCount;
 
 	leftByte <<= rightCount;
