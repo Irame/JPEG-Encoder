@@ -3,9 +3,9 @@
 // fixing alignment issues by setting the byte alignment to 1
 #pragma pack(push, 1)
 
-struct BEushort
+struct BEushort // datatype that swaps byteorder to have the correct order for serialization
 {
-	BEushort() : value(0) {};
+	BEushort() : value(0) {}; // 
 
 	BEushort(unsigned short v)
 	{
@@ -145,4 +145,4 @@ namespace JPEGSegments
 	};
 };
 
-#pragma pack(pop)
+#pragma pack(pop) // use old pack value
