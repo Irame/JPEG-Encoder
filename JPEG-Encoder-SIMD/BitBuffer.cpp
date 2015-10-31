@@ -28,12 +28,15 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 	byte freeBits = 8 - indices.rem;						// number of bits to fill data up to byte boundary
 	byte byteOffset = indices.quot;
 
-	// needs improvement
-	if (offset > 0) {
+	if (offset >= 8)
+	{
 		// skip whole bytes in offset
 		srcBuffer += offset / 8;
 		offset %= 8;
+	}
 
+	// needs improvement
+	if (offset > 0) {
 		size_t bitsToSrcByteBoundary = 8 - offset;
 		size_t bitsToWrite = std::min(bitsToSrcByteBoundary, numOfBits);		// has range 1..8
 
