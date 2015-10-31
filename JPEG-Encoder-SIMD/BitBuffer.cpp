@@ -40,7 +40,7 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 		size_t bitsToSrcByteBoundary = 8 - offset;
 		size_t bitsToWrite = std::min(bitsToSrcByteBoundary, numOfBits);		// has range 1..8
 
-		if (freeBits < bitsToWrite)
+		if (freeBits < bitsToWrite) // not enough space in actual data byte
 		{
 			// fill the current data byte
 			data[byteOffset++] |= (srcBuffer[0] & (0xff >> offset)) >> (8 - freeBits - offset);
@@ -49,12 +49,12 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 			dataBitOffset += freeBits;
 			freeBits = 8;
 
-			// write remaining bitsToWrite to the next data byte
-			data[byteOffset] |= srcBuffer[0] << (8 - bitsToWrite);
-			numOfBits -= bitsToWrite;
-			dataBitOffset += bitsToWrite;
-			freeBits -= bitsToWrite;
-		}
+				// write remaining bitsToWrite to the next data byte
+				data[byteOffset] |= srcBuffer[0] << (8 - bitsToWrite);
+				numOfBits -= bitsToWrite;
+				dataBitOffset += bitsToWrite;
+				freeBits -= bitsToWrite;
+			}
 		else if (freeBits >= bitsToWrite)
 		{
 			// write all bitsToWrite to the current data byte
@@ -161,7 +161,7 @@ void BitBuffer::writeToFile(std::string filePath)
 	fileStream.close();
 }
 
-// converts to format "([01]{4} [01]{4}  )*"
+// converts to format "([01]{4} [01]{4}  )*" -> helpful for testing
 std::ostream& operator<<(std::ostream& strm, const BitBuffer& bitBuffer)
 {
 	size_t bytes = (bitBuffer.dataBitOffset + 7) / 8;

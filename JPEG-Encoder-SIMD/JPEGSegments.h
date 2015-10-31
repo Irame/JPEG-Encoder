@@ -6,7 +6,7 @@
 #include <algorithm>
 #include "BitBuffer.h"
 
-struct BEushort
+struct BEushort // datatype that swaps byteorder to have the correct order for serialization
 {
 	BEushort() : value(0) {};
 
@@ -169,4 +169,4 @@ namespace JPEGSegments
 	};
 };
 
-#pragma pack(pop)
+#pragma pack(pop) // use old pack value
