@@ -33,11 +33,6 @@ namespace JPEGSegments
 		StartOfScan = 0xDA, // SOS
 	};
 
-	struct HeaderBase {
-		void Serialize() {
-		}
-	};
-
 	struct HeaderSegmentMarker {
 		const byte headerBegin = 0xff;
 		const SegmentType headerType;
@@ -47,19 +42,19 @@ namespace JPEGSegments
 
 	// Start of JPEG segments definition
 
-	struct StartOfImage : HeaderBase {
+	struct StartOfImage {
 		const HeaderSegmentMarker marker;
 
 		StartOfImage() : marker(SegmentType::StartOfImage) {}
 	};
 
-	struct EndOfImage : HeaderBase {
+	struct EndOfImage {
 		const HeaderSegmentMarker marker;
 
 		EndOfImage() : marker(SegmentType::EndOfImage) {}
 	};
 
-	struct APP0 : HeaderBase {
+	struct APP0 {
 		const HeaderSegmentMarker marker;
 		const BEushort length = 0x10; // has to be >= 16
 		const byte jfif0[5]{ 0x4a, 0x46, 0x49, 0x46, 0x00 };
@@ -74,7 +69,7 @@ namespace JPEGSegments
 		APP0() : marker(SegmentType::APP0) {}
 	};
 
-	struct StartOfFrame0 : HeaderBase { // SOF0
+	struct StartOfFrame0 { // SOF0
 		const HeaderSegmentMarker marker;
 		const BEushort length = 0x11; // 8 + Anzahl Komponenten*3
 		const byte accuracy = 0x08;
@@ -88,7 +83,7 @@ namespace JPEGSegments
 		StartOfFrame0() : marker(SegmentType::StartOfFrame0) {}
 	};
 
-	struct DefineHuffmannTable : HeaderBase {
+	struct DefineHuffmannTable {
 		const HeaderSegmentMarker marker;
 		BEushort length;
 		byte htInformation; //0-3 bit number of ht, bit 4 (0 = DC, 1 = AC), 5-7 have to be 0
@@ -102,7 +97,7 @@ namespace JPEGSegments
 		// Ein Huffman - Code, der nur aus ‚1‘ Bits besteht ist nicht erlaubt
 	};
 
-	struct DefineQuantizationTable : HeaderBase {
+	struct DefineQuantizationTable {
 		const HeaderSegmentMarker marker;
 		BEushort length;
 		byte info; // 0-3 bits number of QT (0-3), 4-7 accuracy of QT (0 = 8 bit, otherwise 16 bit)
@@ -116,7 +111,7 @@ namespace JPEGSegments
 		// QT für Farbkanal Cb / Cr ist z.B.Nummer 1
 	};
 
-	struct StartOfScan : HeaderBase {
+	struct StartOfScan {
 		const HeaderSegmentMarker marker;
 		const BEushort length = 0x0c;
 		const byte components = 0x03;
@@ -130,6 +125,23 @@ namespace JPEGSegments
 		// Kommt innerhalb eines Segmentes irgendwann das Byte 0xff vor, muss die Bytefolge 0xff 0x00 ausgegeben werden
 		// Dadurch ist ein Decoder später in der Lage, beschädigte Dateien zu dekodieren und sich auf Segmentgrenzen zu synchronisieren
 		// => Es gibt keinen Segmentmarker 0xff 0x00
+	};
+
+	struct SerializeHeaderSegments {
+		template <typename T>
+		static void Serialize(T &headerSegment, BitBuffer &buffer) {
+			buffer.push(headerSegment);
+		}
+		template <>
+		static void Serialize(DefineHuffmannTable &headerSegment, BitBuffer &buffer) {
+			buffer.pushBits(21 * 8, &headerSegment);
+			buffer.pushBits((headerSegment.length - 19) * 8, headerSegment.table); //21-2 byte because the marker doesn't count
+		}
+		template <>
+		static void Serialize(DefineQuantizationTable &headerSegment, BitBuffer &buffer) {
+			buffer.pushBits(5 * 8, &headerSegment);
+			buffer.pushBits((headerSegment.length - 3) * 8, headerSegment.coefficients);
+		}
 	};
 };
 

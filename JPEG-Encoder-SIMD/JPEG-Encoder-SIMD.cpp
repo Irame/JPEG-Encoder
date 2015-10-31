@@ -15,9 +15,9 @@ void bitBufferTest(string filePath)
 {
 	BitBuffer bitBuffer;
 	
-	byte test[2]{ 0xff, 0x55 };
+	//byte test[2]{ 0xff, 0x55 };
 
-	byte testOut[1];
+	//byte testOut[1];
 
 	//bitBuffer.pushBit(false);
 	//bitBuffer.pushBit(false);
@@ -64,10 +64,10 @@ void bitBufferTest(string filePath)
 
 	JPEGSegments::EndOfImage endOfImage;
 
-	bitBuffer.push(startOfImage);
-	bitBuffer.push(app0);
-	bitBuffer.push(startOfFrame0);
-	bitBuffer.push(endOfImage);
+	JPEGSegments::SerializeHeaderSegments::Serialize(startOfImage, bitBuffer);
+	JPEGSegments::SerializeHeaderSegments::Serialize(app0, bitBuffer);
+	JPEGSegments::SerializeHeaderSegments::Serialize(startOfFrame0, bitBuffer);
+	JPEGSegments::SerializeHeaderSegments::Serialize(endOfImage, bitBuffer);
 
 	//for (int i = 0; i < 10000000; i++)
 	//{
