@@ -82,7 +82,7 @@ void bitBufferTest(string filePath)
 int main(int argc, char* argv[])
 {
 	//benchmark("bitBufferTest", 1, [&]() {
-	//	bitBufferTest(argv[1]);
+	//	bitBufferTest(argv[2]);
 	//});
 	//return  1;
 
