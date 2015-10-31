@@ -13,9 +13,9 @@ void BitBuffer::pushBit(bool val)
 	ensureFreeSpace(1);
 	if (val)
 	{
-		// quot is the byte offset and rem in the bit offset inside the byte
-		auto indices = lldiv(dataBitOffset, 8);
-		data[indices.quot] |= 1 << 7 - indices.rem;
+		size_t dataByteOffset = dataBitOffset / 8;
+		byte curByteBitOffset = dataBitOffset % 8;
+		data[dataByteOffset] |= 1 << 7 - curByteBitOffset;
 	}
 	dataBitOffset++;
 }
@@ -25,9 +25,8 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 	ensureFreeSpace(numOfBits);
 
 	byte* srcBuffer = static_cast<byte*>(srcBufferVoid);
-	auto indices = lldiv(dataBitOffset, 8);					// quot is the byte offset and rem in the bit offset inside the byte
-	byte freeBits = 8 - indices.rem;						// number of bits to fill data up to byte boundary
-	byte byteOffset = indices.quot;
+	byte freeBits = 8 - dataBitOffset % 8;						// number of bits to fill data up to byte boundary
+	byte byteOffset = dataBitOffset / 8;
 
 	if (offset >= 8)
 	{
@@ -64,9 +63,8 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 			data[byteOffset] |= (srcBuffer[0] & (0xff >> offset)) << offset >> (8 - freeBits);
 			numOfBits -= bitsToWrite;
 			dataBitOffset += bitsToWrite;
-			indices = lldiv(dataBitOffset, 8);
-			freeBits = 8 - indices.rem;
-			byteOffset = indices.quot;
+			freeBits = 8 - dataBitOffset % 8;
+			byteOffset = dataBitOffset / 8;
 			data[byteOffset] &= 0xff << freeBits;
 		}
 		srcBuffer++;
@@ -106,20 +104,20 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 
 bool BitBuffer::getBit(size_t index) const
 {
-	auto indices = lldiv(index, 8);
-	return data[indices.quot] & (1 << (7 - indices.rem));
+	size_t dataByteOffset = index / 8;
+	byte curByteBitOffset = index % 8;
+	return data[dataByteOffset] & (1 << (7 - curByteBitOffset));
 }
 
 void BitBuffer::getBits(size_t index, byte* out, size_t numOfBits) const
 {
 	if (numOfBits == 0) return;
 
-	auto indices = lldiv(index, 8);
-	byte leftCount = 8 - indices.rem;
+	byte leftCount = 8 - index % 8;
 
 	size_t bitsProcessed = 0;
 	size_t destOffset = 0; 
-	size_t byteIndex = indices.quot;
+	size_t byteIndex = index / 8;
 	while (numOfBits > bitsProcessed)
 	{
 		out[destOffset++] = joinTwoBytes(data[byteIndex++], data[byteIndex], leftCount);
@@ -136,8 +134,8 @@ inline void BitBuffer::ensureFreeSpace(size_t numOfBits)
 	{
 		// ctor ensures that bufferSizeInByte > 0
 		bufferSizeInByte *= 2;
+		data.resize(bufferSizeInByte, 0);
 	}
-	data.resize(bufferSizeInByte, 0);
 }
 
 // joins leftCount bits from the right side of the leftByte and 8-leftCount bits from the left side of the rightByte to one byte 
