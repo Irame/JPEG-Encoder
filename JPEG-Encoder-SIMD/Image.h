@@ -81,14 +81,14 @@ class Image
 	const Dimension2D stepSize;
 	const Dimension2D simulatedSize;
 
-	int blocksPerChannel[3];
+	size_t blocksPerChannel[3];
 	Dimension2D channelSizes[3];
 
 	const SamplingScheme samplingScheme;
 
 	void setRawPixelDataDirect(float* rgbaData);
 
-	size_t getPixelPos(ColorChannelName channelIdx, uint x, uint y) const;
+	size_t getPixelPos(ColorChannelName channelIdx, size_t x, size_t y) const;
 
 	void reduceWidthResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
 	void reduceHeightResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
@@ -104,8 +104,8 @@ public:
 	std::vector<float> getRawPixelDataSimulated();
 	std::vector<float> getRawPixelData();
 
-	void setPixel(uint x, uint y, const PixelData32& color);
-	void getPixel(PixelData32& ref, uint x, uint y) const;
+	void setPixel(size_t x, size_t y, const PixelData32& color);
+	void getPixel(PixelData32& ref, size_t x, size_t y) const;
 
 	void convertToYCbCr();
 	void convertToRGB();

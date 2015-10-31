@@ -64,9 +64,12 @@ void bitBufferTest(string filePath)
 
 	JPEGSegments::EndOfImage endOfImage;
 
-	JPEGSegments::SerializeHeaderSegments::Serialize(startOfImage, bitBuffer);
+	JPEGSegments::SerializeHeaderSegments::Serialize(startOfImage, bitBuffer); 
+	cout << bitBuffer << endl;
 	JPEGSegments::SerializeHeaderSegments::Serialize(app0, bitBuffer);
+	cout << bitBuffer << endl;
 	JPEGSegments::SerializeHeaderSegments::Serialize(startOfFrame0, bitBuffer);
+	cout << bitBuffer << endl;
 	JPEGSegments::SerializeHeaderSegments::Serialize(endOfImage, bitBuffer);
 
 	//for (int i = 0; i < 10000000; i++)
@@ -81,10 +84,10 @@ void bitBufferTest(string filePath)
 
 int main(int argc, char* argv[])
 {
-	//benchmark("bitBufferTest", 1, [&]() {
-	//	bitBufferTest(argv[1]);
-	//});
-	//return  1;
+	benchmark("bitBufferTest", 1, [&]() {
+		bitBufferTest(argv[1]);
+	});
+	return  1;
 
 	if (argc < 3) {
 		std::cerr << "Usage: " << argv[0] << " <Source File> <Destination File>" << std::endl;

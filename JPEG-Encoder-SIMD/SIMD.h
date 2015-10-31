@@ -30,7 +30,7 @@ static void transposeFloatSSE(float *pSrc, float *pDst, unsigned int imageSize)
 
 /// Transforms a Pixel stream (RGBA RGBA RGBA ...) 
 /// into blocks of 8 pixels (RRRRRRRR GGGGGGGG ...)
-static void transposeFloatAVX(float *pSrc, float *pDstR, float *pDstG, float *pDstB, unsigned int imageSize)
+static void transposeFloatAVX(float *pSrc, float *pDstR, float *pDstG, float *pDstB, size_t imageSize)
 {
 	size_t size = imageSize * 4; // per Pixel: RGBA
 	size_t i = 0;
@@ -69,7 +69,7 @@ static void transposeFloatAVX(float *pSrc, float *pDstR, float *pDstG, float *pD
 
 /// Transforms blocks of 8 pixels (RRRRRRRR GGGGGGGG ...)
 /// into a Pixel stream (RGBA RGBA RGBA ...) 
-static void transposeFloatAVX_reverse(float *pSrcR, float *pSrcG, float *pSrcB, float *pDst, unsigned int imageSize)
+static void transposeFloatAVX_reverse(float *pSrcR, float *pSrcG, float *pSrcB, float *pDst, size_t imageSize)
 {
 	static const __m256 alpha { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
 
@@ -236,7 +236,7 @@ static void applySepiaFilterAVXImpl(float* refR, float* refG, float* refB)
 	}
 }
 
-static void multiplyAVX(float* ref, float val, int dataSize)
+static void multiplyAVX(float* ref, float val, size_t dataSize)
 {
 	__m128 supportArray = { val, val, val, val };
 

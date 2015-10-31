@@ -15,7 +15,7 @@ void BitBuffer::pushBit(bool val)
 	{
 		size_t dataByteOffset = dataBitOffset / 8;
 		byte curByteBitOffset = dataBitOffset % 8;
-		data[dataByteOffset] |= 1 << 7 - curByteBitOffset;
+		data[dataByteOffset] |= 1 << (7 - curByteBitOffset);
 	}
 	dataBitOffset++;
 }
@@ -25,8 +25,8 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 	ensureFreeSpace(numOfBits);
 
 	byte* srcBuffer = static_cast<byte*>(srcBufferVoid);
-	byte freeBits = 8 - dataBitOffset % 8;						// number of bits to fill data up to byte boundary
-	byte byteOffset = dataBitOffset / 8;
+	size_t freeBits = 8 - dataBitOffset % 8;						// number of bits to fill data up to byte boundary
+	size_t byteOffset = dataBitOffset / 8;
 
 	if (offset >= 8)
 	{
@@ -51,7 +51,7 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 			if (bitsToWrite > 0)
 			{
 				// write remaining bitsToWrite to the next data byte
-				data[byteOffset] |= srcBuffer[0] << 8 - bitsToWrite;
+				data[byteOffset] |= srcBuffer[0] << (8 - bitsToWrite);
 				numOfBits -= bitsToWrite;
 				dataBitOffset += bitsToWrite;
 				freeBits -= bitsToWrite;
@@ -87,7 +87,7 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 
 		size_t srcOffset = freeBits;
 		size_t srcByteOffset = 0;
-		byte leftCount = 8 - freeBits;
+		size_t leftCount = 8 - freeBits;
 		// go through the remaining number of bits byte by byte
 		while (srcOffset < numOfBits)
 		{
@@ -106,7 +106,7 @@ bool BitBuffer::getBit(size_t index) const
 {
 	size_t dataByteOffset = index / 8;
 	byte curByteBitOffset = index % 8;
-	return data[dataByteOffset] & (1 << (7 - curByteBitOffset));
+	return 0 != (data[dataByteOffset] & (1 << (7 - curByteBitOffset)));
 }
 
 void BitBuffer::getBits(size_t index, byte* out, size_t numOfBits) const

@@ -26,16 +26,16 @@ const Dimension2D& Image::getSimulatedSize() const
 
 void Image::setRawPixelDataDirect(float* rgbaData)
 {
-	int pixelCount = imageSize.width * imageSize.height;
+	size_t pixelCount = imageSize.width * imageSize.height;
 	transposeFloatAVX(rgbaData, channels->red(), channels->green(), channels->blue(), pixelCount);
 }
 
 void Image::setRawPixelData(float* rgbaData)
 {
 	// frequently used values
-	static const int FLOAT_SIZE = sizeof(float); // 4
-	static const int FLOATS_PER_PIXEL = sizeof(PixelData32) / FLOAT_SIZE; // 4
-	static const int PIXEL_PER_BLOCK = sizeof(ColorBlock) / FLOAT_SIZE; // 8
+	static const size_t FLOAT_SIZE = sizeof(float); // 4
+	static const size_t FLOATS_PER_PIXEL = sizeof(PixelData32) / FLOAT_SIZE; // 4
+	static const size_t PIXEL_PER_BLOCK = sizeof(ColorBlock) / FLOAT_SIZE; // 8
 
 	// if the step is 1 we dont have to do any extra stuff
 	if (stepSize.width == 1 && stepSize.height == 1) {
@@ -47,21 +47,21 @@ void Image::setRawPixelData(float* rgbaData)
 	float* buffer = new float[(2 * PIXEL_PER_BLOCK + (simulatedSize.width - imageSize.width)) * FLOATS_PER_PIXEL];
 
 	// offsets to keep track of the position in buffers
-	int rgbaDataOffsetFloat = 0;		// offset in 'rgbaData'
-	int dataPixelOffset = 0;			// offset in 'data'
-	int lineOffsetPixel = 0;			// offset in the current line
+	size_t rgbaDataOffsetFloat = 0;		// offset in 'rgbaData'
+	size_t dataPixelOffset = 0;			// offset in 'data'
+	size_t lineOffsetPixel = 0;			// offset in the current line
 
 	// size of the data which should be accessable due to the step size
-	int simulatedDataSize = simulatedSize.width * simulatedSize.height;
+	size_t simulatedDataSize = simulatedSize.width * simulatedSize.height;
 	// the size of the real data we have
-	int dataSize = imageSize.width * imageSize.height * FLOATS_PER_PIXEL;
+	size_t dataSize = imageSize.width * imageSize.height * FLOATS_PER_PIXEL;
 
 	while (dataPixelOffset < simulatedDataSize)
 	{
 		// number of pixels which will be processed directly from the 'rgbaData' array
-		int pixelsToProcess = imageSize.width - lineOffsetPixel;
+		size_t pixelsToProcess = imageSize.width - lineOffsetPixel;
 		// pixels that are in the last block (or 0)
-		int lineRem = pixelsToProcess % PIXEL_PER_BLOCK;
+		size_t lineRem = pixelsToProcess % PIXEL_PER_BLOCK;
 
 		// adjust pixels to process so that they align with the block size (8)
 		pixelsToProcess -= lineRem;
@@ -72,16 +72,16 @@ void Image::setRawPixelData(float* rgbaData)
 		dataPixelOffset += pixelsToProcess;
 
 		// pixels which are needed to fill one line to a total width of 'simulatedWidth'
-		int pixelsToFillLine = lineRem + simulatedSize.width - imageSize.width;
+		size_t pixelsToFillLine = lineRem + simulatedSize.width - imageSize.width;
 
-		int pixelsToFillLineRem = pixelsToFillLine % PIXEL_PER_BLOCK;
+		size_t pixelsToFillLineRem = pixelsToFillLine % PIXEL_PER_BLOCK;
 		// total number of pixels that be written to 'buffer'
-		int pixelsForBuffer = (pixelsToFillLineRem == 0 ? pixelsToFillLine : pixelsToFillLine + PIXEL_PER_BLOCK - pixelsToFillLineRem);
+		size_t pixelsForBuffer = (pixelsToFillLineRem == 0 ? pixelsToFillLine : pixelsToFillLine + PIXEL_PER_BLOCK - pixelsToFillLineRem);
 		// update offset
 		lineOffsetPixel = (pixelsForBuffer - pixelsToFillLine) % simulatedSize.width;
 
 		// total number of float values that be written to 'buffer'
-		int floatsForBuffer = pixelsForBuffer * FLOATS_PER_PIXEL;
+		size_t floatsForBuffer = pixelsForBuffer * FLOATS_PER_PIXEL;
 		for (int bufferFloatOffset = 0; bufferFloatOffset < floatsForBuffer; bufferFloatOffset += FLOATS_PER_PIXEL)
 		{
 			// if we are on the right side of the picture and outside the real data 
@@ -157,20 +157,20 @@ std::vector<float> Image::getRawPixelData()
 	}
 }
 
-inline size_t Image::getPixelPos(ColorChannelName channelIdx, uint x, uint y) const
+inline size_t Image::getPixelPos(ColorChannelName channelIdx, size_t x, size_t y) const
 {
 	return channelSizes[channelIdx].width * (y * channelSizes[channelIdx].height / simulatedSize.height)
 		+ x * channelSizes[channelIdx].width / simulatedSize.width;
 }
 
-void Image::setPixel(uint x, uint y, const PixelData32& color)
+void Image::setPixel(size_t x, size_t y, const PixelData32& color)
 {
 	*channels->red(getPixelPos(R, x, y)) = color.R;
 	*channels->green(getPixelPos(G, x, y)) = color.G;
 	*channels->blue(getPixelPos(B, x, y)) = color.B;
 }
 
-void Image::getPixel(PixelData32& ref, uint x, uint y) const
+void Image::getPixel(PixelData32& ref, size_t x, size_t y) const
 {
 	ref.R = *channels->red(getPixelPos(R, x, y));
 	ref.G = *channels->green(getPixelPos(G, x, y));

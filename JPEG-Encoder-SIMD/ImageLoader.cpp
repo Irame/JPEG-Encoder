@@ -195,7 +195,7 @@ void ImageLoader::SavePNG(std::string path, ImageCCPtr image)
 		imgData[i] = clamp(0, static_cast<int>(imageData[i] * 255 + 0.5f), 255);
 	}
 
-	unsigned error = lodepng::encode(path, imgData, simulatedSize.width, simulatedSize.height);
+	unsigned error = lodepng::encode(path, imgData, (unsigned int)simulatedSize.width, (unsigned int)simulatedSize.height);
 	if (error) {
 		std::cout << "Failed to encode png " << path << " with error: " << error << ": " << lodepng_error_text(error) << std::endl;
 	}
