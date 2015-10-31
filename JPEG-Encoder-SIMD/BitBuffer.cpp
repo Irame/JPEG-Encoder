@@ -143,7 +143,6 @@ inline void BitBuffer::ensureFreeSpace(size_t numOfBits)
 // joins leftCount bits from the right side of the leftByte and 8-leftCount bits from the left side of the rightByte to one byte 
 byte BitBuffer::joinTwoBytes(byte leftByte, byte rightByte, size_t leftCount)
 {
-	std::cout << "joinTwoBytes: " << std::hex << (int)leftByte << ", " << std::hex << (int)rightByte << ", " << leftCount << std::endl;
 	size_t rightCount = 8 - leftCount;
 
 	leftByte <<= rightCount;
