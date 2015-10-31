@@ -4,7 +4,8 @@
 #include <fstream>
 
 BitBuffer::BitBuffer(size_t initialBufferSizeInBit) 
-	: bufferSizeInByte((initialBufferSizeInBit + 7)/8), data(bufferSizeInByte, 0), dataBitOffset(0)
+	: bufferSizeInByte(initialBufferSizeInBit == 0 ? 1 : (initialBufferSizeInBit + 7)/8), 
+	data(bufferSizeInByte, 0), dataBitOffset(0)
 {}
 
 void BitBuffer::pushBit(bool val)
@@ -130,11 +131,13 @@ void BitBuffer::getBits(size_t index, byte* out, size_t numOfBits) const
 // ensures that there is enought space for numOfBits in the buffer 
 inline void BitBuffer::ensureFreeSpace(size_t numOfBits)
 {
-	if (numOfBits + dataBitOffset > getCapacity())
+	size_t neededSpace = (numOfBits + dataBitOffset + 7)/8;
+	while (neededSpace > bufferSizeInByte)
 	{
-		bufferSizeInByte = bufferSizeInByte + ceil((float)numOfBits / 8);
-		data.resize(bufferSizeInByte, 0);
+		// ctor ensures that bufferSizeInByte > 0
+		bufferSizeInByte *= 2;
 	}
+	data.resize(bufferSizeInByte, 0);
 }
 
 // joins leftCount bits from the right side of the leftByte and 8-leftCount bits from the left side of the rightByte to one byte 
