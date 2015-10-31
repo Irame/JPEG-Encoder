@@ -18,6 +18,7 @@ public:
 
 	static void SavePPM(std::string path, ImageCCPtr image);
 	static void SavePNG(std::string path, ImageCCPtr image);
+	static void SaveJPG(std::string path, ImageCCPtr image);
 
 private:
 	static inline int clamp(int lower, int x, int upper);

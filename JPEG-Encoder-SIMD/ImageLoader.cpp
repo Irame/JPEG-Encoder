@@ -10,6 +10,8 @@
 #include "SIMD.h"
 #include "lodepng.h"
 #include "Benchmark.h"
+#include "JPEGSegments.h"
+#include "BitBuffer.h"
 
 using namespace std;
 
@@ -43,6 +45,8 @@ void ImageLoader::Save(const std::string& filename, ImageCCPtr image)
 		return SavePNG(filename, image);
 	} else if (ext == "ppm") {
 		return SavePPM(filename, image);
+	} else if (ext == "jpg" || ext == "jpeg"){
+		return SaveJPG(filename, image);
 	} else {
 		std::cout << "Failed to save image. Unknown file extension " << ext << std::endl;
 	}
@@ -199,4 +203,22 @@ void ImageLoader::SavePNG(std::string path, ImageCCPtr image)
 	if (error) {
 		std::cout << "Failed to encode png " << path << " with error: " << error << ": " << lodepng_error_text(error) << std::endl;
 	}
+}
+void ImageLoader::SaveJPG(std::string path, ImageCCPtr image) {
+	const Dimension2D& imageSize = image->getImageSize();
+	const SamplingScheme& scheme = image->getSamplingScheme();
+
+	BitBuffer bitBuffer;
+
+	JPEGSegments::StartOfImage startOfImage;
+	JPEGSegments::APP0 app0;
+	JPEGSegments::StartOfFrame0 startOfFrame0(imageSize.width, imageSize.height, scheme);
+	JPEGSegments::EndOfImage endOfImage;
+
+	JPEGSegments::SerializeHeaderSegments::Serialize(startOfImage, bitBuffer);
+	JPEGSegments::SerializeHeaderSegments::Serialize(app0, bitBuffer);
+	JPEGSegments::SerializeHeaderSegments::Serialize(startOfFrame0, bitBuffer);
+	JPEGSegments::SerializeHeaderSegments::Serialize(endOfImage, bitBuffer);
+
+	bitBuffer.writeToFile(path);
 }

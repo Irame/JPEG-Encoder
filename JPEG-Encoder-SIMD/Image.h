@@ -113,4 +113,6 @@ public:
 	void multiplyColorChannelBy(ColorChannelName colorChannel, float val);
 
 	void reduceResolutionBySchema();
+
+	const SamplingScheme& getSamplingScheme() const  { return samplingScheme; }
 };

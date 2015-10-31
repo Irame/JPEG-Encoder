@@ -3,6 +3,9 @@
 // fixing alignment issues by setting the byte alignment to 1
 #pragma pack(push, 1)
 
+#include <algorithm>
+#include "BitBuffer.h"
+
 struct BEushort
 {
 	BEushort() : value(0) {};
@@ -81,6 +84,27 @@ namespace JPEGSegments
 		byte Cr[3]{ 0x03 };
 
 		StartOfFrame0() : marker(SegmentType::StartOfFrame0) {}
+		StartOfFrame0(BEushort xResolution, BEushort yResolution, const SamplingScheme scheme) : 
+			marker(SegmentType::StartOfFrame0), 
+			xResolution(xResolution), 
+			yResolution(yResolution) {
+			int maxFactor1 = max(scheme.yReductionOptions.heightFactor, scheme.yReductionOptions.widthFactor);
+			int maxFactor2 = max(scheme.cbReductionOptions.heightFactor, scheme.cbReductionOptions.widthFactor);
+			int maxFactor3 = max(scheme.crReductionOptions.heightFactor, scheme.crReductionOptions.widthFactor);
+			int maxFactor = max(max(maxFactor1, maxFactor2), maxFactor3);
+			byte yheight = (maxFactor / scheme.yReductionOptions.heightFactor) << 4;
+			byte ywidth = maxFactor / scheme.yReductionOptions.widthFactor;
+			byte cbheight = (maxFactor / scheme.cbReductionOptions.heightFactor) << 4;
+			byte cbwidth = maxFactor / scheme.cbReductionOptions.widthFactor;
+			byte crheight = (maxFactor / scheme.crReductionOptions.heightFactor) << 4;
+			byte crwidth = maxFactor / scheme.crReductionOptions.widthFactor;
+			Y[1] = yheight | ywidth;
+			Y[2] = 0;
+			Cb[1] = cbheight | cbwidth;
+			Cb[2] = 0;
+			Cr[1] = crheight | crwidth;
+			Cr[2] = 0;
+		}
 	};
 
 	struct DefineHuffmannTable {

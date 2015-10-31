@@ -52,15 +52,7 @@ void bitBufferTest(string filePath)
 
 	JPEGSegments::StartOfImage startOfImage;
 	JPEGSegments::APP0 app0;
-	JPEGSegments::StartOfFrame0 startOfFrame0;
-	startOfFrame0.yResolution = 900;
-	startOfFrame0.xResolution = 1600;
-	startOfFrame0.Y[1] = 0x22;
-	startOfFrame0.Y[2] = 0;
-	startOfFrame0.Cb[1] = 0x11;
-	startOfFrame0.Cb[2] = 0;
-	startOfFrame0.Cr[1] = 0x11;
-	startOfFrame0.Cr[2] = 0;
+	JPEGSegments::StartOfFrame0 startOfFrame0(1680,900, SamplingScheme::Scheme422);
 
 	JPEGSegments::EndOfImage endOfImage;
 
