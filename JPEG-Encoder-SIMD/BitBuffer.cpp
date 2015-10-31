@@ -48,27 +48,27 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 			bitsToWrite -= freeBits;
 			dataBitOffset += freeBits;
 			freeBits = 8;
-			if (bitsToWrite > 0)
-			{
-				// write remaining bitsToWrite to the next data byte
-				data[byteOffset] |= srcBuffer[0] << (8 - bitsToWrite);
-				numOfBits -= bitsToWrite;
-				dataBitOffset += bitsToWrite;
-				freeBits -= bitsToWrite;
-			}
+
+			// write remaining bitsToWrite to the next data byte
+			data[byteOffset] |= srcBuffer[0] << (8 - bitsToWrite);
+			numOfBits -= bitsToWrite;
+			dataBitOffset += bitsToWrite;
+			freeBits -= bitsToWrite;
 		}
 		else if (freeBits >= bitsToWrite)
 		{
 			// write all bitsToWrite to the current data byte
 			data[byteOffset] |= (srcBuffer[0] & (0xff >> offset)) << offset >> (8 - freeBits);
+			data[byteOffset] &= 0xff << (freeBits - bitsToWrite);
 			numOfBits -= bitsToWrite;
 			dataBitOffset += bitsToWrite;
 			freeBits = 8 - dataBitOffset % 8;
 			byteOffset = dataBitOffset / 8;
-			data[byteOffset] &= 0xff << freeBits;
 		}
 		srcBuffer++;
 	}
+
+	if (numOfBits == 0) return;
 
 	if (numOfBits <= freeBits)
 	{
@@ -81,9 +81,6 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 		// fill current data byte
 		data[byteOffset++] |= (srcBuffer[0] >> (8 - freeBits));
 		dataBitOffset += freeBits;
-
-		if (numOfBits - freeBits == 0)
-			return;
 
 		size_t srcOffset = freeBits;
 		size_t srcByteOffset = 0;

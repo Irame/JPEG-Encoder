@@ -84,10 +84,10 @@ namespace JPEGSegments
 		byte Cr[3]{ 0x03 };
 
 		StartOfFrame0() : marker(SegmentType::StartOfFrame0) {}
-		StartOfFrame0(BEushort xResolution, BEushort yResolution, const SamplingScheme scheme) : 
+		StartOfFrame0(BEushort xResolution, BEushort yResolution, const SamplingScheme& scheme) : 
 			marker(SegmentType::StartOfFrame0), 
-			xResolution(xResolution), 
-			yResolution(yResolution) {
+			yResolution(yResolution), 
+			xResolution(xResolution) {
 			int maxFactor1 = max(scheme.yReductionOptions.heightFactor, scheme.yReductionOptions.widthFactor);
 			int maxFactor2 = max(scheme.cbReductionOptions.heightFactor, scheme.cbReductionOptions.widthFactor);
 			int maxFactor3 = max(scheme.crReductionOptions.heightFactor, scheme.crReductionOptions.widthFactor);
