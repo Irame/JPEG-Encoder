@@ -132,7 +132,7 @@ inline void BitBuffer::ensureFreeSpace(size_t numOfBits)
 {
 	if (numOfBits + dataBitOffset > getCapacity())
 	{
-		bufferSizeInByte = (bufferSizeInByte + 1) * 2;
+		bufferSizeInByte = bufferSizeInByte + ceil((float)numOfBits / 8);
 		data.resize(bufferSizeInByte, 0);
 	}
 }
