@@ -68,6 +68,18 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 		}
 		srcBuffer++;
 	}
+	else if (offset == 0 && freeBits == 8) // use memcpy if data is byte aligned
+	{
+		size_t bytesToCopy = (numOfBits + 7) / 8;
+		memcpy(&data[byteOffset], srcBuffer, bytesToCopy);
+		size_t srcBitsRemaining = numOfBits % 8;
+		if (srcBitsRemaining != 0)
+		{
+			data[byteOffset + bytesToCopy - 1] &= 0xff << (8 - srcBitsRemaining);
+		}
+		dataBitOffset += numOfBits;
+		return;
+	}
 
 	if (numOfBits == 0) return;
 
