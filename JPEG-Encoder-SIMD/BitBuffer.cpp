@@ -22,6 +22,7 @@ void BitBuffer::pushBit(bool val)
 
 void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 {
+	if (numOfBits == 0) return;
 	ensureFreeSpace(numOfBits);
 
 	byte* srcBuffer = static_cast<byte*>(srcBufferVoid);

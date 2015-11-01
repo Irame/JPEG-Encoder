@@ -56,10 +56,10 @@ void bitBufferTest(string filePath)
 
 	JPEGSegments::EndOfImage endOfImage;
 
-	JPEGSegments::SerializeHeaderSegments::Serialize(startOfImage, bitBuffer);
-	JPEGSegments::SerializeHeaderSegments::Serialize(app0, bitBuffer);
-	JPEGSegments::SerializeHeaderSegments::Serialize(startOfFrame0, bitBuffer);
-	JPEGSegments::SerializeHeaderSegments::Serialize(endOfImage, bitBuffer);
+	JPEGSegments::Serialize(startOfImage, bitBuffer);
+	JPEGSegments::Serialize(app0, bitBuffer);
+	JPEGSegments::Serialize(startOfFrame0, bitBuffer);
+	JPEGSegments::Serialize(endOfImage, bitBuffer);
 
 	//for (int i = 0; i < 10000000; i++)
 	//{
