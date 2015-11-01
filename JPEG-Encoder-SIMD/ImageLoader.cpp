@@ -212,13 +212,13 @@ void ImageLoader::SaveJPG(std::string path, ImageCCPtr image) {
 
 	JPEGSegments::StartOfImage startOfImage;
 	JPEGSegments::APP0 app0;
-	JPEGSegments::StartOfFrame0 startOfFrame0(imageSize.width, imageSize.height, scheme);
+	JPEGSegments::StartOfFrame0 startOfFrame0(static_cast<short>(imageSize.width), static_cast<short>(imageSize.height), scheme);
 	JPEGSegments::EndOfImage endOfImage;
 
-	JPEGSegments::SerializeHeaderSegments::Serialize(startOfImage, bitBuffer);
-	JPEGSegments::SerializeHeaderSegments::Serialize(app0, bitBuffer);
-	JPEGSegments::SerializeHeaderSegments::Serialize(startOfFrame0, bitBuffer);
-	JPEGSegments::SerializeHeaderSegments::Serialize(endOfImage, bitBuffer);
+	JPEGSegments::Serialize(startOfImage, bitBuffer);
+	JPEGSegments::Serialize(app0, bitBuffer);
+	JPEGSegments::Serialize(startOfFrame0, bitBuffer);
+	JPEGSegments::Serialize(endOfImage, bitBuffer);
 
 	bitBuffer.writeToFile(path);
 }
