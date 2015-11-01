@@ -50,12 +50,12 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 			dataBitOffset += freeBits;
 			freeBits = 8;
 
-				// write remaining bitsToWrite to the next data byte
-				data[byteOffset] |= srcBuffer[0] << (8 - bitsToWrite);
-				numOfBits -= bitsToWrite;
-				dataBitOffset += bitsToWrite;
-				freeBits -= bitsToWrite;
-			}
+			// write remaining bitsToWrite to the next data byte
+			data[byteOffset] |= srcBuffer[0] << (8 - bitsToWrite);
+			numOfBits -= bitsToWrite;
+			dataBitOffset += bitsToWrite;
+			freeBits -= bitsToWrite;
+		}
 		else if (freeBits >= bitsToWrite)
 		{
 			// write all bitsToWrite to the current data byte
@@ -67,6 +67,8 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 			byteOffset = dataBitOffset / 8;
 		}
 		srcBuffer++;
+
+		if (numOfBits == 0) return;
 	}
 	else if (offset == 0 && freeBits == 8) // use memcpy if data is byte aligned
 	{
@@ -80,8 +82,6 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 		dataBitOffset += numOfBits;
 		return;
 	}
-
-	if (numOfBits == 0) return;
 
 	if (numOfBits <= freeBits)
 	{
