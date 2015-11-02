@@ -80,7 +80,7 @@ void testHuffmanEncoding()
 	auto result = HuffmanCoding::createHuffmanTable(std::vector<byte> {0, 0, 0, 2, 2, 3, 4});
 	for (auto it = result.cbegin(); it != result.cend(); ++it)
 	{
-		std::cout << it->first << ": " << *it->second << endl;
+		std::cout << int(it->first) << ": " << *it->second << endl;
 	}
 }
 
@@ -95,7 +95,7 @@ int main(int argc, char* argv[])
 	//	bitBufferTest(argv[2]);
 	//});
 
-	//benchmark("testHuffmanEncoding", 100, [&]() {
+	//benchmark("testHuffmanEncoding", 1, [&]() {
 	//	testHuffmanEncoding();
 	//});
 	//return  0;

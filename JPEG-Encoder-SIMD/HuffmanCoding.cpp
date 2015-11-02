@@ -27,7 +27,7 @@ std::map<byte, BitBufferPtr> HuffmanCoding::createHuffmanTable(std::vector<byte>
 
 	std::vector<int> symbolsCount(NUM_BYTE_VALUES);
 
-	auto comp = [](HuffmanTreeNodePtr a, HuffmanTreeNodePtr b) { return a->frequency < b->frequency; };
+	auto comp = [](HuffmanTreeNodePtr a, HuffmanTreeNodePtr b) { return a->frequency > b->frequency; };
 	std::priority_queue<HuffmanTreeNodePtr, std::vector<HuffmanTreeNodePtr>, decltype(comp)> huffmanTreeNodes(comp);
 
 	for (byte symbol : srcData)
