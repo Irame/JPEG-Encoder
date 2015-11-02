@@ -11,6 +11,8 @@
 #include "BitBuffer.h"
 #include "JPEGSegments.h"
 
+byte testValues[10000000];
+
 void bitBufferTest(string filePath)
 {
 	BitBuffer bitBuffer;
@@ -63,7 +65,7 @@ void bitBufferTest(string filePath)
 
 	//for (int i = 0; i < 10000000; i++)
 	//{
-	//	bitBuffer.pushBit(true);
+	//	bitBuffer.pushBit(testValues[i] == 0);
 	//}
 
 	bitBuffer.writeToFile(filePath);
@@ -73,7 +75,12 @@ void bitBufferTest(string filePath)
 
 int main(int argc, char* argv[])
 {
-	//benchmark("bitBufferTest", 1, [&]() {
+	//for (int i = 0; i < 10000000; i++)
+	//{
+	//	testValues[i] = rand() % 2;
+	//}
+
+	//benchmark("bitBufferTest", 100, [&]() {
 	//	bitBufferTest(argv[2]);
 	//});
 	//return  1;

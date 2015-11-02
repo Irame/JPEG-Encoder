@@ -224,7 +224,7 @@ static void applySepiaFilterAVXImpl(float* refR, float* refG, float* refB)
 	__m256 V1 = _mm256_loadu_ps(refG);
 	__m256 V2 = _mm256_loadu_ps(refB);
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 3; i++) {
 		__m256 MRow = _mm256_broadcast_ps(&M.row[i]);
 
 		__m256 resultRow = _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0x00), V0);

@@ -76,8 +76,8 @@ namespace JPEGSegments
 		const HeaderSegmentMarker marker;
 		const BEushort length = 0x11; // 8 + Anzahl Komponenten*3
 		const byte accuracy = 0x08;
-		BEushort yResolution; // has to be > 0
-		BEushort xResolution; // has to be > 0
+		const BEushort yResolution; // has to be > 0
+		const BEushort xResolution; // has to be > 0
 		const byte componentCount = 0x03;
 		byte Y[3]{ 0x01 }; //id, subsampling factor (0-3 bit vertical, 4-7 bit horizontal), number quantisationtable
 		byte Cb[3]{ 0x02 };
