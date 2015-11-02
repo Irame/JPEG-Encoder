@@ -10,6 +10,8 @@
 #include "ImageLoader.h"
 #include "BitBuffer.h"
 #include "JPEGSegments.h"
+#include <map>
+#include "HuffmanCoding.h"
 
 byte testValues[10000000];
 
@@ -73,6 +75,15 @@ void bitBufferTest(string filePath)
 	//cout << bitBuffer << endl;
 }
 
+void testHuffmanEncoding()
+{
+	auto result = HuffmanCoding::createHuffmanTable(std::vector<byte> {0, 0, 0, 2, 2, 3, 4});
+	for (auto it = result.cbegin(); it != result.cend(); ++it)
+	{
+		std::cout << it->first << ": " << *it->second << endl;
+	}
+}
+
 int main(int argc, char* argv[])
 {
 	//for (int i = 0; i < 10000000; i++)
@@ -83,7 +94,11 @@ int main(int argc, char* argv[])
 	//benchmark("bitBufferTest", 100, [&]() {
 	//	bitBufferTest(argv[2]);
 	//});
-	//return  1;
+
+	//benchmark("testHuffmanEncoding", 100, [&]() {
+	//	testHuffmanEncoding();
+	//});
+	//return  0;
 
 	if (argc < 3) {
 		std::cerr << "Usage: " << argv[0] << " <Source File> <Destination File>" << std::endl;

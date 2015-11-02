@@ -54,3 +54,5 @@ public:
 		pushBit(value);
 	}
 };
+
+typedef std::shared_ptr<BitBuffer> BitBufferPtr;

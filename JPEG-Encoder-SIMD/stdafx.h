@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <tchar.h>
 
+#define NUM_BYTE_VALUES 256
+
 typedef unsigned char byte;
 
 

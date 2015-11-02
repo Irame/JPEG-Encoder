@@ -160,9 +160,11 @@
     <ClInclude Include="Benchmark.h" />
     <ClInclude Include="BitBuffer.h" />
     <ClInclude Include="ColorNames.h" />
+    <ClInclude Include="HuffmanCoding.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="ImageLoader.h" />
     <ClInclude Include="JPEGSegments.h" />
+    <ClInclude Include="LinkedList.h" />
     <ClInclude Include="lodepng.h" />
     <ClInclude Include="SamplingScheme.h" />
     <ClInclude Include="SIMD.h" />
@@ -171,6 +173,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BitBuffer.cpp" />
+    <ClCompile Include="HuffmanCoding.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="ImageLoader.cpp" />
     <ClCompile Include="JPEG-Encoder-SIMD.cpp" />
