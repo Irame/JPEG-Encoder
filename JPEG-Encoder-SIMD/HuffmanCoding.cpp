@@ -2,6 +2,35 @@
 #include "HuffmanCoding.h"
 #include <queue>
 
+void HuffmanTable::addSymbolCode(byte symbol, BitBufferPtr code)
+{
+	codeMap[symbol] = code;
+	codeVector.push_back(code);
+}
+
+int HuffmanTable::getSymbolCount()
+{
+	return codeVector.size();
+}
+
+void HuffmanTable::fillArrays(byte* countArr, byte* codeArr)
+{
+	std::sort(codeVector.begin(), codeVector.end(), [](BitBufferPtr a, BitBufferPtr b)
+	{
+		return a->getSize() > b->getSize();
+	});
+
+	memset(countArr, 0, 16);
+		
+	int i = 0;
+	for (auto symbolCodePair : codeMap)
+	{
+		countArr[symbolCodePair.second->getSize() - 1] += 1;
+		codeArr[i++] = symbolCodePair.first;
+	}
+}
+
+
 HuffmanTreeNode::HuffmanTreeNode(int frequency, HuffmanTreeNodePtr leftChild, HuffmanTreeNodePtr rightChild)
 	: frequency(frequency), children(leftChild, rightChild)
 {}
@@ -44,6 +73,8 @@ std::map<byte, BitBufferPtr> HuffmanCoding::createHuffmanTable(std::vector<byte>
 			result[(byte)i] = bitBuffer;
 		}
 	}
+	
+	huffmanTreeNodes.top()->pushCodeBit(false);
 
 	while (huffmanTreeNodes.size() > 1)
 	{
@@ -52,8 +83,8 @@ std::map<byte, BitBufferPtr> HuffmanCoding::createHuffmanTable(std::vector<byte>
 		HuffmanTreeNodePtr lowNode1 = huffmanTreeNodes.top();
 		huffmanTreeNodes.pop();
 
-		lowNode0->pushCodeBit(false);
-		lowNode1->pushCodeBit(true);
+		lowNode0->pushCodeBit(true);
+		lowNode1->pushCodeBit(false);
 
 		huffmanTreeNodes.push(std::make_shared<HuffmanTreeNode>(lowNode0->frequency + lowNode1->frequency, lowNode1, lowNode0));
 	}

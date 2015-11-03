@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include "BitBuffer.h"
+#include "HuffmanCoding.h"
 
 struct BEushort // datatype that swaps byteorder to have the correct order for serialization
 {
@@ -26,6 +27,11 @@ private:
 
 namespace JPEGSegments
 {
+	enum HuffmanTableType : byte
+	{
+		DC = 0, AC = 1
+	};
+
 	enum class SegmentType : byte {
 		StartOfImage = 0xD8, // SOI
 		EndOfImage = 0xD9, // EOI
@@ -114,7 +120,18 @@ namespace JPEGSegments
 		byte symbolCount[16];
 		byte* table;
 
-		DefineHuffmannTable() : marker(SegmentType::DefineHuffmannTable) {}
+		DefineHuffmannTable(byte htNum, HuffmanTableType htType, HuffmanTable& huffmanTable)
+			: marker(SegmentType::DefineHuffmannTable),
+			htInformation((0b1111 & htNum) << 4 | (0b1 & htType) << 3),
+			table(new byte[huffmanTable.getSymbolCount()])
+		{
+			huffmanTable.fillArrays(symbolCount, table);
+		}
+
+		~DefineHuffmannTable()
+		{
+			delete[] table;
+		}
 
 		// Eine DHT kann mehrere HTs enthalten, jeweils mit eigenem Informationsbyte
 		// Maximale Tiefe des Huffman - Baums ist auf 16 beschränkt

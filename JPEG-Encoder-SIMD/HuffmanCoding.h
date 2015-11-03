@@ -4,6 +4,20 @@
 #include <vector>
 #include "BitBuffer.h"
 #include <map>
+#include <algorithm>
+
+class HuffmanTable
+{
+	std::map<byte, BitBufferPtr> codeMap;
+	std::vector<BitBufferPtr> codeVector;
+	
+public:
+	void addSymbolCode(byte symbol, BitBufferPtr code);
+
+	int getSymbolCount();
+
+	void fillArrays(byte* countArr, byte* codeArr);
+};
 
 
 class HuffmanTreeNode;
