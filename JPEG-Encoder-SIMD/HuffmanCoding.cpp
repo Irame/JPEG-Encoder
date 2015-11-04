@@ -8,7 +8,7 @@ void HuffmanTable::addSymbolCode(byte symbol, BitBufferPtr code)
 	codeVector.push_back(code);
 }
 
-int HuffmanTable::getSymbolCount()
+int HuffmanTable::getSymbolCount() const
 {
 	return codeVector.size();
 }
@@ -39,6 +39,11 @@ void HuffmanTreeNode::pushCodeBit(bool bit)
 {
 	children.first->pushCodeBit(bit);
 	children.second->pushCodeBit(bit);
+}
+
+bool HuffmanTreeNode::hasChildren() const
+{
+	return children.first != nullptr || children.second != nullptr;
 }
 
 HuffmanTreeDataNode::HuffmanTreeDataNode(int frequency, BitBufferPtr bitBuffer)
@@ -78,15 +83,18 @@ std::map<byte, BitBufferPtr> HuffmanCoding::createHuffmanTable(std::vector<byte>
 
 	while (huffmanTreeNodes.size() > 1)
 	{
-		HuffmanTreeNodePtr lowNode0 = huffmanTreeNodes.top();
+		HuffmanTreeNodePtr lowNodeRight = huffmanTreeNodes.top();
 		huffmanTreeNodes.pop();
-		HuffmanTreeNodePtr lowNode1 = huffmanTreeNodes.top();
+		HuffmanTreeNodePtr lowNodeLeft = huffmanTreeNodes.top();
 		huffmanTreeNodes.pop();
 
-		lowNode0->pushCodeBit(true);
-		lowNode1->pushCodeBit(false);
+		if (lowNodeLeft->hasChildren() && !lowNodeRight->hasChildren())
+			swap(lowNodeLeft, lowNodeRight);
 
-		huffmanTreeNodes.push(std::make_shared<HuffmanTreeNode>(lowNode0->frequency + lowNode1->frequency, lowNode1, lowNode0));
+		lowNodeRight->pushCodeBit(true);
+		lowNodeLeft->pushCodeBit(false);
+
+		huffmanTreeNodes.push(std::make_shared<HuffmanTreeNode>(lowNodeRight->frequency + lowNodeLeft->frequency, lowNodeLeft, lowNodeRight));
 	}
 
 	return result;

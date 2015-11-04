@@ -14,7 +14,7 @@ class HuffmanTable
 public:
 	void addSymbolCode(byte symbol, BitBufferPtr code);
 
-	int getSymbolCount();
+	int getSymbolCount() const;
 
 	void fillArrays(byte* countArr, byte* codeArr);
 };
@@ -36,6 +36,8 @@ public:
 	std::pair<HuffmanTreeNodePtr, HuffmanTreeNodePtr> children;
 
 	virtual void pushCodeBit(bool bit);
+	
+	bool hasChildren() const;
 };
 
 class HuffmanTreeDataNode : public HuffmanTreeNode
