@@ -20,7 +20,7 @@ public:
 
 	std::map<byte, BitBufferPtr> codeMap;
 
-	int getSymbolCount() const;
+	size_t getSymbolCount() const;
 
 	static HuffmanTablePtr createHuffmanTable(std::vector<byte> srcData);
 };
@@ -50,9 +50,4 @@ public:
 	BitBufferPtr bitBuffer;
 
 	void pushCodeBitToLeaves(bool bit) override;
-};
-
-
-class HuffmanCoding
-{
 };

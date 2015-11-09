@@ -3,7 +3,7 @@
 #include <queue>
 #include "SortedLinkedList.h"
 
-int HuffmanTable::getSymbolCount() const
+size_t HuffmanTable::getSymbolCount() const
 {
 	return codeMap.size();
 }
@@ -43,7 +43,7 @@ void HuffmanTreeDataNode::pushCodeBitToLeaves(bool bit)
 
 HuffmanTablePtr HuffmanTable::createHuffmanTable(std::vector<byte> srcData)
 {
-	std::map<byte, BitBufferPtr> result;
+	HuffmanTablePtr huffmanTable = std::shared_ptr<HuffmanTable>(new HuffmanTable());
 
 	std::vector<int> symbolsCount(NUM_BYTE_VALUES);
 
@@ -61,7 +61,7 @@ HuffmanTablePtr HuffmanTable::createHuffmanTable(std::vector<byte> srcData)
 		if (curSymbolCount > 0) {
 			BitBufferPtr bitBuffer = std::make_shared<BitBuffer>();
 			huffmanTreeNodes.push(std::make_shared<HuffmanTreeDataNode>(curSymbolCount, bitBuffer));
-			result[(byte)i] = bitBuffer;
+			huffmanTable->codeMap[(byte)i] = bitBuffer;
 		}
 	}
 
@@ -87,9 +87,6 @@ HuffmanTablePtr HuffmanTable::createHuffmanTable(std::vector<byte> srcData)
 	}
 	
 	curNode->pushCodeBitToLeaves(false);
-
-	HuffmanTablePtr huffmanTable = std::shared_ptr<HuffmanTable>(new HuffmanTable());
-	huffmanTable->codeMap = result;
 
 	return huffmanTable;
 }

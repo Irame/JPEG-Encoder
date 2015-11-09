@@ -127,11 +127,23 @@ namespace JPEGSegments
 		{
 			memset(symbolCount, 0, 16);
 
-			int i = 0;
-			for (auto symbolCodePair : huffmanTable.codeMap) //todo: huffmantable sorted right?
+			vector<std::pair<const byte, BitBufferPtr>*> sortableMapEntries;
+
+			for (auto symbolCodePair : huffmanTable.codeMap)
 			{
-				symbolCount[symbolCodePair.second->getSize() - 1] += 1;
-				table[i++] = symbolCodePair.first;
+				sortableMapEntries.push_back(&symbolCodePair);
+			}
+
+			std::sort(sortableMapEntries.begin(), sortableMapEntries.end(), [](std::pair<const byte, BitBufferPtr>* a, std::pair<const byte, BitBufferPtr>* b)
+			{
+				return a->second->getSize() < b->second->getSize();
+			});
+
+			int i = 0;
+			for (auto symbolCodePair : sortableMapEntries)
+			{
+				symbolCount[symbolCodePair->second->getSize() - 1] += 1;
+				table[i++] = symbolCodePair->first;
 			}
 		}
 
