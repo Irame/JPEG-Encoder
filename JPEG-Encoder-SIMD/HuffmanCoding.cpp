@@ -88,7 +88,7 @@ HuffmanTablePtr HuffmanTable::createHuffmanTable(std::vector<byte> srcData)
 	
 	curNode->pushCodeBitToLeaves(false);
 
-	HuffmanTablePtr huffmanTable = std::make_shared<HuffmanTable>();
+	HuffmanTablePtr huffmanTable = std::shared_ptr<HuffmanTable>(new HuffmanTable());
 	huffmanTable->codeMap = result;
 
 	return huffmanTable;

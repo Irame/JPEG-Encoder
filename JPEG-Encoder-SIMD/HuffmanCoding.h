@@ -15,8 +15,8 @@ typedef std::shared_ptr<HuffmanTreeDataNode> HuffmanTreeDataNodePtr;
 
 class HuffmanTable
 {
+	HuffmanTable() {};
 public:
-	HuffmanTable() {};//todo: private?
 
 	std::map<byte, BitBufferPtr> codeMap;
 
