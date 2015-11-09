@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "HuffmanCoding.h"
 #include <queue>
+#include "SortedLinkedList.h"
 
 void HuffmanTable::addSymbolCode(byte symbol, BitBufferPtr code)
 {
@@ -62,7 +63,7 @@ std::map<byte, BitBufferPtr> HuffmanCoding::createHuffmanTable(std::vector<byte>
 	std::vector<int> symbolsCount(NUM_BYTE_VALUES);
 
 	auto comp = [](HuffmanTreeNodePtr a, HuffmanTreeNodePtr b) { return a->frequency > b->frequency; };
-	std::priority_queue<HuffmanTreeNodePtr, std::vector<HuffmanTreeNodePtr>, decltype(comp)> huffmanTreeNodes(comp);
+	SortedLinkedList<HuffmanTreeNodePtr, decltype(comp)> huffmanTreeNodes(comp);
 
 	for (byte symbol : srcData)
 	{
