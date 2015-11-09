@@ -36,10 +36,19 @@ HuffmanTreeNode::HuffmanTreeNode(int frequency, HuffmanTreeNodePtr leftChild, Hu
 	: frequency(frequency), children(leftChild, rightChild)
 {}
 
-void HuffmanTreeNode::pushCodeBit(bool bit)
+void HuffmanTreeNode::pushCodeBitToLeaves(bool bit)
 {
-	children.first->pushCodeBit(bit);
-	children.second->pushCodeBit(bit);
+	children.first->pushCodeBitToLeaves(bit);
+	children.second->pushCodeBitToLeaves(bit);
+}
+
+void HuffmanTreeNode::pushCodeBitToNodes()
+{
+	if (!hasChildren()) return;
+	children.first->pushCodeBitToLeaves(false);
+	children.second->pushCodeBitToLeaves(true);
+	children.first->pushCodeBitToNodes();
+	children.second->pushCodeBitToNodes();
 }
 
 bool HuffmanTreeNode::hasChildren() const
@@ -51,7 +60,7 @@ HuffmanTreeDataNode::HuffmanTreeDataNode(int frequency, BitBufferPtr bitBuffer)
 	: HuffmanTreeNode(frequency, nullptr, nullptr), bitBuffer(bitBuffer)
 {}
 
-void HuffmanTreeDataNode::pushCodeBit(bool bit)
+void HuffmanTreeDataNode::pushCodeBitToLeaves(bool bit)
 {
 	bitBuffer->pushBit(bit);
 }
@@ -62,7 +71,7 @@ std::map<byte, BitBufferPtr> HuffmanCoding::createHuffmanTable(std::vector<byte>
 
 	std::vector<int> symbolsCount(NUM_BYTE_VALUES);
 
-	auto comp = [](HuffmanTreeNodePtr a, HuffmanTreeNodePtr b) { return a->frequency > b->frequency; };
+	auto comp = [](HuffmanTreeNodePtr a, HuffmanTreeNodePtr b) { return a->frequency < b->frequency; };
 	SortedLinkedList<HuffmanTreeNodePtr, decltype(comp)> huffmanTreeNodes(comp);
 
 	for (byte symbol : srcData)
@@ -79,8 +88,6 @@ std::map<byte, BitBufferPtr> HuffmanCoding::createHuffmanTable(std::vector<byte>
 			result[(byte)i] = bitBuffer;
 		}
 	}
-	
-	huffmanTreeNodes.top()->pushCodeBit(false);
 
 	while (huffmanTreeNodes.size() > 1)
 	{
@@ -92,11 +99,18 @@ std::map<byte, BitBufferPtr> HuffmanCoding::createHuffmanTable(std::vector<byte>
 		if (lowNodeLeft->hasChildren() && !lowNodeRight->hasChildren())
 			swap(lowNodeLeft, lowNodeRight);
 
-		lowNodeRight->pushCodeBit(true);
-		lowNodeLeft->pushCodeBit(false);
-
 		huffmanTreeNodes.push(std::make_shared<HuffmanTreeNode>(lowNodeRight->frequency + lowNodeLeft->frequency, lowNodeLeft, lowNodeRight));
 	}
+
+	HuffmanTreeNodePtr curNode = huffmanTreeNodes.top();
+	curNode->pushCodeBitToNodes();
+	
+	while(curNode->hasChildren())
+	{
+		curNode = curNode->children.second;
+	}
+	
+	curNode->pushCodeBitToLeaves(false);
 
 	return result;
 }

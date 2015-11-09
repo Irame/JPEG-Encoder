@@ -35,9 +35,10 @@ public:
 	int frequency;
 	std::pair<HuffmanTreeNodePtr, HuffmanTreeNodePtr> children;
 
-	virtual void pushCodeBit(bool bit);
-	
 	bool hasChildren() const;
+
+	void pushCodeBitToNodes();
+	virtual void pushCodeBitToLeaves(bool bit);
 };
 
 class HuffmanTreeDataNode : public HuffmanTreeNode
@@ -47,7 +48,7 @@ public:
 
 	BitBufferPtr bitBuffer;
 
-	void pushCodeBit(bool bit) override;
+	void pushCodeBitToLeaves(bool bit) override;
 };
 
 
