@@ -77,8 +77,8 @@ void bitBufferTest(string filePath)
 
 void testHuffmanEncoding()
 {
-	auto result = HuffmanCoding::createHuffmanTable(std::vector<byte> {0, 0, 0, 2, 2, 3, 4});
-	for (auto it = result.cbegin(); it != result.cend(); ++it)
+	auto result = HuffmanTable::createHuffmanTable(std::vector<byte> {0, 0, 0, 2, 2, 3, 4});
+	for (auto it = result->codeMap.cbegin(); it != result->codeMap.cend(); ++it)
 	{
 		std::cout << int(it->first) << ": " << *it->second << endl;
 	}

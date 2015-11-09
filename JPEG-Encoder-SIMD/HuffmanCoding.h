@@ -6,24 +6,25 @@
 #include <map>
 #include <algorithm>
 
+class HuffmanTable;
+class HuffmanTreeNode;
+class HuffmanTreeDataNode;
+typedef std::shared_ptr<HuffmanTable> HuffmanTablePtr;
+typedef std::shared_ptr<HuffmanTreeNode> HuffmanTreeNodePtr;
+typedef std::shared_ptr<HuffmanTreeDataNode> HuffmanTreeDataNodePtr;
+
 class HuffmanTable
 {
-	std::map<byte, BitBufferPtr> codeMap;
-	std::vector<BitBufferPtr> codeVector;
-	
 public:
-	void addSymbolCode(byte symbol, BitBufferPtr code);
+	HuffmanTable() {};//todo: private?
+
+	std::map<byte, BitBufferPtr> codeMap;
 
 	int getSymbolCount() const;
 
-	void fillArrays(byte* countArr, byte* codeArr);
+	static HuffmanTablePtr createHuffmanTable(std::vector<byte> srcData);
 };
 
-
-class HuffmanTreeNode;
-class HuffmanTreeDataNode;
-typedef std::shared_ptr<HuffmanTreeNode> HuffmanTreeNodePtr;
-typedef std::shared_ptr<HuffmanTreeDataNode> HuffmanTreeDataNodePtr;
 
 class HuffmanTreeNode
 {
@@ -54,6 +55,4 @@ public:
 
 class HuffmanCoding
 {
-public:
-	static std::map<byte, BitBufferPtr> createHuffmanTable(std::vector<byte> srcData);
 };

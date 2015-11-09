@@ -125,7 +125,14 @@ namespace JPEGSegments
 			htInformation((0b1111 & htNum) << 4 | (0b1 & htType) << 3),
 			table(new byte[huffmanTable.getSymbolCount()])
 		{
-			huffmanTable.fillArrays(symbolCount, table);
+			memset(symbolCount, 0, 16);
+
+			int i = 0;
+			for (auto symbolCodePair : huffmanTable.codeMap) //todo: huffmantable sorted right?
+			{
+				symbolCount[symbolCodePair.second->getSize() - 1] += 1;
+				table[i++] = symbolCodePair.first;
+			}
 		}
 
 		~DefineHuffmannTable()

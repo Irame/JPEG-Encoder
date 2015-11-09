@@ -3,34 +3,10 @@
 #include <queue>
 #include "SortedLinkedList.h"
 
-void HuffmanTable::addSymbolCode(byte symbol, BitBufferPtr code)
-{
-	codeMap[symbol] = code;
-	codeVector.push_back(code);
-}
-
 int HuffmanTable::getSymbolCount() const
 {
-	return codeVector.size();
+	return codeMap.size();
 }
-
-void HuffmanTable::fillArrays(byte* countArr, byte* codeArr)
-{
-	std::sort(codeVector.begin(), codeVector.end(), [](BitBufferPtr a, BitBufferPtr b)
-	{
-		return a->getSize() > b->getSize();
-	});
-
-	memset(countArr, 0, 16);
-		
-	int i = 0;
-	for (auto symbolCodePair : codeMap)
-	{
-		countArr[symbolCodePair.second->getSize() - 1] += 1;
-		codeArr[i++] = symbolCodePair.first;
-	}
-}
-
 
 HuffmanTreeNode::HuffmanTreeNode(int frequency, HuffmanTreeNodePtr leftChild, HuffmanTreeNodePtr rightChild)
 	: frequency(frequency), children(leftChild, rightChild)
@@ -65,7 +41,7 @@ void HuffmanTreeDataNode::pushCodeBitToLeaves(bool bit)
 	bitBuffer->pushBit(bit);
 }
 
-std::map<byte, BitBufferPtr> HuffmanCoding::createHuffmanTable(std::vector<byte> srcData)
+HuffmanTablePtr HuffmanTable::createHuffmanTable(std::vector<byte> srcData)
 {
 	std::map<byte, BitBufferPtr> result;
 
@@ -112,5 +88,8 @@ std::map<byte, BitBufferPtr> HuffmanCoding::createHuffmanTable(std::vector<byte>
 	
 	curNode->pushCodeBitToLeaves(false);
 
-	return result;
+	HuffmanTablePtr huffmanTable = std::make_shared<HuffmanTable>();
+	huffmanTable->codeMap = result;
+
+	return huffmanTable;
 }
