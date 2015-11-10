@@ -8,6 +8,18 @@ size_t HuffmanTable::getSymbolCount() const
 	return codeMap.size();
 }
 
+BitBufferPtr HuffmanTable::encodeSymbols(const std::vector<byte>& srcData)
+{
+	BitBufferPtr result = std::make_shared<BitBuffer>();
+	
+	for(byte b : srcData)
+	{
+		result->pushBits(*codeMap[b]);
+	}
+
+	return result;
+}
+
 PackageMergeTreeNode::PackageMergeTreeNode(int frequency, PackageMergeTreeNodePtr leftChild, PackageMergeTreeNodePtr rightChild)
 	: frequency(frequency), children(leftChild, rightChild)
 {}
@@ -36,7 +48,7 @@ void PackageMergeTreeDataNode::incCodeLength()
 // package-merge algorithm
 // Managing Gigabytes: Compressing and Indexing Documents and Images (p. 402-404)
 // https://books.google.de/books?id=2F74jyPl48EC&pg=PA402
-HuffmanTablePtr HuffmanTable::createHuffmanTable(size_t codeWordLength, std::vector<byte> srcData)
+HuffmanTablePtr HuffmanTable::createHuffmanTable(size_t codeWordLength, const std::vector<byte>& srcData)
 {
 	HuffmanTablePtr huffmanTable = std::shared_ptr<HuffmanTable>(new HuffmanTable());
 

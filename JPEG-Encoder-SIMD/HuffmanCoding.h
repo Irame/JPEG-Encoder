@@ -21,7 +21,9 @@ public:
 
 	size_t getSymbolCount() const;
 
-	static HuffmanTablePtr createHuffmanTable(size_t codeWordLength, std::vector<byte> srcData);
+	BitBufferPtr encodeSymbols(const std::vector<byte>& srcData);
+
+	static HuffmanTablePtr createHuffmanTable(size_t codeWordLength, const std::vector<byte>& srcData);
 };
 
 
