@@ -20,12 +20,12 @@ void BitBuffer::pushBit(bool val)
 	dataBitOffset++;
 }
 
-void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
+void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid, size_t offset)
 {
 	if (numOfBits == 0) return;
 	ensureFreeSpace(numOfBits);
 
-	byte* srcBuffer = static_cast<byte*>(srcBufferVoid);
+	const byte* srcBuffer = static_cast<const byte*>(srcBufferVoid);
 	size_t freeBits = 8 - dataBitOffset % 8;						// number of bits to fill data up to byte boundary
 	size_t byteOffset = dataBitOffset / 8;
 
@@ -111,6 +111,11 @@ void BitBuffer::pushBits(size_t numOfBits, void* srcBufferVoid, size_t offset)
 		data[byteOffset - 1] &= 0xff << (srcOffset - numOfBits);
 		dataBitOffset -= (srcOffset - numOfBits);
 	}
+}
+
+void BitBuffer::pushBits(const BitBuffer& buffer)
+{
+	pushBits(buffer.getSize(), buffer.data.data());
 }
 
 bool BitBuffer::getBit(size_t index) const
