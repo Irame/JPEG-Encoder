@@ -4,14 +4,13 @@
 #include <vector>
 #include "BitBuffer.h"
 #include <map>
-#include <algorithm>
 
 class HuffmanTable;
-class HuffmanTreeNode;
-class HuffmanTreeDataNode;
+class PackageMergeTreeNode;
+class PackageMergeTreeDataNode;
 typedef std::shared_ptr<HuffmanTable> HuffmanTablePtr;
-typedef std::shared_ptr<HuffmanTreeNode> HuffmanTreeNodePtr;
-typedef std::shared_ptr<HuffmanTreeDataNode> HuffmanTreeDataNodePtr;
+typedef std::shared_ptr<PackageMergeTreeNode> PackageMergeTreeNodePtr;
+typedef std::shared_ptr<PackageMergeTreeDataNode> PackageMergeTreeDataNodePtr;
 
 class HuffmanTable
 {
@@ -22,32 +21,32 @@ public:
 
 	size_t getSymbolCount() const;
 
-	static HuffmanTablePtr createHuffmanTable(std::vector<byte> srcData);
+	static HuffmanTablePtr createHuffmanTable(size_t codeWordLength, std::vector<byte> srcData);
 };
 
 
-class HuffmanTreeNode
+class PackageMergeTreeNode
 {
 public:
-	virtual ~HuffmanTreeNode() {}
+	virtual ~PackageMergeTreeNode() {}
 
-	HuffmanTreeNode(int frequency, HuffmanTreeNodePtr leftChild, HuffmanTreeNodePtr rightChild);
+	PackageMergeTreeNode(int frequency, PackageMergeTreeNodePtr leftChild, PackageMergeTreeNodePtr rightChild);
 
 	int frequency;
-	std::pair<HuffmanTreeNodePtr, HuffmanTreeNodePtr> children;
+	std::pair<PackageMergeTreeNodePtr, PackageMergeTreeNodePtr> children;
 
-	bool hasChildren() const;
+	bool isLeave() const;
 
-	void pushCodeBitToNodes();
-	virtual void pushCodeBitToLeaves(bool bit);
+	virtual void incCodeLength();
 };
 
-class HuffmanTreeDataNode : public HuffmanTreeNode
+class PackageMergeTreeDataNode : public PackageMergeTreeNode
 {
 public:
-	HuffmanTreeDataNode(int frequency, BitBufferPtr bitBuffer);
+	PackageMergeTreeDataNode(byte data, int frequency);
 
-	BitBufferPtr bitBuffer;
+	byte data;
+	int codeLength;
 
-	void pushCodeBitToLeaves(bool bit) override;
+	void incCodeLength() override;
 };

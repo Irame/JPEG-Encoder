@@ -1,54 +1,49 @@
 #include "stdafx.h"
 #include "HuffmanCoding.h"
 #include <queue>
-#include "SortedLinkedList.h"
+#include <functional>
 
 size_t HuffmanTable::getSymbolCount() const
 {
 	return codeMap.size();
 }
 
-HuffmanTreeNode::HuffmanTreeNode(int frequency, HuffmanTreeNodePtr leftChild, HuffmanTreeNodePtr rightChild)
+PackageMergeTreeNode::PackageMergeTreeNode(int frequency, PackageMergeTreeNodePtr leftChild, PackageMergeTreeNodePtr rightChild)
 	: frequency(frequency), children(leftChild, rightChild)
 {}
 
-void HuffmanTreeNode::pushCodeBitToLeaves(bool bit)
+bool PackageMergeTreeNode::isLeave() const
 {
-	children.first->pushCodeBitToLeaves(bit);
-	children.second->pushCodeBitToLeaves(bit);
+	return children.first != nullptr && children.second != nullptr;
 }
 
-void HuffmanTreeNode::pushCodeBitToNodes()
+void PackageMergeTreeNode::incCodeLength()
 {
-	if (!hasChildren()) return;
-	children.first->pushCodeBitToLeaves(false);
-	children.second->pushCodeBitToLeaves(true);
-	children.first->pushCodeBitToNodes();
-	children.second->pushCodeBitToNodes();
+	children.first->incCodeLength();
+	children.second->incCodeLength();
 }
 
-bool HuffmanTreeNode::hasChildren() const
-{
-	return children.first != nullptr || children.second != nullptr;
-}
-
-HuffmanTreeDataNode::HuffmanTreeDataNode(int frequency, BitBufferPtr bitBuffer)
-	: HuffmanTreeNode(frequency, nullptr, nullptr), bitBuffer(bitBuffer)
+PackageMergeTreeDataNode::PackageMergeTreeDataNode(byte data, int frequency)
+	: PackageMergeTreeNode(frequency, nullptr, nullptr), data(data), codeLength(0)
 {}
 
-void HuffmanTreeDataNode::pushCodeBitToLeaves(bool bit)
+void PackageMergeTreeDataNode::incCodeLength()
 {
-	bitBuffer->pushBit(bit);
+	codeLength++;
 }
 
-HuffmanTablePtr HuffmanTable::createHuffmanTable(std::vector<byte> srcData)
+
+// package-merge algorithm
+// Managing Gigabytes: Compressing and Indexing Documents and Images (p. 402-404)
+// https://books.google.de/books?id=2F74jyPl48EC&pg=PA402
+HuffmanTablePtr HuffmanTable::createHuffmanTable(size_t codeWordLength, std::vector<byte> srcData)
 {
 	HuffmanTablePtr huffmanTable = std::shared_ptr<HuffmanTable>(new HuffmanTable());
 
 	std::vector<int> symbolsCount(NUM_BYTE_VALUES);
 
-	auto comp = [](HuffmanTreeNodePtr a, HuffmanTreeNodePtr b) { return a->frequency < b->frequency; };
-	SortedLinkedList<HuffmanTreeNodePtr, decltype(comp)> huffmanTreeNodes(comp);
+	auto comp = [](PackageMergeTreeNodePtr a, PackageMergeTreeNodePtr b) { return a->frequency < b->frequency; };
+	std::vector<PackageMergeTreeNodePtr> origNodes;
 
 	for (byte symbol : srcData)
 	{
@@ -59,34 +54,64 @@ HuffmanTablePtr HuffmanTable::createHuffmanTable(std::vector<byte> srcData)
 	{
 		int curSymbolCount = symbolsCount[i];
 		if (curSymbolCount > 0) {
-			BitBufferPtr bitBuffer = std::make_shared<BitBuffer>();
-			huffmanTreeNodes.push(std::make_shared<HuffmanTreeDataNode>(curSymbolCount, bitBuffer));
-			huffmanTable->codeMap[(byte)i] = bitBuffer;
+			origNodes.push_back(std::make_shared<PackageMergeTreeDataNode>(i, curSymbolCount));
 		}
 	}
 
-	while (huffmanTreeNodes.size() > 1)
+	if (codeWordLength < ceil(log2(origNodes.size()))) return nullptr;
+
+	std::vector<PackageMergeTreeNodePtr> curNodes = origNodes;
+
+	for (int l = 1; l <= codeWordLength; l++)
 	{
-		HuffmanTreeNodePtr lowNodeRight = huffmanTreeNodes.top();
-		huffmanTreeNodes.pop();
-		HuffmanTreeNodePtr lowNodeLeft = huffmanTreeNodes.top();
-		huffmanTreeNodes.pop();
+		std::sort(curNodes.begin(), curNodes.end(), [](PackageMergeTreeNodePtr a, PackageMergeTreeNodePtr b)
+		{
+			return a->frequency < b->frequency;
+		});
 
-		if (lowNodeLeft->hasChildren() && !lowNodeRight->hasChildren())
-			swap(lowNodeLeft, lowNodeRight);
-
-		huffmanTreeNodes.push(std::make_shared<HuffmanTreeNode>(lowNodeRight->frequency + lowNodeLeft->frequency, lowNodeLeft, lowNodeRight));
+		std::vector<PackageMergeTreeNodePtr> nextNodes;
+		if (l < codeWordLength) nextNodes = origNodes;
+		for (int i = 1; i < curNodes.size(); i += 2)
+		{
+			PackageMergeTreeNodePtr leftNode = curNodes[i - 1];
+			PackageMergeTreeNodePtr rightNode = curNodes[i];
+			nextNodes.push_back(std::make_shared<PackageMergeTreeNode>(leftNode->frequency + rightNode->frequency, leftNode, rightNode));
+		}
+		curNodes = nextNodes;
 	}
 
-	HuffmanTreeNodePtr curNode = huffmanTreeNodes.top();
-	curNode->pushCodeBitToNodes();
-	
-	while(curNode->hasChildren())
+	for (auto node : curNodes)
 	{
-		curNode = curNode->children.second;
+		node->incCodeLength();
 	}
-	
-	curNode->pushCodeBitToLeaves(false);
+
+	std::vector<PackageMergeTreeDataNodePtr> dataNodes(origNodes.size());
+
+	transform(origNodes.begin(), origNodes.end(), dataNodes.begin(), std::static_pointer_cast<PackageMergeTreeDataNode, PackageMergeTreeNode>);
+
+	std::sort(dataNodes.begin(), dataNodes.end(), [](PackageMergeTreeDataNodePtr a, PackageMergeTreeDataNodePtr b)
+	{
+		return a->codeLength > b->codeLength;
+	});
+
+	int lastCodeLength = dataNodes[0]->codeLength;
+	unsigned short code = 0xffff >> (16 - lastCodeLength);
+	for (int i = 0; i < dataNodes.size(); i++)
+	{
+		int curCodeLength = dataNodes[i]->codeLength;
+		if (curCodeLength != lastCodeLength) {
+			code++;
+			code >>= lastCodeLength - curCodeLength;
+			code--;
+		}
+		auto curBitBuffer = std::make_shared<BitBuffer>();
+		unsigned short beCode = _byteswap_ushort(code << (16 - curCodeLength));
+		curBitBuffer->pushBits(curCodeLength, &beCode);
+		huffmanTable->codeMap[dataNodes[i]->data] = curBitBuffer;
+
+		code--;
+		lastCodeLength = curCodeLength;
+	}
 
 	return huffmanTable;
 }
