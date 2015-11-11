@@ -2,6 +2,7 @@
 #include "HuffmanCoding.h"
 #include <queue>
 #include <functional>
+#include <vector>
 
 size_t HuffmanTable::getSymbolCount() const
 {
@@ -126,4 +127,42 @@ HuffmanTablePtr HuffmanTable::createHuffmanTable(size_t codeWordLength, const st
 	}
 
 	return huffmanTable;
+}
+
+std::vector<int> HuffmanTable::decodeHuffmannEncodedBitstream(BitBufferPtr inputStream, HuffmanTablePtr huffmanTable) {
+
+	std::vector<int> resultVector;
+	BitBuffer currentBitstream = BitBuffer();
+	bool bit;
+
+	for (int i = 0; i < inputStream->getSize(); i++)
+	{
+		bit = inputStream->getBit(i);
+		currentBitstream.pushBit(bit);
+		for (int j = 0; j < currentBitstream.getSize(); j++)
+		{
+			for (auto it = huffmanTable->codeMap.cbegin(); it != huffmanTable->codeMap.cend(); ++it)
+			{
+				if (it->second->getSize() != currentBitstream.getSize())
+				{
+					continue;
+				}
+				else
+				{
+					bit = currentBitstream.getBit(j);
+					if (bit != it->second->getBit(j))
+					{
+						continue;
+					}
+					else if (j == currentBitstream.getSize() - 1)
+					{
+						resultVector.push_back((int) it->first);
+						currentBitstream = BitBuffer();
+					}
+				}
+			}
+		}
+	}
+
+	return resultVector;
 }

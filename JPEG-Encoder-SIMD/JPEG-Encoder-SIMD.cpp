@@ -82,6 +82,23 @@ void testHuffmanEncoding()
 	{
 		std::cout << int(it->first) << ": " << *it->second << endl;
 	}
+
+	BitBufferPtr inputBitstream = make_shared<BitBuffer>();
+	inputBitstream->pushBit(true);
+	inputBitstream->pushBit(true);
+	inputBitstream->pushBit(true);
+	inputBitstream->pushBit(false);
+	inputBitstream->pushBit(true);
+	inputBitstream->pushBit(true);
+	inputBitstream->pushBit(false); // Buffer: 1110110 aka "3" "0" "4"
+	std::cout << "TestBitstream: 1110110" << endl;
+	vector<int> decodedData = HuffmanTable::decodeHuffmannEncodedBitstream(inputBitstream, result);
+	std::cout << "Encoded symbols: ";
+	for (int i : decodedData)
+	{
+		std::cout << i << " ";
+	}
+	std::cout << endl;
 }
 
 int main(int argc, char* argv[])
@@ -95,10 +112,10 @@ int main(int argc, char* argv[])
 	//	bitBufferTest(argv[2]);
 	//});
 
-	//benchmark("testHuffmanEncoding", 1, [&]() {
-	//	testHuffmanEncoding();
-	//});
-	//return  0;
+	benchmark("testHuffmanEncoding", 1, [&]() {
+		testHuffmanEncoding();
+	});
+	return  0;
 
 	if (argc < 3) {
 		std::cerr << "Usage: " << argv[0] << " <Source File> <Destination File>" << std::endl;

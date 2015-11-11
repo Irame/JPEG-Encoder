@@ -1,7 +1,6 @@
 #pragma once
 #include <utility>
 #include <memory>
-#include <vector>
 #include "BitBuffer.h"
 #include <map>
 
@@ -24,6 +23,8 @@ public:
 	BitBufferPtr encodeSymbols(const std::vector<byte>& srcData);
 
 	static HuffmanTablePtr createHuffmanTable(size_t codeWordLength, const std::vector<byte>& srcData);
+
+	static std::vector<int> decodeHuffmannEncodedBitstream(BitBufferPtr inputStream, HuffmanTablePtr huffmanTable);
 };
 
 
