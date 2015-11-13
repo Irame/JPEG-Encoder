@@ -9,43 +9,6 @@ size_t HuffmanTable::getSymbolCount() const
 	return codeMap.size();
 }
 
-BitBufferPtr HuffmanTable::encode(const std::vector<byte>& srcData)
-{
-	BitBufferPtr result = std::make_shared<BitBuffer>();
-	
-	for(byte b : srcData)
-	{
-		result->pushBits(*codeMap[b]);
-	}
-
-	return result;
-}
-
-PackageMergeTreeNode::PackageMergeTreeNode(int frequency, PackageMergeTreeNodePtr leftChild, PackageMergeTreeNodePtr rightChild)
-	: frequency(frequency), children(leftChild, rightChild)
-{}
-
-bool PackageMergeTreeNode::isLeave() const
-{
-	return children.first != nullptr && children.second != nullptr;
-}
-
-void PackageMergeTreeNode::incCodeLength()
-{
-	children.first->incCodeLength();
-	children.second->incCodeLength();
-}
-
-PackageMergeTreeDataNode::PackageMergeTreeDataNode(byte data, int frequency)
-	: PackageMergeTreeNode(frequency, nullptr, nullptr), data(data), codeLength(0)
-{}
-
-void PackageMergeTreeDataNode::incCodeLength()
-{
-	codeLength++;
-}
-
-
 // package-merge algorithm
 // Managing Gigabytes: Compressing and Indexing Documents and Images (p. 402-404)
 // https://books.google.de/books?id=2F74jyPl48EC&pg=PA402
@@ -129,7 +92,19 @@ HuffmanTablePtr HuffmanTable::create(size_t codeWordLength, const std::vector<by
 	return huffmanTable;
 }
 
-std::vector<byte> HuffmanTable::decode(BitBufferPtr inputStream) 
+BitBufferPtr HuffmanTable::encode(const std::vector<byte>& srcData)
+{
+	BitBufferPtr result = std::make_shared<BitBuffer>();
+
+	for (byte b : srcData)
+	{
+		result->pushBits(*codeMap[b]);
+	}
+
+	return result;
+}
+
+std::vector<byte> HuffmanTable::decode(BitBufferPtr inputStream)
 {
 	std::vector<byte> resultVector;
 	BitBuffer currentBitstream = BitBuffer();
@@ -154,4 +129,28 @@ std::vector<byte> HuffmanTable::decode(BitBufferPtr inputStream)
 	}
 
 	return resultVector;
+}
+
+PackageMergeTreeNode::PackageMergeTreeNode(int frequency, PackageMergeTreeNodePtr leftChild, PackageMergeTreeNodePtr rightChild)
+	: frequency(frequency), children(leftChild, rightChild)
+{}
+
+bool PackageMergeTreeNode::isLeave() const
+{
+	return children.first != nullptr && children.second != nullptr;
+}
+
+void PackageMergeTreeNode::incCodeLength()
+{
+	children.first->incCodeLength();
+	children.second->incCodeLength();
+}
+
+PackageMergeTreeDataNode::PackageMergeTreeDataNode(byte data, int frequency)
+	: PackageMergeTreeNode(frequency, nullptr, nullptr), data(data), codeLength(0)
+{}
+
+void PackageMergeTreeDataNode::incCodeLength()
+{
+	codeLength++;
 }
