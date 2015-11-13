@@ -120,7 +120,7 @@ std::vector<byte> HuffmanTable::decode(BitBufferPtr inputStream)
 			if (*it->second == currentBitstream)
 			{
 				resultVector.push_back(it->first);
-				currentBitstream = BitBuffer();
+				currentBitstream.clear();
 			}
 		}
 	}

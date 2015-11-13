@@ -144,6 +144,12 @@ void BitBuffer::getBits(size_t index, byte* out, size_t numOfBits) const
 	out[destOffset - 1] &= 0xff << (bitsProcessed - numOfBits);
 }
 
+void BitBuffer::clear()
+{
+	memset(data.data(), 0, bufferSizeInByte);
+	dataBitOffset = 0;
+}
+
 // ensures that there is enought space for numOfBits in the buffer 
 inline void BitBuffer::ensureFreeSpace(size_t numOfBits)
 {

@@ -34,6 +34,9 @@ public:
 	// Writes the requested bits into an out byte array
 	void getBits(size_t index, byte* out, size_t numOfBits) const;
 	
+	// clears conent
+	void clear();
+
 	// Writes all bits from the buffer into a file (in binary)
 	void writeToFile(std::string file);
 
