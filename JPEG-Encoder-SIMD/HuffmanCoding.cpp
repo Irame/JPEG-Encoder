@@ -16,7 +16,7 @@ HuffmanTablePtr HuffmanTable::create(size_t codeWordLength, const std::vector<by
 {
 	HuffmanTablePtr huffmanTable = std::shared_ptr<HuffmanTable>(new HuffmanTable());
 	
-	codeWordLength--;				// we ad a zero to the 1* code so our true limit has to be one less than the given one 
+	if (srcData.size() == 0) return huffmanTable;
 
 	std::vector<int> symbolsCount(NUM_BYTE_VALUES);
 
@@ -35,6 +35,7 @@ HuffmanTablePtr HuffmanTable::create(size_t codeWordLength, const std::vector<by
 			origNodes.push_back(std::make_shared<PackageMergeTreeDataNode>(i, curSymbolCount));
 		}
 	}
+	origNodes.push_back(std::make_shared<PackageMergeTreeDataNode>(0, 0));			// eliminates 1*-codes
 
 	if (codeWordLength < ceil(log2(origNodes.size()))) return nullptr;
 
@@ -72,10 +73,11 @@ HuffmanTablePtr HuffmanTable::create(size_t codeWordLength, const std::vector<by
 		return a->codeLength > b->codeLength;
 	});
 
-	int lastCodeLength = dataNodes[0]->codeLength;
-	unsigned short code = 0xffff >> (16 - lastCodeLength);
+	int lastCodeLength = dataNodes[0]->frequency == 0 ? dataNodes[1]->codeLength : dataNodes[0]->codeLength;				// not sure if we need this
+	unsigned short code = (0xffff >> (16 - lastCodeLength)) - 1;			// rightgrowing tree without 1*-codes
 	for (int i = 0; i < dataNodes.size(); i++)
 	{
+		if (dataNodes[i]->frequency == 0) continue;				// eliminates 1*-codes
 		int curCodeLength = dataNodes[i]->codeLength;
 		if (curCodeLength != lastCodeLength) {
 			code++;
@@ -85,7 +87,6 @@ HuffmanTablePtr HuffmanTable::create(size_t codeWordLength, const std::vector<by
 		auto curBitBuffer = std::make_shared<BitBuffer>();
 		unsigned short beCode = _byteswap_ushort(code << (16 - curCodeLength));
 		curBitBuffer->pushBits(curCodeLength, &beCode);
-		if (i == 0) curBitBuffer->pushBit(false);				// eliminates 1* codes
 		huffmanTable->codeMap[dataNodes[i]->data] = curBitBuffer;
 
 		code--;
