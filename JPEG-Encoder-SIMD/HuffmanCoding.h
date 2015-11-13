@@ -20,11 +20,11 @@ public:
 
 	size_t getSymbolCount() const;
 
-	BitBufferPtr encodeSymbols(const std::vector<byte>& srcData);
+	static HuffmanTablePtr create(size_t codeWordLength, const std::vector<byte>& srcData);
 
-	static HuffmanTablePtr createHuffmanTable(size_t codeWordLength, const std::vector<byte>& srcData);
+	BitBufferPtr encode(const std::vector<byte>& srcData);
 
-	static std::vector<int> decodeHuffmannEncodedBitstream(BitBufferPtr inputStream, HuffmanTablePtr huffmanTable);
+	std::vector<byte> decode(BitBufferPtr inputStream);
 };
 
 

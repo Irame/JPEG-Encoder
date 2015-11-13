@@ -15,6 +15,19 @@
 
 byte testValues[10000000];
 
+template <typename TElem>
+ostream& operator<<(ostream& os, const vector<TElem>& vec) {
+	typedef vector<TElem>::const_iterator iter_t;
+	const iter_t iter_begin = vec.begin();
+	const iter_t iter_end = vec.end();
+	os << "[";
+	for (iter_t iter = iter_begin; iter != iter_end; ++iter) {
+		cout << ((iter != iter_begin) ? ", " : "") << *iter;
+	}
+	os << "]";
+	return os;
+}
+
 void bitBufferTest(string filePath)
 {
 	BitBuffer bitBuffer;
@@ -77,28 +90,24 @@ void bitBufferTest(string filePath)
 
 void testHuffmanEncoding()
 {
-	auto result = HuffmanTable::createHuffmanTable(15, std::vector<byte> {0, 0, 0, 2, 2, 3, 4});
-	for (auto it = result->codeMap.cbegin(); it != result->codeMap.cend(); ++it)
+	std::vector<byte> allSymbols{ 0, 0, 0, 2, 2, 3, 4 };
+	cout << "All symbols: " << allSymbols << endl;
+	
+	auto huffmanTable = HuffmanTable::create(15, allSymbols);
+	cout << "Huffman Table:" << endl;
+	for (auto it = huffmanTable->codeMap.cbegin(); it != huffmanTable->codeMap.cend(); ++it)
 	{
 		std::cout << int(it->first) << ": " << *it->second << endl;
 	}
 
-	BitBufferPtr inputBitstream = make_shared<BitBuffer>();
-	inputBitstream->pushBit(true);
-	inputBitstream->pushBit(true);
-	inputBitstream->pushBit(true);
-	inputBitstream->pushBit(false);
-	inputBitstream->pushBit(true);
-	inputBitstream->pushBit(true);
-	inputBitstream->pushBit(false); // Buffer: 1110110 aka "3" "0" "4"
-	std::cout << "TestBitstream: 1110110" << endl;
-	vector<int> decodedData = HuffmanTable::decodeHuffmannEncodedBitstream(inputBitstream, result);
-	std::cout << "Encoded symbols: ";
-	for (int i : decodedData)
-	{
-		std::cout << i << " ";
-	}
-	std::cout << endl;
+	vector<byte> encodeDecodeTestSymbols{ 3, 0, 4 };
+	cout << "Test symbols: " << encodeDecodeTestSymbols << endl;
+
+	auto encodedSymbols = huffmanTable->encode(encodeDecodeTestSymbols);
+	std::cout << "Encoded symbols: " << *encodedSymbols << endl;
+
+	vector<byte> decodedSymbols = huffmanTable->decode(encodedSymbols);
+	std::cout << "Decoded symbols: " << decodedSymbols << endl;
 }
 
 int main(int argc, char* argv[])

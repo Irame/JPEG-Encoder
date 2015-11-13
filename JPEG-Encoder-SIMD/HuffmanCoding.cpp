@@ -9,7 +9,7 @@ size_t HuffmanTable::getSymbolCount() const
 	return codeMap.size();
 }
 
-BitBufferPtr HuffmanTable::encodeSymbols(const std::vector<byte>& srcData)
+BitBufferPtr HuffmanTable::encode(const std::vector<byte>& srcData)
 {
 	BitBufferPtr result = std::make_shared<BitBuffer>();
 	
@@ -49,7 +49,7 @@ void PackageMergeTreeDataNode::incCodeLength()
 // package-merge algorithm
 // Managing Gigabytes: Compressing and Indexing Documents and Images (p. 402-404)
 // https://books.google.de/books?id=2F74jyPl48EC&pg=PA402
-HuffmanTablePtr HuffmanTable::createHuffmanTable(size_t codeWordLength, const std::vector<byte>& srcData)
+HuffmanTablePtr HuffmanTable::create(size_t codeWordLength, const std::vector<byte>& srcData)
 {
 	HuffmanTablePtr huffmanTable = std::shared_ptr<HuffmanTable>(new HuffmanTable());
 
@@ -129,34 +129,23 @@ HuffmanTablePtr HuffmanTable::createHuffmanTable(size_t codeWordLength, const st
 	return huffmanTable;
 }
 
-std::vector<int> HuffmanTable::decodeHuffmannEncodedBitstream(BitBufferPtr inputStream, HuffmanTablePtr huffmanTable) {
-
-	std::vector<int> resultVector;
+std::vector<byte> HuffmanTable::decode(BitBufferPtr inputStream) 
+{
+	std::vector<byte> resultVector;
 	BitBuffer currentBitstream = BitBuffer();
-	bool bit;
 
 	for (int i = 0; i < inputStream->getSize(); i++)
 	{
-		bit = inputStream->getBit(i);
-		currentBitstream.pushBit(bit);
+		currentBitstream.pushBit(inputStream->getBit(i));
 		for (int j = 0; j < currentBitstream.getSize(); j++)
 		{
-			for (auto it = huffmanTable->codeMap.cbegin(); it != huffmanTable->codeMap.cend(); ++it)
+			for (auto it = codeMap.cbegin(); it != codeMap.cend(); ++it)
 			{
-				if (it->second->getSize() != currentBitstream.getSize())
+				if (it->second->getSize() == currentBitstream.getSize())
 				{
-					continue;
-				}
-				else
-				{
-					bit = currentBitstream.getBit(j);
-					if (bit != it->second->getBit(j))
+					if (currentBitstream.getBit(j) == it->second->getBit(j) && j == currentBitstream.getSize() - 1)
 					{
-						continue;
-					}
-					else if (j == currentBitstream.getSize() - 1)
-					{
-						resultVector.push_back((int) it->first);
+						resultVector.push_back(it->first);
 						currentBitstream = BitBuffer();
 					}
 				}
