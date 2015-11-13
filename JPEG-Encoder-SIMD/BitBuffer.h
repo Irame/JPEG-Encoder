@@ -38,11 +38,14 @@ public:
 	void writeToFile(std::string file);
 
 	// compares two BitBuffer
-	bool operator==(const BitBuffer& other);
+	bool operator==(const BitBuffer& other) const;
+	bool operator<(const BitBuffer& other) const;
+	bool operator>(const BitBuffer& other) const;
+
+	int compare(const BitBuffer& other) const;
 
 	// Converts the Buffer into a string of '0' and '1' in blocks seperated by ' ' or '  '
 	friend std::ostream& operator<<(std::ostream& strm, const BitBuffer& bitBuffer);
-
 
 	// Generic write method
 	template<typename T>

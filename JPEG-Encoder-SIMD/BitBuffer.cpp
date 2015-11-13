@@ -2,6 +2,7 @@
 #include "BitBuffer.h"
 #include <algorithm>
 #include <fstream>
+#include <assert.h>
 
 BitBuffer::BitBuffer(size_t initialBufferSizeInBit) 
 	: bufferSizeInByte(initialBufferSizeInBit == 0 ? 1 : (initialBufferSizeInBit + 7)/8), 
@@ -179,14 +180,39 @@ void BitBuffer::writeToFile(std::string filePath)
 	fileStream.close();
 }
 
-bool BitBuffer::operator==(const BitBuffer& other)
+bool BitBuffer::operator==(const BitBuffer& other) const
 {
 	if (other.dataBitOffset == dataBitOffset)
 	{
-		size_t bytesToCompare = (dataBitOffset + 7) / 8;
-		return memcmp(other.data.data(), data.data(), bytesToCompare) == 0;
+		return compare(other) == 0;
 	}
 	return false;
+}
+
+bool BitBuffer::operator<(const BitBuffer& other) const
+{
+	if (other.dataBitOffset == dataBitOffset)
+	{
+		return compare(other) < 0;
+	}
+	return false;
+}
+
+bool BitBuffer::operator>(const BitBuffer& other) const
+{
+	if (other.dataBitOffset == dataBitOffset)
+	{
+		return compare(other) > 0;
+	}
+	return false;
+}
+
+inline int BitBuffer::compare(const BitBuffer& other) const
+{
+	assert(other.dataBitOffset == dataBitOffset);
+
+	size_t bytesToCompare = (dataBitOffset + 7) / 8;
+	return memcmp(data.data(), other.data.data(), bytesToCompare);
 }
 
 // converts to format "([01]{4} [01]{4}  )*" -> helpful for testing
