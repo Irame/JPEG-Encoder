@@ -37,6 +37,9 @@ public:
 	// Writes all bits from the buffer into a file (in binary)
 	void writeToFile(std::string file);
 
+	// compares two BitBuffer
+	bool operator==(const BitBuffer& other);
+
 	// Converts the Buffer into a string of '0' and '1' in blocks seperated by ' ' or '  '
 	friend std::ostream& operator<<(std::ostream& strm, const BitBuffer& bitBuffer);
 

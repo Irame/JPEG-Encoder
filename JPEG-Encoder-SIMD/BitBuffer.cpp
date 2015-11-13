@@ -179,6 +179,16 @@ void BitBuffer::writeToFile(std::string filePath)
 	fileStream.close();
 }
 
+bool BitBuffer::operator==(const BitBuffer& other)
+{
+	if (other.dataBitOffset == dataBitOffset)
+	{
+		size_t bytesToCompare = (dataBitOffset + 7) / 8;
+		return memcmp(other.data.data(), data.data(), bytesToCompare) == 0;
+	}
+	return false;
+}
+
 // converts to format "([01]{4} [01]{4}  )*" -> helpful for testing
 std::ostream& operator<<(std::ostream& strm, const BitBuffer& bitBuffer)
 {

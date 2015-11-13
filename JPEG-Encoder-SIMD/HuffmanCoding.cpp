@@ -112,18 +112,12 @@ std::vector<byte> HuffmanTable::decode(BitBufferPtr inputStream)
 	for (int i = 0; i < inputStream->getSize(); i++)
 	{
 		currentBitstream.pushBit(inputStream->getBit(i));
-		for (int j = 0; j < currentBitstream.getSize(); j++)
+		for (auto it = codeMap.cbegin(); it != codeMap.cend(); ++it)
 		{
-			for (auto it = codeMap.cbegin(); it != codeMap.cend(); ++it)
+			if (*it->second == currentBitstream)
 			{
-				if (it->second->getSize() == currentBitstream.getSize())
-				{
-					if (currentBitstream.getBit(j) == it->second->getBit(j) && j == currentBitstream.getSize() - 1)
-					{
-						resultVector.push_back(it->first);
-						currentBitstream = BitBuffer();
-					}
-				}
+				resultVector.push_back(it->first);
+				currentBitstream = BitBuffer();
 			}
 		}
 	}
