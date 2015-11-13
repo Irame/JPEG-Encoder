@@ -15,6 +15,8 @@ size_t HuffmanTable::getSymbolCount() const
 HuffmanTablePtr HuffmanTable::create(size_t codeWordLength, const std::vector<byte>& srcData)
 {
 	HuffmanTablePtr huffmanTable = std::shared_ptr<HuffmanTable>(new HuffmanTable());
+	
+	codeWordLength--;				// we ad a zero to the 1* code so our true limit has to be one less than the given one 
 
 	std::vector<int> symbolsCount(NUM_BYTE_VALUES);
 
@@ -83,6 +85,7 @@ HuffmanTablePtr HuffmanTable::create(size_t codeWordLength, const std::vector<by
 		auto curBitBuffer = std::make_shared<BitBuffer>();
 		unsigned short beCode = _byteswap_ushort(code << (16 - curCodeLength));
 		curBitBuffer->pushBits(curCodeLength, &beCode);
+		if (i == 0) curBitBuffer->pushBit(false);				// eliminates 1* codes
 		huffmanTable->codeMap[dataNodes[i]->data] = curBitBuffer;
 
 		code--;
@@ -123,6 +126,55 @@ std::vector<byte> HuffmanTable::decode(BitBufferPtr inputStream)
 	}
 
 	return resultVector;
+}
+
+std::vector<byte> HuffmanTable::decode2(BitBufferPtr inputStream)
+{
+	std::vector<byte> result;
+
+	typedef std::tuple<BitBuffer, size_t, byte> EntryType;
+	std::vector<EntryType> decodePairs;
+
+	// create a sortable <BitBuffer, byte> map to work with
+	for (auto it = codeMap.cbegin(); it != codeMap.cend(); ++it)
+	{
+		decodePairs.emplace_back(*it->second, it->second->getSize(), it->first);
+	}
+
+	// sort table by codeword length and codeword bits
+	std::sort(decodePairs.begin(), decodePairs.end(), [](const EntryType& a, const EntryType& b)
+	{
+		return std::get<1>(a) == std::get<1>(b) ? std::get<0>(a) < std::get<0>(b) : std::get<1>(a) < std::get<1>(b);
+	});
+
+	// fill codewords with 1-bits
+	unsigned short fillBits = 0xffff;
+	for (auto& tuple : decodePairs)
+	{
+		BitBuffer& curBitBuffer = std::get<0>(tuple);
+		curBitBuffer.pushBits(16 - curBitBuffer.getSize(), &fillBits);
+	}
+
+	size_t offset = 0;
+	while(offset < inputStream->getSize())
+	{
+		BitBuffer curBitBuffer;
+		byte buffer[2] = {0, 0};
+		inputStream->getBits(offset, buffer, std::min(size_t(16), inputStream->getSize()));
+		curBitBuffer.pushBits(16, buffer);
+
+		for (auto& tuple : decodePairs)
+		{
+			if (!(std::get<0>(tuple) < curBitBuffer))
+			{
+				result.push_back(std::get<2>(tuple));
+				offset += std::get<1>(tuple);
+				break;
+			}
+		}
+	}
+	
+	return result;
 }
 
 PackageMergeTreeNode::PackageMergeTreeNode(int frequency, PackageMergeTreeNodePtr leftChild, PackageMergeTreeNodePtr rightChild)

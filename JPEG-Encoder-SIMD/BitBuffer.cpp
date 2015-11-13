@@ -137,7 +137,7 @@ void BitBuffer::getBits(size_t index, byte* out, size_t numOfBits) const
 	size_t byteIndex = index / 8;
 	while (numOfBits > bitsProcessed)
 	{
-		out[destOffset++] = joinTwoBytes(data[byteIndex], data[byteIndex + 1], leftCount);
+		out[destOffset++] = joinTwoBytes(data[byteIndex], byteIndex + 1 < data.size() ? data[byteIndex + 1] : 0, leftCount);
 		byteIndex++;
 		bitsProcessed += 8;
 	}

@@ -25,6 +25,7 @@ public:
 	BitBufferPtr encode(const std::vector<byte>& srcData);
 
 	std::vector<byte> decode(BitBufferPtr inputStream);
+	std::vector<byte> decode2(BitBufferPtr inputStream);
 };
 
 
