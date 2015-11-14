@@ -34,9 +34,9 @@ class PackageMergeTreeNode
 public:
 	virtual ~PackageMergeTreeNode() {}
 
-	PackageMergeTreeNode(int frequency, PackageMergeTreeNodePtr leftChild, PackageMergeTreeNodePtr rightChild);
+	PackageMergeTreeNode(size_t frequency, PackageMergeTreeNodePtr leftChild, PackageMergeTreeNodePtr rightChild);
 
-	int frequency;
+	size_t frequency;
 	std::pair<PackageMergeTreeNodePtr, PackageMergeTreeNodePtr> children;
 
 	bool isLeave() const;
@@ -47,10 +47,10 @@ public:
 class PackageMergeTreeDataNode : public PackageMergeTreeNode
 {
 public:
-	PackageMergeTreeDataNode(byte data, int frequency);
+	PackageMergeTreeDataNode(byte data, size_t frequency);
 
 	byte data;
-	int codeLength;
+	size_t codeLength;
 
 	void incCodeLength() override;
 };

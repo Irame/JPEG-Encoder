@@ -18,21 +18,21 @@ HuffmanTablePtr HuffmanTable::create(size_t codeWordLength, const std::vector<by
 	
 	if (srcData.size() == 0) return huffmanTable;
 
-	std::vector<int> symbolsCount(NUM_BYTE_VALUES);
+	std::vector<size_t> symbolsCount(NUM_BYTE_VALUES);
 
 	auto comp = [](PackageMergeTreeNodePtr a, PackageMergeTreeNodePtr b) { return a->frequency < b->frequency; };
 	std::vector<PackageMergeTreeNodePtr> origNodes;
 
 	for (byte symbol : srcData)
 	{
-		symbolsCount[(int)symbol]++;
+		symbolsCount[static_cast<size_t>(symbol)]++;
 	}
 
-	for (int i = 0; i < symbolsCount.size(); i++)
+	for (size_t i = 0; i < symbolsCount.size(); i++)
 	{
-		int curSymbolCount = symbolsCount[i];
+		size_t curSymbolCount = symbolsCount[i];
 		if (curSymbolCount > 0) {
-			origNodes.push_back(std::make_shared<PackageMergeTreeDataNode>(i, curSymbolCount));
+			origNodes.push_back(std::make_shared<PackageMergeTreeDataNode>(static_cast<byte>(i), curSymbolCount));
 		}
 	}
 	origNodes.push_back(std::make_shared<PackageMergeTreeDataNode>(0, 0));			// eliminates 1*-codes
@@ -41,7 +41,7 @@ HuffmanTablePtr HuffmanTable::create(size_t codeWordLength, const std::vector<by
 
 	std::vector<PackageMergeTreeNodePtr> curNodes = origNodes;
 
-	for (int l = 1; l <= codeWordLength; l++)
+	for (size_t l = 1; l <= codeWordLength; l++)
 	{
 		std::sort(curNodes.begin(), curNodes.end(), [](PackageMergeTreeNodePtr a, PackageMergeTreeNodePtr b)
 		{
@@ -50,7 +50,7 @@ HuffmanTablePtr HuffmanTable::create(size_t codeWordLength, const std::vector<by
 
 		std::vector<PackageMergeTreeNodePtr> nextNodes;
 		if (l < codeWordLength) nextNodes = origNodes;
-		for (int i = 1; i < curNodes.size(); i += 2)
+		for (size_t i = 1; i < curNodes.size(); i += 2)
 		{
 			PackageMergeTreeNodePtr leftNode = curNodes[i - 1];
 			PackageMergeTreeNodePtr rightNode = curNodes[i];
@@ -73,12 +73,12 @@ HuffmanTablePtr HuffmanTable::create(size_t codeWordLength, const std::vector<by
 		return a->codeLength > b->codeLength;
 	});
 
-	int lastCodeLength = dataNodes[0]->frequency == 0 ? dataNodes[1]->codeLength : dataNodes[0]->codeLength;				// not sure if we need this
+	size_t lastCodeLength = dataNodes[0]->frequency == 0 ? dataNodes[1]->codeLength : dataNodes[0]->codeLength;				// not sure if we need this
 	unsigned short code = (0xffff >> (16 - lastCodeLength)) - 1;			// rightgrowing tree without 1*-codes
-	for (int i = 0; i < dataNodes.size(); i++)
+	for (size_t i = 0; i < dataNodes.size(); i++)
 	{
 		if (dataNodes[i]->frequency == 0) continue;				// eliminates 1*-codes
-		int curCodeLength = dataNodes[i]->codeLength;
+		size_t curCodeLength = dataNodes[i]->codeLength;
 		if (curCodeLength != lastCodeLength) {
 			code++;
 			code >>= lastCodeLength - curCodeLength;
@@ -131,28 +131,39 @@ std::vector<byte> HuffmanTable::decode(BitBufferPtr inputStream)
 
 std::vector<byte> HuffmanTable::decode2(BitBufferPtr inputStream)
 {
+	struct EntryType
+	{
+		byte symbol;
+		BitBuffer code;
+		size_t codeLength;
+
+
+		EntryType(byte symbol, const BitBuffer& code, size_t codeLength)
+			: symbol(symbol), code(code), codeLength(codeLength)
+		{}
+	};
+
 	std::vector<byte> result;
 
-	typedef std::tuple<BitBuffer, size_t, byte> EntryType;
 	std::vector<EntryType> decodePairs;
 
 	// create a sortable <BitBuffer, byte> map to work with
 	for (auto it = codeMap.cbegin(); it != codeMap.cend(); ++it)
 	{
-		decodePairs.emplace_back(*it->second, it->second->getSize(), it->first);
+		decodePairs.emplace_back(it->first, *it->second, it->second->getSize());
 	}
 
 	// sort table by codeword length and codeword bits
 	std::sort(decodePairs.begin(), decodePairs.end(), [](const EntryType& a, const EntryType& b)
 	{
-		return std::get<1>(a) == std::get<1>(b) ? std::get<0>(a) < std::get<0>(b) : std::get<1>(a) < std::get<1>(b);
+		return a.codeLength == b.codeLength ? a.code < b.code : a.codeLength < b.codeLength;
 	});
 
 	// fill codewords with 1-bits
 	unsigned short fillBits = 0xffff;
-	for (auto& tuple : decodePairs)
+	for (auto& entry : decodePairs)
 	{
-		BitBuffer& curBitBuffer = std::get<0>(tuple);
+		BitBuffer& curBitBuffer = entry.code;
 		curBitBuffer.pushBits(16 - curBitBuffer.getSize(), &fillBits);
 	}
 
@@ -164,12 +175,12 @@ std::vector<byte> HuffmanTable::decode2(BitBufferPtr inputStream)
 		inputStream->getBits(offset, buffer, std::min(size_t(16), inputStream->getSize()));
 		curBitBuffer.pushBits(16, buffer);
 
-		for (auto& tuple : decodePairs)
+		for (auto& entry : decodePairs)
 		{
-			if (!(std::get<0>(tuple) < curBitBuffer))
+			if (!(entry.code < curBitBuffer))
 			{
-				result.push_back(std::get<2>(tuple));
-				offset += std::get<1>(tuple);
+				result.push_back(entry.symbol);
+				offset += entry.codeLength;
 				break;
 			}
 		}
@@ -178,7 +189,7 @@ std::vector<byte> HuffmanTable::decode2(BitBufferPtr inputStream)
 	return result;
 }
 
-PackageMergeTreeNode::PackageMergeTreeNode(int frequency, PackageMergeTreeNodePtr leftChild, PackageMergeTreeNodePtr rightChild)
+PackageMergeTreeNode::PackageMergeTreeNode(size_t frequency, PackageMergeTreeNodePtr leftChild, PackageMergeTreeNodePtr rightChild)
 	: frequency(frequency), children(leftChild, rightChild)
 {}
 
@@ -193,7 +204,7 @@ void PackageMergeTreeNode::incCodeLength()
 	children.second->incCodeLength();
 }
 
-PackageMergeTreeDataNode::PackageMergeTreeDataNode(byte data, int frequency)
+PackageMergeTreeDataNode::PackageMergeTreeDataNode(byte data, size_t frequency)
 	: PackageMergeTreeNode(frequency, nullptr, nullptr), data(data), codeLength(0)
 {}
 
