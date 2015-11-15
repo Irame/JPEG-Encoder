@@ -2,16 +2,15 @@
 //
 
 #include "stdafx.h"
-
-#include <iostream>
-
 #include "Benchmark.h"
-
-#include "ImageLoader.h"
+#include <vector>
+#include <string>
 #include "BitBuffer.h"
 #include "JPEGSegments.h"
-#include <map>
-#include "HuffmanCoding.h"
+#include "Image.h"
+#include "ImageLoader.h"
+
+using namespace std;
 
 byte testValues[10000000];
 
@@ -73,10 +72,10 @@ void bitBufferTest(string filePath)
 
 	JPEGSegments::EndOfImage endOfImage;
 
-	JPEGSegments::Serialize(startOfImage, bitBuffer);
-	JPEGSegments::Serialize(app0, bitBuffer);
-	JPEGSegments::Serialize(startOfFrame0, bitBuffer);
-	JPEGSegments::Serialize(endOfImage, bitBuffer);
+	Serialize(startOfImage, bitBuffer);
+	Serialize(app0, bitBuffer);
+	Serialize(startOfFrame0, bitBuffer);
+	Serialize(endOfImage, bitBuffer);
 
 	//for (int i = 0; i < 10000000; i++)
 	//{
@@ -90,7 +89,7 @@ void bitBufferTest(string filePath)
 
 void testHuffmanEncoding()
 {
-	std::vector<byte> allSymbols{ 0, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
+	vector<byte> allSymbols{ 0, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
 	cout << "All symbols: " << allSymbols << endl;
 	
 	auto huffmanTable = HuffmanTable<byte>::create(16, allSymbols);
@@ -100,10 +99,10 @@ void testHuffmanEncoding()
 	cout << "Test symbols: " << encodeDecodeTestSymbols << endl;
 
 	auto encodedSymbols = huffmanTable->encode(encodeDecodeTestSymbols);
-	std::cout << "Encoded symbols: " << *encodedSymbols << endl;
+	cout << "Encoded symbols: " << *encodedSymbols << endl;
 
 	vector<byte> decodedSymbols = huffmanTable->decode(encodedSymbols);
-	std::cout << "Decoded symbols: " << decodedSymbols << endl;
+	cout << "Decoded symbols: " << decodedSymbols << endl;
 }
 
 int main(int argc, char* argv[])
@@ -123,16 +122,16 @@ int main(int argc, char* argv[])
 	return  0;
 
 	if (argc < 3) {
-		std::cerr << "Usage: " << argv[0] << " <Source File> <Destination File>" << std::endl;
+		cerr << "Usage: " << argv[0] << " <Source File> <Destination File>" << endl;
 		return 1;
 	}
 
-	std::string srcFile(argv[1]);
-	std::string dstFile(argv[2]);
+	string srcFile(argv[1]);
+	string dstFile(argv[2]);
 
 	SamplingScheme scheme = SamplingScheme::Scheme422;
 
-	std::cout << "Load image file: " << srcFile << std::endl;
+	cout << "Load image file: " << srcFile << endl;
 	ImageCCPtr image = nullptr;
 	
 
@@ -157,7 +156,7 @@ int main(int argc, char* argv[])
 	//});
 
 
-	std::cout << "Reduce channel resolution for scheme." << std::endl;
+	cout << "Reduce channel resolution for scheme." << endl;
 	benchmark("reduceResolutionBySchema", 1, [&]() {
 		image->reduceResolutionBySchema();
 	});
@@ -184,7 +183,7 @@ int main(int argc, char* argv[])
 	//	image->applySepia();
 	//});
 
-	std::cout << "Save image file: " << dstFile << std::endl;
+	cout << "Save image file: " << dstFile << endl;
 	benchmark("ImageLoader::Save()", 1, [&]() {
 		ImageLoader::Save(dstFile, image);
 	});

@@ -1,8 +1,6 @@
 #pragma once
-
-#include <string>
 #include "Image.h"
-
+#include "SamplingScheme.h"
 
 class ImageLoader
 {

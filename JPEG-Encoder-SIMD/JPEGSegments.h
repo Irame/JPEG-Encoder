@@ -4,8 +4,9 @@
 #pragma pack(push, 1)
 
 #include <algorithm>
-#include "BitBuffer.h"
 #include "HuffmanCoding.h"
+#include "SamplingScheme.h"
+
 
 struct BEushort // datatype that swaps byteorder to have the correct order for serialization
 {
@@ -94,10 +95,10 @@ namespace JPEGSegments
 			marker(SegmentType::StartOfFrame0), 
 			yResolution(yResolution), 
 			xResolution(xResolution) {
-			int maxFactor1 = max(scheme.yReductionOptions.heightFactor, scheme.yReductionOptions.widthFactor);
-			int maxFactor2 = max(scheme.cbReductionOptions.heightFactor, scheme.cbReductionOptions.widthFactor);
-			int maxFactor3 = max(scheme.crReductionOptions.heightFactor, scheme.crReductionOptions.widthFactor);
-			int maxFactor = max(max(maxFactor1, maxFactor2), maxFactor3);
+			int maxFactor1 = std::max(scheme.yReductionOptions.heightFactor, scheme.yReductionOptions.widthFactor);
+			int maxFactor2 = std::max(scheme.cbReductionOptions.heightFactor, scheme.cbReductionOptions.widthFactor);
+			int maxFactor3 = std::max(scheme.crReductionOptions.heightFactor, scheme.crReductionOptions.widthFactor);
+			int maxFactor = std::max(std::max(maxFactor1, maxFactor2), maxFactor3);
 			byte yheight = (maxFactor / scheme.yReductionOptions.heightFactor) << 4;
 			byte ywidth = maxFactor / scheme.yReductionOptions.widthFactor;
 			byte cbheight = (maxFactor / scheme.cbReductionOptions.heightFactor) << 4;
@@ -127,7 +128,7 @@ namespace JPEGSegments
 		{
 			memset(symbolCount, 0, 16);
 
-			vector<std::pair<const byte, BitBufferPtr>*> sortableMapEntries;
+			std::vector<std::pair<const byte, BitBufferPtr>*> sortableMapEntries;
 
 			for (auto symbolCodePair : huffmanTable)
 			{

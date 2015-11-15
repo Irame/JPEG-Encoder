@@ -1,14 +1,8 @@
 #pragma once
-
 #include <chrono>
-#include <functional>
-#include <iostream>
-#include <string>
-
-using namespace std; 
 
 template <typename F>
-static void benchmark(string name, size_t count, F& lambda)
+static void benchmark(std::string name, size_t count, F& lambda)
 {
 	auto start = std::chrono::high_resolution_clock::now();
 

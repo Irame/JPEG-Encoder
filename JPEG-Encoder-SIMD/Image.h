@@ -1,9 +1,9 @@
 #pragma once
-#include <vector>
 #include <memory>
-#include <cassert>
-#include "SamplingScheme.h"
+#include <assert.h>
 #include "ColorNames.h"
+#include "SamplingScheme.h"
+#include <vector>
 
 class Image;
 
