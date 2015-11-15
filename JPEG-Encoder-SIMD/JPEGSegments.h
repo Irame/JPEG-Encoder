@@ -125,7 +125,7 @@ namespace JPEGSegments
 			: marker(SegmentType::DefineHuffmannTable),
 			htInformation((0b1111 & htNum) << 4 | (0b1 & htType) << 3),
 			table(new byte[huffmanTable.getSymbolCount()]), 
-			length(2+1+16+huffmanTable.getSymbolCount())
+			length(2+1+16+unsigned short(huffmanTable.getSymbolCount()))
 		{
 			memset(symbolCount, 0, 16);
 
@@ -144,8 +144,7 @@ namespace JPEGSegments
 			int i = 0;
 			for (auto symbolCodePair : sortableMapEntries)
 			{
-				int test = symbolCodePair.second->getSize() - 1;
-				symbolCount[test] += 1;
+				symbolCount[symbolCodePair.second->getSize() - 1] += 1;
 				table[i++] = symbolCodePair.first;
 			}
 		}
