@@ -207,6 +207,7 @@ void ImageLoader::SavePNG(std::string path, ImageCCPtr image)
 void ImageLoader::SaveJPG(std::string path, ImageCCPtr image) {
 	const Dimension2D& imageSize = image->getImageSize();
 	const SamplingScheme& scheme = image->getSamplingScheme();
+	//const HuffmanTablePtr<byte> huffmann = image->getHuffmanTable();
 
 	BitBuffer bitBuffer;
 
@@ -214,11 +215,13 @@ void ImageLoader::SaveJPG(std::string path, ImageCCPtr image) {
 	JPEGSegments::APP0 app0;
 	JPEGSegments::StartOfFrame0 startOfFrame0(static_cast<short>(imageSize.width), static_cast<short>(imageSize.height), scheme);
 	JPEGSegments::EndOfImage endOfImage;
+	//JPEGSegments::DefineHuffmannTable defineHuffmannTable(byte(0), JPEGSegments::HuffmanTableType::DC, *huffmann);
 
 	JPEGSegments::Serialize(startOfImage, bitBuffer);
 	JPEGSegments::Serialize(app0, bitBuffer);
 	JPEGSegments::Serialize(startOfFrame0, bitBuffer);
 	JPEGSegments::Serialize(endOfImage, bitBuffer);
+	//JPEGSegments::Serialize(defineHuffmannTable, bitBuffer);
 
 	bitBuffer.writeToFile(path);
 }

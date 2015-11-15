@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "SIMD.h"
 #include "Image.h"
+#include "HuffmanCoding.h"
 
 Image::Image(size_t width, size_t height, SamplingScheme scheme) 
 	: imageSize(width, height), stepSize(scheme.calcWidthStepSize(), scheme.calcHeightStepSize()),

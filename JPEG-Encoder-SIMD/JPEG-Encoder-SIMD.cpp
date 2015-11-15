@@ -102,6 +102,7 @@ void testHuffmanEncoding()
 	cout << "Encoded symbols: " << *encodedSymbols << endl;
 
 	vector<byte> decodedSymbols = huffmanTable->decode(encodedSymbols);
+
 	cout << "Decoded symbols: " << decodedSymbols << endl;
 }
 
@@ -116,10 +117,10 @@ int main(int argc, char* argv[])
 	//	bitBufferTest(argv[2]);
 	//});
 
-	benchmark("testHuffmanEncoding", 1, [&]() {
-		testHuffmanEncoding();
-	});
-	return  0;
+	//benchmark("testHuffmanEncoding", 1, [&]() {
+	//	testHuffmanEncoding();
+	//});
+	//return  0;
 
 	if (argc < 3) {
 		cerr << "Usage: " << argv[0] << " <Source File> <Destination File>" << endl;
@@ -140,6 +141,7 @@ int main(int argc, char* argv[])
 	});
 
 
+
 	//std::cout << "Convert image to YCbCr." << std::endl;
 	//benchmark("convertToYCbCr",1, [&]() {
 	//	image->convertToYCbCr();
@@ -156,10 +158,10 @@ int main(int argc, char* argv[])
 	//});
 
 
-	cout << "Reduce channel resolution for scheme." << endl;
-	benchmark("reduceResolutionBySchema", 1, [&]() {
-		image->reduceResolutionBySchema();
-	});
+	//cout << "Reduce channel resolution for scheme." << endl;
+	//benchmark("reduceResolutionBySchema", 1, [&]() {
+	//	image->reduceResolutionBySchema();
+	//});
 
 
 	//std::cout << "Cancle out Cb and Cr Channel." << std::endl;

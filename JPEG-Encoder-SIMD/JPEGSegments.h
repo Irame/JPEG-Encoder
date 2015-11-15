@@ -121,7 +121,7 @@ namespace JPEGSegments
 		byte symbolCount[16];
 		byte* table;
 
-		DefineHuffmannTable(byte htNum, HuffmanTableType htType, HuffmanTable<byte>& huffmanTable)
+		DefineHuffmannTable(byte htNum, HuffmanTableType htType, const HuffmanTable<byte>& huffmanTable)
 			: marker(SegmentType::DefineHuffmannTable),
 			htInformation((0b1111 & htNum) << 4 | (0b1 & htType) << 3),
 			table(new byte[huffmanTable.getSymbolCount()])

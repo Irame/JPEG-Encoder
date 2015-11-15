@@ -115,4 +115,9 @@ public:
 	void reduceResolutionBySchema();
 
 	const SamplingScheme& getSamplingScheme() const  { return samplingScheme; }
+
+	shared_ptr<HuffmanTable<byte>> getHuffmanTable(){
+		std::vector<byte> allSymbols{ 0, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
+		return HuffmanTable<byte>::create(16, allSymbols);
+	}
 };
