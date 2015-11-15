@@ -17,7 +17,7 @@ byte testValues[10000000];
 
 template <typename TElem>
 ostream& operator<<(ostream& os, const vector<TElem>& vec) {
-	typedef vector<TElem>::const_iterator iter_t;
+	typedef typename vector<TElem>::const_iterator iter_t;
 	const iter_t iter_begin = vec.begin();
 	const iter_t iter_end = vec.end();
 	os << "[";
@@ -90,7 +90,7 @@ void bitBufferTest(string filePath)
 
 void testHuffmanEncoding()
 {
-	std::vector<byte> allSymbols{ 0, 0, 0, 2, 2, 3, 4 };
+	std::vector<byte> allSymbols{ 0, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
 	cout << "All symbols: " << allSymbols << endl;
 	
 	auto huffmanTable = HuffmanTable<byte>::create(16, allSymbols);
