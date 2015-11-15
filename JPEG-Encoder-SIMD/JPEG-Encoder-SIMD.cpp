@@ -93,7 +93,7 @@ void testHuffmanEncoding()
 	std::vector<byte> allSymbols{ 0, 0, 0, 2, 2, 3, 4 };
 	cout << "All symbols: " << allSymbols << endl;
 	
-	auto huffmanTable = HuffmanTable::create(16, allSymbols);
+	auto huffmanTable = HuffmanTable<byte>::create(16, allSymbols);
 	cout << "Huffman Table:" << endl << *huffmanTable;
 
 	vector<byte> encodeDecodeTestSymbols{ 3, 0, 4 };

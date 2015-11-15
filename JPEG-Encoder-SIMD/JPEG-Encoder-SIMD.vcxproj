@@ -174,7 +174,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BitBuffer.cpp" />
-    <ClCompile Include="HuffmanCoding.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="ImageLoader.cpp" />
     <ClCompile Include="JPEG-Encoder-SIMD.cpp" />
