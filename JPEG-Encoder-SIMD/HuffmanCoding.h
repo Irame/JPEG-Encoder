@@ -107,7 +107,7 @@ HuffmanTablePtr<SymbolType> HuffmanTable<SymbolType>::create(size_t codeWordLeng
 
 	HuffmanTablePtr<SymbolType> huffmanTable = std::shared_ptr<HuffmanTable>(new HuffmanTable(codeWordLength));
 
-	// if no input symbols are given a empty table is returned
+	// if no input symbols are given an empty table is returned
 	if (srcData.size() == 0) return huffmanTable;
 
 	// count the number of occurences for each symbol in 'srcData'
@@ -167,18 +167,17 @@ HuffmanTablePtr<SymbolType> HuffmanTable<SymbolType>::create(size_t codeWordLeng
 	std::vector<PackageMergeTreeDataNodePtr<SymbolType>> dataNodes(origNodes.size());
 	transform(origNodes.begin(), origNodes.end(), dataNodes.begin(), std::static_pointer_cast<PackageMergeTreeDataNode<SymbolType>, PackageMergeTreeNode>);
 
-	// sort 'dataNodes' by codeLength such that the longes code length os on top
+	// sort 'dataNodes' by codeLength such that the longest code length is on top
 	std::sort(dataNodes.begin(), dataNodes.end(), [](PackageMergeTreeDataNodePtr<SymbolType> a, PackageMergeTreeDataNodePtr<SymbolType> b)
 	{
 		return a->codeLength > b->codeLength;
 	});
 
-	// get the greates code length of a not dummy leave (lastCodeLength = dataNodes[0]->codeLength; 
-	//     should work because there should allways be a true leave with the same code word leng as the dummy leave)
-	size_t lastCodeLength = dataNodes[0]->frequency == 0 ? dataNodes[1]->codeLength : dataNodes[0]->codeLength;
+	// get the greatest code length
+	size_t lastCodeLength = dataNodes[0]->codeLength;
 
-	// start with a 1*0 code to ensure a rightgrowing tree without 1* codes (e.g. 1*0 => 11111110)
-	InternalCodeType code = (~InternalCodeType(0) >> (sizeof(InternalCodeType) * 8 - lastCodeLength)) - 1;
+	// start with a 1* code to ensure a rightgrowing
+	InternalCodeType code = ~InternalCodeType(0) >> (sizeof(InternalCodeType) * 8 - lastCodeLength);
 	for (size_t i = 0; i < dataNodes.size(); i++)
 	{
 		// ignore our dummy leave
@@ -186,21 +185,19 @@ HuffmanTablePtr<SymbolType> HuffmanTable<SymbolType>::create(size_t codeWordLeng
 
 		size_t curCodeLength = dataNodes[i]->codeLength;
 
-		// if the codelength changes we hve to go one up in our tree
+		// if the codelength changes we have to go up in our tree
 		if (curCodeLength != lastCodeLength) {
-			code++;
 			code >>= lastCodeLength - curCodeLength;
-			code--;
 		}
+
+		// go one left in our tree (also eliminates 1* codes)
+		code--;
 
 		// create a bitbuffer with the current code and put it into the 'huffmanTable->codeMap'
 		auto curBitBuffer = std::make_shared<BitBuffer>();
 		InternalCodeType beCode = _byteswap_uint64(code << (sizeof(InternalCodeType) * 8 - curCodeLength));
 		curBitBuffer->pushBits(curCodeLength, &beCode);
 		huffmanTable->codeMap[dataNodes[i]->data] = curBitBuffer;
-
-		// go one left in our tree
-		code--;
 
 		lastCodeLength = curCodeLength;
 	}
