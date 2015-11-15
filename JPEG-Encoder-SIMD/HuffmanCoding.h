@@ -2,6 +2,7 @@
 #include <memory>
 #include "BitBuffer.h"
 #include <map>
+#include <algorithm>
 
 template<typename SymbolType>
 class HuffmanTable;
