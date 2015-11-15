@@ -127,15 +127,14 @@ HuffmanTablePtr<SymbolType> HuffmanTable<SymbolType>::create(size_t codeWordLeng
 
 	std::vector<PackageMergeTreeNodePtr> curNodes = origNodes;
 
-	for (size_t l = 1; l <= codeWordLength; l++)
+	for (size_t l = 1; l < codeWordLength; l++)
 	{
 		std::sort(curNodes.begin(), curNodes.end(), [](PackageMergeTreeNodePtr a, PackageMergeTreeNodePtr b)
 		{
 			return a->frequency < b->frequency;
 		});
 
-		std::vector<PackageMergeTreeNodePtr> nextNodes;
-		if (l < codeWordLength) nextNodes = origNodes;
+		std::vector<PackageMergeTreeNodePtr> nextNodes = origNodes;
 		for (size_t i = 1; i < curNodes.size(); i += 2)
 		{
 			PackageMergeTreeNodePtr leftNode = curNodes[i - 1];
@@ -145,9 +144,14 @@ HuffmanTablePtr<SymbolType> HuffmanTable<SymbolType>::create(size_t codeWordLeng
 		curNodes = nextNodes;
 	}
 
-	for (auto node : curNodes)
+	std::sort(curNodes.begin(), curNodes.end(), [](PackageMergeTreeNodePtr a, PackageMergeTreeNodePtr b)
 	{
-		node->incCodeLength();
+		return a->frequency < b->frequency;
+	});
+
+	for (size_t i = 0; i < 2 * origNodes.size() - 2; i++)
+	{
+		curNodes[i]->incCodeLength();
 	}
 
 	std::vector<PackageMergeTreeDataNodePtr<SymbolType>> dataNodes(origNodes.size());
