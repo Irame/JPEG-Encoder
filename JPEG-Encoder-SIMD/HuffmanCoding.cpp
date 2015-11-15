@@ -4,9 +4,21 @@
 #include <functional>
 #include <vector>
 
+typedef uint64_t InternalCodeType;
+
 size_t HuffmanTable::getSymbolCount() const
 {
 	return codeMap.size();
+}
+
+std::map<byte, BitBufferPtr>::const_iterator HuffmanTable::begin() const
+{
+	return codeMap.begin();
+}
+
+std::map<byte, BitBufferPtr>::const_iterator HuffmanTable::end() const
+{
+	return codeMap.end();
 }
 
 // package-merge algorithm
@@ -14,7 +26,9 @@ size_t HuffmanTable::getSymbolCount() const
 // https://books.google.de/books?id=2F74jyPl48EC&pg=PA402
 HuffmanTablePtr HuffmanTable::create(size_t codeWordLength, const std::vector<byte>& srcData)
 {
-	HuffmanTablePtr huffmanTable = std::shared_ptr<HuffmanTable>(new HuffmanTable());
+	if (codeWordLength > sizeof(InternalCodeType) * 8) return nullptr;
+
+	HuffmanTablePtr huffmanTable = std::shared_ptr<HuffmanTable>(new HuffmanTable(codeWordLength));
 	
 	if (srcData.size() == 0) return huffmanTable;
 
@@ -74,7 +88,7 @@ HuffmanTablePtr HuffmanTable::create(size_t codeWordLength, const std::vector<by
 	});
 
 	size_t lastCodeLength = dataNodes[0]->frequency == 0 ? dataNodes[1]->codeLength : dataNodes[0]->codeLength;				// not sure if we need this
-	unsigned short code = (0xffff >> (16 - lastCodeLength)) - 1;			// rightgrowing tree without 1*-codes
+	InternalCodeType code = (~InternalCodeType(0) >> (sizeof(InternalCodeType) * 8 - lastCodeLength)) - 1;			// rightgrowing tree without 1*-codes
 	for (size_t i = 0; i < dataNodes.size(); i++)
 	{
 		if (dataNodes[i]->frequency == 0) continue;				// eliminates 1*-codes
@@ -85,7 +99,7 @@ HuffmanTablePtr HuffmanTable::create(size_t codeWordLength, const std::vector<by
 			code--;
 		}
 		auto curBitBuffer = std::make_shared<BitBuffer>();
-		unsigned short beCode = _byteswap_ushort(code << (16 - curCodeLength));
+		InternalCodeType beCode = _byteswap_uint64(code << (sizeof(InternalCodeType) * 8 - curCodeLength));
 		curBitBuffer->pushBits(curCodeLength, &beCode);
 		huffmanTable->codeMap[dataNodes[i]->data] = curBitBuffer;
 
@@ -164,16 +178,16 @@ std::vector<byte> HuffmanTable::decode2(BitBufferPtr inputStream)
 	for (auto& entry : decodePairs)
 	{
 		BitBuffer& curBitBuffer = entry.code;
-		curBitBuffer.pushBits(16 - curBitBuffer.getSize(), &fillBits);
+		curBitBuffer.pushBits(maxCodewordLength - curBitBuffer.getSize(), &fillBits);
 	}
 
 	size_t offset = 0;
 	while(offset < inputStream->getSize())
 	{
 		BitBuffer curBitBuffer;
-		byte buffer[2] = {0, 0};
-		inputStream->getBits(offset, buffer, std::min(size_t(16), inputStream->getSize()));
-		curBitBuffer.pushBits(16, buffer);
+		InternalCodeType buffer = 0;
+		inputStream->getBits(offset, &buffer, std::min(maxCodewordLength, inputStream->getSize()));
+		curBitBuffer.pushBits(maxCodewordLength, &buffer);
 
 		for (auto& entry : decodePairs)
 		{
@@ -211,4 +225,13 @@ PackageMergeTreeDataNode::PackageMergeTreeDataNode(byte data, size_t frequency)
 void PackageMergeTreeDataNode::incCodeLength()
 {
 	codeLength++;
+}
+
+std::ostream& operator<<(std::ostream& strm, const HuffmanTable& huffmanTable)
+{
+	for (auto it = huffmanTable.codeMap.cbegin(); it != huffmanTable.codeMap.cend(); ++it)
+	{
+		std::cout << int(it->first) << ": " << *it->second << std::endl;
+	}
+	return strm;
 }

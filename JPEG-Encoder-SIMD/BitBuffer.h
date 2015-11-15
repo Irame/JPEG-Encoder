@@ -32,7 +32,7 @@ public:
 	// Returns the bit at the given index
 	bool getBit(size_t index) const;
 	// Writes the requested bits into an out byte array
-	void getBits(size_t index, byte* out, size_t numOfBits) const;
+	void getBits(size_t index, void* out, size_t numOfBits) const;
 	
 	// clears conent
 	void clear();

@@ -13,12 +13,16 @@ typedef std::shared_ptr<PackageMergeTreeDataNode> PackageMergeTreeDataNodePtr;
 
 class HuffmanTable
 {
-	HuffmanTable() {};
-public:
+	HuffmanTable(size_t maxCodewordLength) : maxCodewordLength(maxCodewordLength) {};
 
 	std::map<byte, BitBufferPtr> codeMap;
+	size_t maxCodewordLength;
 
+public:
 	size_t getSymbolCount() const;
+
+	std::map<byte, BitBufferPtr>::const_iterator begin() const;
+	std::map<byte, BitBufferPtr>::const_iterator end() const;
 
 	static HuffmanTablePtr create(size_t codeWordLength, const std::vector<byte>& srcData);
 
@@ -26,6 +30,8 @@ public:
 
 	std::vector<byte> decode(BitBufferPtr inputStream);
 	std::vector<byte> decode2(BitBufferPtr inputStream);
+
+	friend std::ostream& operator<<(std::ostream& strm, const HuffmanTable& bitBuffer);
 };
 
 

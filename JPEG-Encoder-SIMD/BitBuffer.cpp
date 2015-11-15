@@ -126,9 +126,11 @@ bool BitBuffer::getBit(size_t index) const
 	return 0 != (data[dataByteOffset] & (1 << (7 - curByteBitOffset)));
 }
 
-void BitBuffer::getBits(size_t index, byte* out, size_t numOfBits) const
+void BitBuffer::getBits(size_t index, void* outVoid, size_t numOfBits) const
 {
 	if (numOfBits == 0) return;
+
+	byte* out = static_cast<byte*>(outVoid);
 
 	byte leftCount = 8 - index % 8;
 

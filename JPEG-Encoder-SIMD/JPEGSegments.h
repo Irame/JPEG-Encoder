@@ -129,7 +129,7 @@ namespace JPEGSegments
 
 			vector<std::pair<const byte, BitBufferPtr>*> sortableMapEntries;
 
-			for (auto symbolCodePair : huffmanTable.codeMap)
+			for (auto symbolCodePair : huffmanTable)
 			{
 				sortableMapEntries.push_back(&symbolCodePair);
 			}

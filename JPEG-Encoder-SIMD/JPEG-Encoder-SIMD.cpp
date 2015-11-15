@@ -94,11 +94,7 @@ void testHuffmanEncoding()
 	cout << "All symbols: " << allSymbols << endl;
 	
 	auto huffmanTable = HuffmanTable::create(16, allSymbols);
-	cout << "Huffman Table:" << endl;
-	for (auto it = huffmanTable->codeMap.cbegin(); it != huffmanTable->codeMap.cend(); ++it)
-	{
-		std::cout << int(it->first) << ": " << *it->second << endl;
-	}
+	cout << "Huffman Table:" << endl << *huffmanTable;
 
 	vector<byte> encodeDecodeTestSymbols{ 3, 0, 4 };
 	cout << "Test symbols: " << encodeDecodeTestSymbols << endl;
