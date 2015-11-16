@@ -136,3 +136,77 @@ void DCT::seperateDCT(const PointerMatrix& values)
 		}
 	}
 }
+
+void DCT::kokDCT(const PointerMatrix& values)
+{
+	size_t N = 64;
+
+	std::vector<float> X; // Output
+	std::vector<float> x; // Input
+	std::vector<float> p; // p(n) für C(i)
+	std::vector<float> q; // q(n) für D'(i)
+	std::vector<float> D_i; // cache for D(i)
+
+	for (size_t i = 0; i < 8; i++)
+	{
+		for (size_t j = 0; j < 8; j++)
+		{
+			x.push_back(values[i][j]);
+		}
+	}
+
+	// Calculate new sequences p(n) and q(n) 
+	for (size_t n = 0; n <= N / 2 - 1; n++)
+	{
+		p.push_back(x[n] + x[N - 1 - n]);
+		q.push_back((x[n] - x[N - 1 - n]) * 2 * cosf((2 * M_PIf *(2 * n + 1)) / (4.0f*N)));
+	}
+
+	// calc D(k=0) with X(0)
+	D_i.push_back(0.0f);
+	for (size_t n = 0; n <= N-1; n++)
+	{
+	 	D_i[0] += x[n];
+	}
+
+	// C(i)
+	auto C_n = [&N, &p](size_t i, size_t n) {
+		return p[n] * cosf((2*M_PIf * (2*n + 1) * 2*i) / (4.0f*N));
+	};
+	// D'(i)
+	auto D_n_ = [&N, &q](size_t i, size_t n) {
+		return q[n] * cosf((2*M_PIf * (2*n + 1) * 2*i) / (4.0f*N));
+	};
+	auto D_n = [&N, &D_i, &D_n_](size_t i, size_t n) {
+		if (i == 0)
+			return 2 * D_i[0]; // D'(0) = 2*D(0)
+		else
+			return D_n_(i, n) - D_i[i-1]; // D'(i) - D(i-1)
+	};
+		
+	for (size_t i = 0; i <= N / 2 - 1; i++)
+	{
+		float c = 0.0f;
+		float d = 0.0f;
+
+		for (size_t n = 0; n <= N / 2 - 1; n++)
+		{
+			c += C_n(i, n);
+			d += D_n(i, n);
+		}
+
+		D_i.push_back(d); // store D(i)
+		
+		X.push_back(c);
+		X.push_back(d);
+	}
+
+
+	for (size_t i = 0; i < 8; i++)
+	{
+		for (size_t j = 0; j < 8; j++)
+		{
+			values[i][j] = X[i * 8 + j];
+		}
+	}
+}

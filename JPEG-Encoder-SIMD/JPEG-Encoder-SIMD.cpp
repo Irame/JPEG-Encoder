@@ -91,20 +91,30 @@ void bitBufferTest(string filePath)
 
 void testDCT()
 {
-	float rowOne[]		=	{ 1,2,3,4,5,6,7,8 };
-	float rowTwo[]		=	{ 1,2,3,4,5,6,7,8 };
-	float rowThree[]	=	{ 1,2,3,4,5,6,7,8 };
-	float rowFour[]		=	{ 1,2,3,4,5,6,7,8 };
-	float rowFive[]		=	{ 1,2,3,4,5,6,7,8 };
-	float rowSix[]		=	{ 1,2,3,4,5,6,7,8 };
-	float rowSeven[]	=	{ 1,2,3,4,5,6,7,8 };
-	float rowEight[]	=	{ 1,2,3,4,5,6,7,8 };
+	float rowOne[]		=	{ 140, 144, 147, 140, 140, 155, 179, 175 };
+	float rowTwo[] = { 144, 152, 140, 147, 140, 148, 167, 179 };
+	float rowThree[] = { 152, 155, 136, 167, 163, 162, 152, 172 };
+	float rowFour[] = { 168, 145, 156, 160, 152, 155, 136, 160 };
+	float rowFive[] = { 162, 148, 156, 148, 140, 136, 147, 162 };
+	float rowSix[] = { 147, 167, 140, 155, 155, 140, 136, 162 };
+	float rowSeven[] = { 136, 156, 123, 167, 162, 144, 140, 147 };
+	float rowEight[] = { 148, 155, 136, 155, 152, 147, 147, 136 };
+
+	
+	
+	
+	
+	
+	
+	
+	
 
 	PointerMatrix testMatrix = PointerMatrix(rowOne, rowTwo, rowThree, rowFour, rowFive, rowSix, rowSeven, rowEight);
 	
 	DCT::directDCT(testMatrix);
 	//DCT::seperateDCT(testMatrix);
 	//DCT::dct_ii(testMatrix);
+	//DCT::kokDCT(testMatrix);
 	for (int i = 0; i < 8; i++)
 	{
 		for (int j = 0; j < 8; j++)
