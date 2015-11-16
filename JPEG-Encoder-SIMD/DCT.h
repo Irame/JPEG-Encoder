@@ -1,6 +1,8 @@
 #pragma once
+#include "PointerMatrix.h"
+
 namespace DCT
 {
-	static float* directDCT(float* values);
+	static void directDCT(PointerMatrix values);
 };
 

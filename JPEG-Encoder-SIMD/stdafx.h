@@ -7,11 +7,16 @@
 
 #include "targetver.h"
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include <stdio.h>
 #include <tchar.h>
 #include <iostream>
 
 #define NUM_BYTE_VALUES 256
+
+#define M_PIf ((float)M_PI)
 
 typedef unsigned char byte;
 
