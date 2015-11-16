@@ -102,8 +102,9 @@ void testDCT()
 
 	PointerMatrix testMatrix = PointerMatrix(rowOne, rowTwo, rowThree, rowFour, rowFive, rowSix, rowSeven, rowEight);
 	
-	//DCT::directDCT(testMatrix);
-	DCT::seperateDCT(testMatrix);
+	DCT::directDCT(testMatrix);
+	//DCT::seperateDCT(testMatrix);
+	//DCT::dct_ii(testMatrix);
 	for (int i = 0; i < 8; i++)
 	{
 		for (int j = 0; j < 8; j++)
