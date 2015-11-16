@@ -162,11 +162,11 @@ void DCT::kokDCT(const PointerMatrix& values)
 		q.push_back((x[n] - x[N - 1 - n]) * 2 * cosf((2 * M_PIf *(2 * n + 1)) / (4.0f*N)));
 	}
 
-	// calc D(k=0) with X(0)
+	// calc D(i=0) with X(2i+1)
 	D_i.push_back(0.0f);
 	for (size_t n = 0; n <= N-1; n++)
 	{
-	 	D_i[0] += x[n];
+		D_i[0] += cosf((2*M_PIf*(2*n+1))/(4.0f*N));
 	}
 
 	// C(i)
@@ -187,18 +187,62 @@ void DCT::kokDCT(const PointerMatrix& values)
 	for (size_t i = 0; i <= N / 2 - 1; i++)
 	{
 		float c = 0.0f;
-		float d = 0.0f;
+		float d_ = 0.0f;
 
 		for (size_t n = 0; n <= N / 2 - 1; n++)
 		{
 			c += C_n(i, n);
-			d += D_n(i, n);
+			d_ += D_n_(i, n);
 		}
 
-		D_i.push_back(d); // store D(i)
+		float d = 0.0f;
+		if (i == 0)
+		{
+			d = 2 * D_i[0];
+		}
+		else
+		{
+			d = d_ - D_i[i - 1];
+			D_i.push_back(d); // store D(i)
+		}
 		
 		X.push_back(c);
 		X.push_back(d);
+	}
+
+
+
+	for (size_t i = 0; i < 8; i++)
+	{
+		for (size_t j = 0; j < 8; j++)
+		{
+			values[i][j] = X[i * 8 + j];
+		}
+	}
+}
+
+
+void DCT::kokSimple(const PointerMatrix& values)
+{
+	size_t N = 64;
+
+	std::vector<float> X(64); // Output
+	std::vector<float> x; // Input
+
+	for (size_t i = 0; i < 8; i++)
+	{
+		for (size_t j = 0; j < 8; j++)
+		{
+			x.push_back(values[i][j]);
+		}
+	}
+
+	for (int k = 0; k < N; k++)
+	{
+		for (int n = 0; n < N; n++)
+		{
+			X[k] += x[n] * cos(M_PIf / (2 * N) * (2 * n + 1) * k);
+		}
 	}
 
 

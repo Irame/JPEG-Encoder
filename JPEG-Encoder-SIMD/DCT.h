@@ -8,5 +8,6 @@ namespace DCT
 	void seperateDCT(const PointerMatrix& values);
 
 	void kokDCT(const PointerMatrix& values);
+	void kokSimple(const PointerMatrix& values);
 };
 
