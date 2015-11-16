@@ -11,21 +11,27 @@ void DCT::directDCT(const PointerMatrix& values)
 	float memory[64]; 
 	PointerMatrix M = PointerMatrix(memory);
 
+	// calculate values that don't change
 	float sqrtTemp = 1 / sqrt(2);
 	float twoN = 2 * N;
 	float halfN = 2 / N;
+	
 	for (int i = 0; i < N; i++) {
+		// calculate values that only change with i
+		float iPI = i * M_PIf;
+		float ci = i == 0 ? sqrtTemp : 1;
+
 		for (int j = 0; j < N; j++) {
-			float ci = i == 0 ? sqrtTemp : 1;
+			// calculate values that only change with j
 			float cj = j == 0 ? sqrtTemp : 1;
+			float jPI = j * M_PIf;
 
 			float temp = 0;
-			float iPI = i*M_PIf;
-			float jPI = j*M_PIf;
 			
 			for (int x = 0; x < N; x++) {
+				float twoX = 2 * x;
 				for (int y = 0; y < N; y++) {
-					temp += values[x][y] * cos(((2 * x + 1)*iPI) / twoN)*cos(((2 * y + 1)*jPI) / twoN);
+					temp += values[x][y] * cos(((twoX + 1) * iPI) / twoN) * cos(((2 * y + 1) * jPI) / twoN);
 				}
 			}
 			M[i][j] = halfN * ci * cj * temp;
