@@ -91,25 +91,33 @@ void bitBufferTest(string filePath)
 
 void testDCT()
 {
-	float rowOne[]		=	{ 1,2,3,4,5,6,7,8 };
-	float rowTwo[]		=	{ 1,2,3,4,5,6,7,8 };
-	float rowThree[]	=	{ 1,2,3,4,5,6,7,8 };
-	float rowFour[]		=	{ 1,2,3,4,5,6,7,8 };
-	float rowFive[]		=	{ 1,2,3,4,5,6,7,8 };
-	float rowSix[]		=	{ 1,2,3,4,5,6,7,8 };
-	float rowSeven[]	=	{ 1,2,3,4,5,6,7,8 };
-	float rowEight[]	=	{ 1,2,3,4,5,6,7,8 };
+	float rowOne[]		=	{ 50,50,50,50,50,50,50,50 };
+	float rowTwo[]		=	{ 50,50,50,50,50,50,50,50 };
+	float rowThree[]	=	{ 50,50,50,50,50,50,50,50 };
+	float rowFour[]		=	{ 50,50,50,50,50,50,50,50 };
+	float rowFive[]		=	{ 50,50,50,50,50,50,50,50 };
+	float rowSix[]		=	{ 50,50,50,50,50,50,50,50 };
+	float rowSeven[]	=	{ 50,50,50,50,50,50,50,50 };
+	float rowEight[]	=	{ 50,50,50,50,50,50,50,50 };
 
-	PointerMatrix testMatrix = PointerMatrix(rowOne, rowTwo, rowThree, rowFour, rowFive, rowSix, rowSeven, rowEight);
+	float arr[64];
+
+	for (int i = 0; i < 64; i++)
+	{
+		arr[i] = i+1;
+	}
+
+	PointerMatrix testMatrix = PointerMatrix(arr);
+	//PointerMatrix testMatrix = PointerMatrix(rowOne, rowTwo, rowThree, rowFour, rowFive, rowSix, rowSeven, rowEight);
 	
-	DCT::directDCT(testMatrix);
-	//DCT::seperateDCT(testMatrix);
+	//DCT::directDCT(testMatrix);
+	DCT::seperateDCT(testMatrix);
 	//DCT::dct_ii(testMatrix);
 	for (int i = 0; i < 8; i++)
 	{
 		for (int j = 0; j < 8; j++)
 		{
-			cout << testMatrix[i][j] << " | ";
+			cout << round(testMatrix[i][j]) << " | ";
 		}
 		cout << endl;
 	}
