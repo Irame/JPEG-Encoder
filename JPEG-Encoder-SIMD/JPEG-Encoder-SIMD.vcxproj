@@ -160,6 +160,7 @@
     <ClInclude Include="Benchmark.h" />
     <ClInclude Include="BitBuffer.h" />
     <ClInclude Include="ColorNames.h" />
+    <ClInclude Include="DCT.h" />
     <ClInclude Include="HuffmanCoding.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="ImageLoader.h" />
@@ -174,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BitBuffer.cpp" />
+    <ClCompile Include="DCT.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="ImageLoader.cpp" />
     <ClCompile Include="JPEG-Encoder-SIMD.cpp" />
