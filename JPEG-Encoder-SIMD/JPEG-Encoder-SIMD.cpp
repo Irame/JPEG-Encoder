@@ -9,6 +9,8 @@
 #include "JPEGSegments.h"
 #include "Image.h"
 #include "ImageLoader.h"
+#include "PointerMatrix.h"
+#include "DCT.h"
 
 using namespace std;
 
@@ -87,6 +89,32 @@ void bitBufferTest(string filePath)
 	//cout << bitBuffer << endl;
 }
 
+void testDCT()
+{
+	float rowOne[]		=	{ 1,2,3,4,5,6,7,8 };
+	float rowTwo[]		=	{ 1,2,3,4,5,6,7,8 };
+	float rowThree[]	=	{ 1,2,3,4,5,6,7,8 };
+	float rowFour[]		=	{ 1,2,3,4,5,6,7,8 };
+	float rowFive[]		=	{ 1,2,3,4,5,6,7,8 };
+	float rowSix[]		=	{ 1,2,3,4,5,6,7,8 };
+	float rowSeven[]	=	{ 1,2,3,4,5,6,7,8 };
+	float rowEight[]	=	{ 1,2,3,4,5,6,7,8 };
+
+	PointerMatrix testMatrix = PointerMatrix(rowOne, rowTwo, rowThree, rowFour, rowFive, rowSix, rowSeven, rowEight);
+	
+	//DCT::directDCT(testMatrix);
+	DCT::seperateDCT(testMatrix);
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			cout << testMatrix[i][j] << " | ";
+		}
+		cout << endl;
+	}
+	cout << "end of dct" << endl;
+}
+
 void testHuffmanEncoding()
 {
 	vector<byte> allSymbols{ 0, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
@@ -122,7 +150,7 @@ int main(int argc, char* argv[])
 	//});
 	//return  0;
 
-	if (argc < 3) {
+	/*if (argc < 3) {
 		cerr << "Usage: " << argv[0] << " <Source File> <Destination File>" << endl;
 		return 1;
 	}
@@ -138,7 +166,7 @@ int main(int argc, char* argv[])
 
 	benchmark("ImageLoader::Load()",1, [&]() {
 		image = ImageLoader::Load(srcFile, scheme);
-	});
+	});*/
 
 
 
@@ -185,11 +213,16 @@ int main(int argc, char* argv[])
 	//	image->applySepia();
 	//});
 
-	cout << "Save image file: " << dstFile << endl;
+	/*cout << "Save image file: " << dstFile << endl;
 	benchmark("ImageLoader::Save()", 1, [&]() {
 		ImageLoader::Save(dstFile, image);
+	});*/
+
+	std::cout << "Test DCT" << endl;
+	benchmark("Test DCT", 1, [&]()
+	{
+		testDCT();
 	});
 
 	return 0;
 }
-

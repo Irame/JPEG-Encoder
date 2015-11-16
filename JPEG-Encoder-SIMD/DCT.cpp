@@ -45,7 +45,7 @@ void DCT::directDCT(const PointerMatrix& values)
 	}
 }
 
-static void seperateDCT(const PointerMatrix& values)
+void DCT::seperateDCT(const PointerMatrix& values)
 {
 	// use 8x8 blocks for DCT
 	int N = 8;
@@ -54,6 +54,7 @@ static void seperateDCT(const PointerMatrix& values)
 	float aValues[64];
 	float resultValues[64];
 	float saveResult[64];
+	float temp;
 
 	PointerMatrix a = PointerMatrix(aValues);
 	PointerMatrix result = PointerMatrix(resultValues);
@@ -66,7 +67,8 @@ static void seperateDCT(const PointerMatrix& values)
 		{
 			C = k == 0 ? 1 / sqrtf(2) : 1;
 
-			a[k][n] = C * sqrtf(2 / N)*cosf((2 * n + 1) * (k * M_PIf / 2 * N));
+			temp = C * sqrtf(2 / N)*cosf((2 * n + 1) * (k * M_PIf / 2 * N));
+			a[k][n] = temp;
 		}
 	}
 
