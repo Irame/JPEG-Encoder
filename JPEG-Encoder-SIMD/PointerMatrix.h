@@ -11,12 +11,24 @@ public:
 		: data{ r0, r1, r2, r3, r4, r5, r6, r7 }
 	{ }
 
-	float* operator[](size_t row)
+	~PointerMatrix() {};
+
+	float* operator[](size_t row) const
 	{
 		assert(row <= 8);
 		return data[row];
 	}
 
-	~PointerMatrix() {};
+	float at(size_t x, size_t y) const
+	{
+		assert(x <= 7, y <= 7);
+		return data[x][y];
+	}
+
+	float atTransposed(size_t x, size_t y) const
+	{
+		assert(x <= 7, y <= 7);
+		return data[y][x];
+	}
 };
 
