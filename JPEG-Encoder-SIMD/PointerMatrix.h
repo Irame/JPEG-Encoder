@@ -19,16 +19,16 @@ public:
 		return data[row];
 	}
 
-	float at(size_t x, size_t y) const
+	float at(size_t row, size_t col) const
 	{
 		assert(x <= 7, y <= 7);
-		return data[x][y];
+		return data[row][col];
 	}
 
-	float atTransposed(size_t x, size_t y) const
+	float atTransposed(size_t row, size_t col) const
 	{
 		assert(x <= 7, y <= 7);
-		return data[y][x];
+		return data[col][row];
 	}
 };
 
