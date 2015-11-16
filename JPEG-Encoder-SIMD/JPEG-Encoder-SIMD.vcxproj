@@ -167,6 +167,7 @@
     <ClInclude Include="JPEGSegments.h" />
     <ClInclude Include="LinkedList.h" />
     <ClInclude Include="lodepng.h" />
+    <ClInclude Include="PointerMatrix.h" />
     <ClInclude Include="SamplingScheme.h" />
     <ClInclude Include="SIMD.h" />
     <ClInclude Include="SortedLinkedList.h" />
