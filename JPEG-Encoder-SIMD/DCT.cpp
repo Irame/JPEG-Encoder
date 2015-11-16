@@ -3,7 +3,7 @@
 #include <vector>
 #include "PointerMatrix.h"
 
-void DCT::directDCT(PointerMatrix values)
+void DCT::directDCT(const PointerMatrix& values)
 {
 	// use 8x8 blocks for DCT
 	int N = 8;

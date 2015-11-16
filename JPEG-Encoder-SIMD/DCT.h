@@ -3,6 +3,6 @@
 
 namespace DCT
 {
-	static void directDCT(PointerMatrix values);
+	static void directDCT(const PointerMatrix& values);
 };
 
