@@ -37,35 +37,11 @@ void DCT::directDCT(const PointerMatrix& values)
 			M[i][j] = halfN * ci * cj * temp;
 		}
 	}
-	// copy calculated values into the provided values
-	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
-			values[i][j] = M[i][j];
-		}
-	}
-}
+	// https://en.wikipedia.org/wiki/JPEG#Discrete_cosine_transform
+	// subtract 1024 from the DC coefficient, which is mathematically equivalent
+	// to center the provided data around zero.
+	M[0][0] -= 1024;  
 
-void DCT::dct_ii(const PointerMatrix values) {
-	int N = 8;
-	// alocate memory to store the results
-	float memory[64];
-	PointerMatrix M = PointerMatrix(memory);
-	int k = 0;
-	for (int x = 0; x < N; x++) {
-		for (int y = 0; y < N; y++) {
-			double sum = 0.;
-			double s = (x == 0 && y == 0) ? sqrt(.5) : 1.;
-			int n = 0;
-			for (int i = 0; i < N; i++) {
-				for (int j = 0; j < N; j++) {
-					sum += s * values[i][j] * cos(M_PI * (n + .5) * k / N);
-					n++;
-				}
-			}
-			M[x][y] = float(sum * sqrt(2. / N));
-			k++;
-		}
-	}
 	// copy calculated values into the provided values
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
@@ -126,6 +102,11 @@ void DCT::seperateDCT(const PointerMatrix& values)
 			}
 		}
 	}
+
+	// https://en.wikipedia.org/wiki/JPEG#Discrete_cosine_transform
+	// subtract 1024 from the DC coefficient, which is mathematically equivalent
+	// to center the provided data around zero.
+	result[0][0] -= 1024;
 
 	// copy results to input matrix
 	for (i = 0; i < N; i++) 
