@@ -121,6 +121,7 @@ void DCT::seperateDCT(const PointerMatrix& values)
 void DCT::kokDCT(const PointerMatrix& values)
 {
 	size_t N = 64;
+	size_t N_2 = N / 2;
 
 	std::vector<float> X; // Output
 	std::vector<float> x; // Input
@@ -137,62 +138,50 @@ void DCT::kokDCT(const PointerMatrix& values)
 	}
 
 	// Calculate new sequences p(n) and q(n) 
-	for (size_t n = 0; n <= N / 2 - 1; n++)
+	for (size_t n = 0; n <= N_2 - 1; n++)
 	{
 		p.push_back(x[n] + x[N - 1 - n]);
 		q.push_back((x[n] - x[N - 1 - n]) * 2 * cosf((2 * M_PIf *(2 * n + 1)) / (4.0f*N)));
 	}
 
-	// calc D(i=0) with X(2i+1)
+	
+	// Calc C(0); D(0)
 	D_i.push_back(0.0f);
-	for (size_t n = 0; n <= N-1; n++)
+	X.push_back(0.0f);
+	for (size_t n = 0; n <= N - 1; n++)
 	{
-		D_i[0] += cosf((2*M_PIf*(2*n+1))/(4.0f*N));
+		// C(0)=sum(x[n])
+		X[0] += x[n];
+
+		// calc D(i=0) with X(2i+1)
+		// D(0)=sum(x[n]*cos((n*pi + pi/2) / N))
+		D_i[0] += x[n] * cosf((n*M_PIf + M_PI_2f) / N);
 	}
+	X.push_back(D_i[0]);
 
-	// C(i)
-	auto C_n = [&N, &p](size_t i, size_t n) {
-		return p[n] * cosf((2*M_PIf * (2*n + 1) * 2*i) / (4.0f*N));
-	};
-	// D'(i)
-	auto D_n_ = [&N, &q](size_t i, size_t n) {
-		return q[n] * cosf((2*M_PIf * (2*n + 1) * 2*i) / (4.0f*N));
-	};
-	auto D_n = [&N, &D_i, &D_n_](size_t i, size_t n) {
-		if (i == 0)
-			return 2 * D_i[0]; // D'(0) = 2*D(0)
-		else
-			return D_n_(i, n) - D_i[i-1]; // D'(i) - D(i-1)
-	};
-		
-	for (size_t i = 0; i <= N / 2 - 1; i++)
+	// Calc i=[1;N/2-1]
+	for (size_t i = 1; i <= N_2 - 1; i++)
 	{
-		float c = 0.0f;
-		float d_ = 0.0f;
-
-		for (size_t n = 0; n <= N / 2 - 1; n++)
+		float c = 0.0f;  // C(i)
+		float d_ = 0.0f; // D'(i)
+		for (size_t n = 0; n <= N_2 - 1; n++)
 		{
-			c += C_n(i, n);
-			d_ += D_n_(i, n);
+			float cos = cosf(((n*M_PIf + M_PI_2f) / N) * 2 * i);
+			c += p[n] * cos;
+			d_ += q[n] * cos;
 		}
 
-		float d = 0.0f;
-		if (i == 0)
-		{
-			d = 2 * D_i[0];
-		}
-		else
-		{
-			d = d_ - D_i[i - 1];
-		D_i.push_back(d); // store D(i)
-		}
-		
+		// D(i) = D'(i) - D(i-1)
+		float d = d_ - D_i[i - 1];
+
 		X.push_back(c);
 		X.push_back(d);
+
+		D_i.push_back(d); // store D(i) for recursion
 	}
 
 
-
+	// Copy values into Matrix
 	for (size_t i = 0; i < 8; i++)
 	{
 		for (size_t j = 0; j < 8; j++)

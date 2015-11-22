@@ -17,6 +17,7 @@
 #define NUM_BYTE_VALUES 256
 
 #define M_PIf ((float)M_PI)
+#define M_PI_2f ((float)M_PI_2)
 
 typedef unsigned char byte;
 
