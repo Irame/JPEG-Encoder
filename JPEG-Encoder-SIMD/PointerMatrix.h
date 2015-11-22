@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <array>
 
 class PointerMatrix
 {
@@ -36,3 +37,42 @@ public:
 	}
 };
 
+
+class mat8x8
+{
+private:
+	std::array<float, 64> data;
+
+public:
+	mat8x8() : data({}) {}; // init with zeros
+
+	mat8x8(float* matrix)
+	{
+		memcpy_s(data.data(), 64, matrix, 64);
+	}
+
+	mat8x8(float* r0, float* r1, float* r2, float* r3, float* r4, float* r5, float* r6, float* r7)
+	{ 
+		memcpy_s(&data[0],  8*sizeof(float), r0, 8*sizeof(float));
+		memcpy_s(&data[8],  8*sizeof(float), r1, 8*sizeof(float));
+		memcpy_s(&data[16], 8*sizeof(float), r2, 8*sizeof(float));
+		memcpy_s(&data[24], 8*sizeof(float), r3, 8*sizeof(float));
+		memcpy_s(&data[32], 8*sizeof(float), r4, 8*sizeof(float));
+		memcpy_s(&data[40], 8*sizeof(float), r5, 8*sizeof(float));
+		memcpy_s(&data[48], 8*sizeof(float), r6, 8*sizeof(float));
+		memcpy_s(&data[56], 8*sizeof(float), r7, 8*sizeof(float));
+	}
+
+
+	~mat8x8() {};
+
+	float& operator[](size_t idx) { return data[idx]; }
+	const float& operator[](size_t idx) const { return data[idx]; }
+
+	float at(size_t row, size_t col) const
+	{
+		return data[row * 8 + col];
+	}
+
+	float atTransposed(size_t row, size_t col) const { return at(col, row); }
+};

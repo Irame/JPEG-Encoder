@@ -118,36 +118,26 @@ void DCT::seperateDCT(const PointerMatrix& values)
 	}
 }
 
-void DCT::kokDCT(const PointerMatrix& values)
+mat8x8 DCT::kokDCT(const mat8x8& x)
 {
-	size_t N = 64;
-	size_t N_2 = N / 2;
+	const size_t N = 64;
+	const size_t N_2 = N / 2;
 
-	std::vector<float> X; // Output
-	std::vector<float> x; // Input
-	std::vector<float> p; // p(n) für C(i)
-	std::vector<float> q; // q(n) für D'(i)
-	std::vector<float> D_i; // cache for D(i)
-
-	for (size_t i = 0; i < 8; i++)
-	{
-		for (size_t j = 0; j < 8; j++)
-		{
-			x.push_back(values[i][j]);
-		}
-	}
+	mat8x8 X; // Output
+	float p[N_2]; // p(n) für C(i)
+	float q[N_2]; // q(n) für D'(i)
+	float D_i[N_2]; // cache for D(i)
 
 	// Calculate new sequences p(n) and q(n) 
 	for (size_t n = 0; n <= N_2 - 1; n++)
 	{
-		p.push_back(x[n] + x[N - 1 - n]);
-		q.push_back((x[n] - x[N - 1 - n]) * 2 * cosf((2 * M_PIf *(2 * n + 1)) / (4.0f*N)));
+		p[n] = x[n] + x[N - 1 - n];
+		q[n] = (x[n] - x[N - 1 - n]) * 2 * cosf((2 * M_PIf *(2 * n + 1)) / (4.0f*N));
 	}
 
 	
 	// Calc C(0); D(0)
-	D_i.push_back(0.0f);
-	X.push_back(0.0f);
+	D_i[0] = 0.0f;
 	for (size_t n = 0; n <= N - 1; n++)
 	{
 		// C(0)=sum(x[n])
@@ -157,9 +147,10 @@ void DCT::kokDCT(const PointerMatrix& values)
 		// D(0)=sum(x[n]*cos((n*pi + pi/2) / N))
 		D_i[0] += x[n] * cosf((n*M_PIf + M_PI_2f) / N);
 	}
-	X.push_back(D_i[0]);
+	X[1] = D_i[0];
 
 	// Calc i=[1;N/2-1]
+	size_t pos = 1;
 	for (size_t i = 1; i <= N_2 - 1; i++)
 	{
 		float c = 0.0f;  // C(i)
@@ -174,21 +165,13 @@ void DCT::kokDCT(const PointerMatrix& values)
 		// D(i) = D'(i) - D(i-1)
 		float d = d_ - D_i[i - 1];
 
-		X.push_back(c);
-		X.push_back(d);
+		X[++pos] = c;
+		X[++pos] = d;
 
-		D_i.push_back(d); // store D(i) for recursion
+		D_i[i] = d; // store D(i) for recursion
 	}
 
-
-	// Copy values into Matrix
-	for (size_t i = 0; i < 8; i++)
-	{
-		for (size_t j = 0; j < 8; j++)
-		{
-			values[i][j] = X[i * 8 + j];
-		}
-	}
+	return X;
 }
 
 
