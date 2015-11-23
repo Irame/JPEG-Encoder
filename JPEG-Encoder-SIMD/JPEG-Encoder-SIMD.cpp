@@ -109,6 +109,7 @@ void testDCT()
 
 	float resultBytes[64];
 	PointerMatrix result(resultBytes);
+	mat8x8 matResult;
 
 	//PointerMatrix testMatrix = PointerMatrix(arr);
 	PointerMatrix testMatrix = PointerMatrix(rowOne, rowTwo, rowThree, rowFour, rowFive, rowSix, rowSeven, rowEight);
@@ -118,18 +119,31 @@ void testDCT()
 	DCT::seperateDCT(testMatrix, result);
 	//DCT::dct_ii(testMatrix);
 
-	size_t runs = 1000;
-	benchmark("Direct DCT", runs, [&testMatrix, &result]() {
-		DCT::directDCT(testMatrix, result);
-	});
+	size_t runs = 100;
+	//benchmark("Direct DCT", runs, [&testMatrix, &result]() {
+	//	for (int i = 0; i < 1024; i++) {
+	//		DCT::directDCT(testMatrix, result);
+	//	}
+	//});
 	benchmark("Seperate DCT", runs, [&testMatrix, &result]() {
-		DCT::seperateDCT(testMatrix, result);
+		for (int i = 0; i < 1024; i++) {
+			DCT::seperateDCT(testMatrix, result);
+		}
 	});
-	benchmark("Kok DCT", runs, [&kokMatrix]() {
-		mat8x8 result = DCT::kokDCT(kokMatrix);
-	});
-	benchmark("Kok Simple DCT", runs, [&kokMatrix]() {
-		mat8x8 result = DCT::kokSimple(kokMatrix);
+	//benchmark("Kok DCT", runs, [&kokMatrix]() {
+	//	for (int i = 0; i < 1024; i++) {
+	//		mat8x8 result = DCT::kokDCT(kokMatrix);
+	//	}
+	//});
+	//benchmark("Kok Simple DCT", runs, [&kokMatrix]() {
+	//	for (int i = 0; i < 1024; i++) {
+	//		mat8x8 result = DCT::kokSimple(kokMatrix);
+	//	}
+	//});
+	benchmark("Arai DCT", runs, [&kokMatrix, &matResult]() {
+		for (int i = 0; i < 1024; i++) {
+			matResult = DCT::araiDCT(kokMatrix);
+		}
 	});
 
 	cout << endl;
@@ -137,7 +151,19 @@ void testDCT()
 	{
 		for (int j = 0; j < 8; j++)
 		{
-			cout << round(result[i][j]) << " | ";
+			//cout << round(result[i][j]) << " | ";
+			printf("%5.0f | ", round(matResult.at(i, j)));
+		}
+		cout << endl;
+	}
+	cout << "end of dct" << endl;
+
+	cout << endl;
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			printf("%5.0f | ", round(result[i][j]));
 		}
 		cout << endl;
 	}

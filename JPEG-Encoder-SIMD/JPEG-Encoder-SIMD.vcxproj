@@ -148,6 +148,7 @@
       <OpenMPSupport>true</OpenMPSupport>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <AdditionalIncludeDirectories>"$(SolutionDir)boost\";%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -160,6 +161,7 @@
     <ClInclude Include="Benchmark.h" />
     <ClInclude Include="BitBuffer.h" />
     <ClInclude Include="ColorNames.h" />
+    <ClInclude Include="const_math.h" />
     <ClInclude Include="DCT.h" />
     <ClInclude Include="HuffmanCoding.h" />
     <ClInclude Include="Image.h" />

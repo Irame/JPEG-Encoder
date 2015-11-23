@@ -18,6 +18,8 @@
 
 #define M_PIf ((float)M_PI)
 #define M_PI_2f ((float)M_PI_2)
+#define M_SQRT2f ((float)M_SQRT2)
+#define M_SQRT1_2f ((float)M_SQRT1_2)
 
 typedef unsigned char byte;
 

@@ -69,10 +69,16 @@ public:
 	float& operator[](size_t idx) { return data[idx]; }
 	const float& operator[](size_t idx) const { return data[idx]; }
 
-	float at(size_t row, size_t col) const
+	const float& at(size_t row, size_t col) const
 	{
 		return data[row * 8 + col];
 	}
 
-	float atTransposed(size_t row, size_t col) const { return at(col, row); }
+	float& at(size_t row, size_t col)
+	{
+		return data[row * 8 + col];
+	}
+
+	const float& atT(size_t row, size_t col) const { return at(col, row); }
+	float& atT(size_t row, size_t col) { return at(col, row); }
 };

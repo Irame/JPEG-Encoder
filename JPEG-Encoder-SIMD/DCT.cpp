@@ -2,6 +2,7 @@
 #include "DCT.h"
 #include <vector>
 #include "PointerMatrix.h"
+#include "const_math.h"
 
 void DCT::directDCT(const PointerMatrix& values, PointerMatrix& result)
 {
@@ -169,4 +170,154 @@ mat8x8 DCT::kokSimple(const mat8x8& x)
 	}
 
 	return X;
+}
+
+//constexpr float C_(size_t k) { return k == 0 ? 1.0f : (float)c_cos(k * M_PIf / 16); }
+//constexpr float S_(size_t k) { return k == 0 ? M_SQRT1_2f / 2.0f : 1.0f / (4.0f * C_(k)); }
+float C_(size_t k) { return k == 0 ? 1.0f : (float)cosf(k * M_PIf / 16); }
+float S_(size_t k) { return k == 0 ? M_SQRT1_2f / 2.0f : 1.0f / (4.0f * C_(k)); }
+mat8x8 DCT::araiDCT(const mat8x8& x)
+{
+	mat8x8 y; // Output
+
+	static const float C[8] = { C_(0), C_(1), C_(2), C_(3), C_(4), C_(5), C_(6), C_(7) };
+	static const float s[8] = { S_(0), S_(1), S_(2), S_(3), S_(4), S_(5), S_(6), S_(7) };
+
+	static const float a1 = C[4];
+	static const float a2 = C[2] - C[6];
+	static const float a3 = C[4];
+	static const float a4 = C[6] + C[2];
+	static const float a5 = C[6];
+
+	for (size_t row = 0; row < 8; row++) {
+		float temp1[8];
+		temp1[0] = x.at(row, 0) + x.at(row, 7);
+		temp1[1] = x.at(row, 1) + x.at(row, 6);
+		temp1[2] = x.at(row, 2) + x.at(row, 5);
+		temp1[3] = x.at(row, 3) + x.at(row, 4);
+		temp1[4] = x.at(row, 3) - x.at(row, 4);
+		temp1[5] = x.at(row, 2) - x.at(row, 5);
+		temp1[6] = x.at(row, 1) - x.at(row, 6);
+		temp1[7] = x.at(row, 0) - x.at(row, 7);
+
+		float temp2[8];
+		temp2[0] = temp1[0] + temp1[3];
+		temp2[1] = temp1[1] + temp1[2];
+		temp2[2] = temp1[1] - temp1[2];
+		temp2[3] = temp1[0] - temp1[3];
+		temp2[4] = -temp1[4] - temp1[5];
+		temp2[5] = temp1[5] + temp1[6];
+		temp2[6] = temp1[6] + temp1[7];
+		temp2[7] = temp1[7];
+
+		float temp3[8];
+		temp3[0] = temp2[0] + temp2[1];
+		temp3[1] = temp2[0] - temp2[1];
+		temp3[2] = temp2[2] + temp2[3];
+		temp3[3] = temp2[3];
+		temp3[4] = temp2[4];
+		temp3[5] = temp2[5];
+		temp3[6] = temp2[6];
+		temp3[7] = temp2[7];
+
+
+		float temp6plus4 = temp3[4] + temp3[6];
+		temp3[2] *= a1;
+		temp3[4] = -temp3[4] * a2 - temp6plus4 * a5;
+		temp3[5] *= a3;
+		temp3[6] = temp3[6] * a4 - temp6plus4 * a5;
+
+		float temp = temp3[2];
+		temp3[2] += temp3[3];
+		temp3[3] -= temp;
+		temp = temp3[5];
+		temp3[5] += temp3[7];
+		temp3[7] -= temp;
+
+		float temp4[8];
+		y.at(row, 0) = temp3[0];
+		y.at(row, 4) = temp3[1];
+		y.at(row, 2) = temp3[2];
+		y.at(row, 6) = temp3[3];
+		y.at(row, 5) = temp3[4] + temp3[7];
+		y.at(row, 1) = temp3[5] + temp3[6];
+		y.at(row, 7) = temp3[5] - temp3[6];
+		y.at(row, 3) = temp3[7] - temp3[4];
+
+		y.at(row, 0) *= s[0];
+		y.at(row, 4) *= s[4];
+		y.at(row, 2) *= s[2];
+		y.at(row, 6) *= s[6];
+		y.at(row, 5) *= s[5];
+		y.at(row, 1) *= s[1];
+		y.at(row, 7) *= s[7];
+		y.at(row, 3) *= s[3];
+	}
+
+	for (size_t row = 0; row < 8; row++) {
+		float temp1[8];
+		temp1[0] = y.atT(row, 0) + y.atT(row, 7);
+		temp1[1] = y.atT(row, 1) + y.atT(row, 6);
+		temp1[2] = y.atT(row, 2) + y.atT(row, 5);
+		temp1[3] = y.atT(row, 3) + y.atT(row, 4);
+		temp1[4] = y.atT(row, 3) - y.atT(row, 4);
+		temp1[5] = y.atT(row, 2) - y.atT(row, 5);
+		temp1[6] = y.atT(row, 1) - y.atT(row, 6);
+		temp1[7] = y.atT(row, 0) - y.atT(row, 7);
+
+		float temp2[8];
+		temp2[0] = temp1[0] + temp1[3];
+		temp2[1] = temp1[1] + temp1[2];
+		temp2[2] = temp1[1] - temp1[2];
+		temp2[3] = temp1[0] - temp1[3];
+		temp2[4] = -temp1[4] - temp1[5];
+		temp2[5] = temp1[5] + temp1[6];
+		temp2[6] = temp1[6] + temp1[7];
+		temp2[7] = temp1[7];
+
+		float temp3[8];
+		temp3[0] = temp2[0] + temp2[1];
+		temp3[1] = temp2[0] - temp2[1];
+		temp3[2] = temp2[2] + temp2[3];
+		temp3[3] = temp2[3];
+		temp3[4] = temp2[4];
+		temp3[5] = temp2[5];
+		temp3[6] = temp2[6];
+		temp3[7] = temp2[7];
+
+
+		float temp6plus4 = temp3[4] + temp3[6];
+		temp3[2] *= a1;
+		temp3[4] = -temp3[4] * a2 - temp6plus4 * a5;
+		temp3[5] *= a3;
+		temp3[6] = temp3[6] * a4 - temp6plus4 * a5;
+
+		float temp = temp3[2];
+		temp3[2] += temp3[3];
+		temp3[3] -= temp;
+		temp = temp3[5];
+		temp3[5] += temp3[7];
+		temp3[7] -= temp;
+
+		float temp4[8];
+		y.atT(row, 0) = temp3[0];
+		y.atT(row, 4) = temp3[1];
+		y.atT(row, 2) = temp3[2];
+		y.atT(row, 6) = temp3[3];
+		y.atT(row, 5) = temp3[4] + temp3[7];
+		y.atT(row, 1) = temp3[5] + temp3[6];
+		y.atT(row, 7) = temp3[5] - temp3[6];
+		y.atT(row, 3) = temp3[7] - temp3[4];
+
+		y.atT(row, 0) *= s[0];
+		y.atT(row, 4) *= s[4];
+		y.atT(row, 2) *= s[2];
+		y.atT(row, 6) *= s[6];
+		y.atT(row, 5) *= s[5];
+		y.atT(row, 1) *= s[1];
+		y.atT(row, 7) *= s[7];
+		y.atT(row, 3) *= s[3];
+	}
+
+	return y;
 }

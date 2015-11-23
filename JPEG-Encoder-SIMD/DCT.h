@@ -8,4 +8,6 @@ namespace DCT
 
 	mat8x8 kokDCT(const mat8x8& x);
 	mat8x8 kokSimple(const mat8x8& x);
+
+	mat8x8 araiDCT(const mat8x8& x);
 };
