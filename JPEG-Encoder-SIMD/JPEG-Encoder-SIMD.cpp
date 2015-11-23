@@ -107,17 +107,37 @@ void testDCT()
 		arr[i] = i+1;
 	}
 
+	float resultBytes[64];
+	PointerMatrix result(resultBytes);
+
 	//PointerMatrix testMatrix = PointerMatrix(arr);
 	PointerMatrix testMatrix = PointerMatrix(rowOne, rowTwo, rowThree, rowFour, rowFive, rowSix, rowSeven, rowEight);
+	mat8x8 kokMatrix = mat8x8(rowOne, rowTwo, rowThree, rowFour, rowFive, rowSix, rowSeven, rowEight);
 	
 	//DCT::directDCT(testMatrix);
-	DCT::seperateDCT(testMatrix);
+	DCT::seperateDCT(testMatrix, result);
 	//DCT::dct_ii(testMatrix);
+
+	size_t runs = 1000;
+	benchmark("Direct DCT", runs, [&testMatrix, &result]() {
+		DCT::directDCT(testMatrix, result);
+	});
+	benchmark("Seperate DCT", runs, [&testMatrix, &result]() {
+		DCT::seperateDCT(testMatrix, result);
+	});
+	benchmark("Kok DCT", runs, [&kokMatrix]() {
+		mat8x8 result = DCT::kokDCT(kokMatrix);
+	});
+	benchmark("Kok Simple DCT", runs, [&kokMatrix]() {
+		mat8x8 result = DCT::kokSimple(kokMatrix);
+	});
+
+	cout << endl;
 	for (int i = 0; i < 8; i++)
 	{
 		for (int j = 0; j < 8; j++)
 		{
-			cout << round(testMatrix[i][j]) << " | ";
+			cout << round(result[i][j]) << " | ";
 		}
 		cout << endl;
 	}

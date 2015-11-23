@@ -3,13 +3,11 @@
 #include <vector>
 #include "PointerMatrix.h"
 
-void DCT::directDCT(const PointerMatrix& values)
+void DCT::directDCT(const PointerMatrix& values, PointerMatrix& result)
 {
 	// use 8x8 blocks for DCT
 	int N = 8;
-	// alocate memory to store the results
-	float memory[64]; 
-	PointerMatrix M = PointerMatrix(memory);
+	PointerMatrix& M = result;
 
 	// calculate values that don't change
 	float sqrtTemp = float(1.0 / sqrt(2));
@@ -41,28 +39,19 @@ void DCT::directDCT(const PointerMatrix& values)
 	// subtract 1024 from the DC coefficient, which is mathematically equivalent
 	// to center the provided data around zero.
 	M[0][0] -= 1024;  
-
-	// copy calculated values into the provided values
-	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
-			values[i][j] = M[i][j];
-		}
-	}
 }
 
-void DCT::seperateDCT(const PointerMatrix& values)
+void DCT::seperateDCT(const PointerMatrix& values, PointerMatrix& result)
 {
 	// use 8x8 blocks for DCT
 	int N = 8;
 
 	// allocate memory
 	float aValues[64];
-	float resultValues[64];
 	float saveResult[64];
 	float temp;
 
 	PointerMatrix a = PointerMatrix(aValues);
-	PointerMatrix result = PointerMatrix(resultValues);
 	PointerMatrix saveResults = PointerMatrix(saveResult);
 
 	float C = 0;
@@ -107,15 +96,6 @@ void DCT::seperateDCT(const PointerMatrix& values)
 	// subtract 1024 from the DC coefficient, which is mathematically equivalent
 	// to center the provided data around zero.
 	result[0][0] -= 1024;
-
-	// copy results to input matrix
-	for (i = 0; i < N; i++) 
-	{
-		for (j = 0; j < N; j++)
-		{
-			values[i][j] = result[i][j];
-		}
-	}
 }
 
 mat8x8 DCT::kokDCT(const mat8x8& x)
@@ -175,20 +155,10 @@ mat8x8 DCT::kokDCT(const mat8x8& x)
 }
 
 
-void DCT::kokSimple(const PointerMatrix& values)
+mat8x8 DCT::kokSimple(const mat8x8& x)
 {
 	size_t N = 64;
-
-	std::vector<float> X(64); // Output
-	std::vector<float> x; // Input
-
-	for (size_t i = 0; i < 8; i++)
-	{
-		for (size_t j = 0; j < 8; j++)
-		{
-			x.push_back(values[i][j]);
-		}
-	}
+	mat8x8 X; // Output
 
 	for (int k = 0; k < N; k++)
 	{
@@ -198,12 +168,5 @@ void DCT::kokSimple(const PointerMatrix& values)
 		}
 	}
 
-
-	for (size_t i = 0; i < 8; i++)
-	{
-		for (size_t j = 0; j < 8; j++)
-		{
-			values[i][j] = X[i * 8 + j];
-		}
-	}
+	return X;
 }
