@@ -272,7 +272,7 @@ std::vector<SymbolType> HuffmanTable<SymbolType>::decode2(BitBufferPtr inputStre
 	});
 
 	// fill codewords with 1-bits
-	unsigned short fillBits = 0xffff;
+	InternalCodeType fillBits = ~InternalCodeType(0);
 	for (auto& entry : decodePairs)
 	{
 		BitBuffer& curBitBuffer = entry.code;
