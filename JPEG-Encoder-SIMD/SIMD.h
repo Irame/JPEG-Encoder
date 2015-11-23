@@ -295,7 +295,7 @@ static void halfHeightResolutionAverageAVX(float* buff1, float* buff2, float* re
 	_mm256_storeu_ps(resultBuff, _mm256_div_ps(sum, normVec));
 }
 
-inline void transpose8_ps(__m256 &row0, __m256 &row1, __m256 &row2, __m256 &row3, __m256 &row4, __m256 &row5, __m256 &row6, __m256 &row7) {
+static void transpose8_ps(__m256 &row0, __m256 &row1, __m256 &row2, __m256 &row3, __m256 &row4, __m256 &row5, __m256 &row6, __m256 &row7) {
 	__m256 __t0, __t1, __t2, __t3, __t4, __t5, __t6, __t7;
 	__m256 __tt0, __tt1, __tt2, __tt3, __tt4, __tt5, __tt6, __tt7;
 	__t0 = _mm256_unpacklo_ps(row0, row1);
@@ -437,4 +437,9 @@ static void twoDimentionalDCTAVX(const float* in, float* out)
 	_mm256_storeu_ps(&out[5 * 8], regs[5]);
 	_mm256_storeu_ps(&out[6 * 8], regs[6]);
 	_mm256_storeu_ps(&out[7 * 8], regs[7]);
+
+	// https://en.wikipedia.org/wiki/JPEG#Discrete_cosine_transform
+	// subtract 1024 from the DC coefficient, which is mathematically equivalent
+	// to center the provided data around zero.
+	out[0] -= 1024;
 }

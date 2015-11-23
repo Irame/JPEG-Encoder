@@ -327,6 +327,12 @@ mat8x8 DCT::araiDCT(const mat8x8& x)
 		y.atT(row, 3) *= s3;
 	}
 
+
+	// https://en.wikipedia.org/wiki/JPEG#Discrete_cosine_transform
+	// subtract 1024 from the DC coefficient, which is mathematically equivalent
+	// to center the provided data around zero.
+	y[0] -= 1024;
+
 	return y;
 }
 
