@@ -10,5 +10,5 @@ namespace DCT
 	mat8x8 kokSimple(const mat8x8& x);
 
 	mat8x8 araiDCT(const mat8x8& x);
-	mat8x8 araiDCTAVX(const mat8x8& x);
+	void araiDCTAVX(const PointerMatrix& in, PointerMatrix& out);
 };

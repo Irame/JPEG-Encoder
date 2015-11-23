@@ -1,5 +1,6 @@
 #pragma once
 #include "const_math.h"
+#include "PointerMatrix.h"
 
 
 // https://software.intel.com/sites/default/files/m/d/4/1/d/8/Image_Processing_-_whitepaper_-_100pct_CCEreviewed_update.pdf
@@ -407,18 +408,18 @@ static void oneDimensionalDCT(__m256* ref)
 	ref[7] = _mm256_mul_ps(ref[7], _mm256_set1_ps(s7));
 }
 
-static void twoDimentionalDCTAVX(const float* in, float* out)
+static void twoDimentionalDCTAVX(const PointerMatrix& in, PointerMatrix& out)
 {
 	__m256 regs[8]
 	{
-		_mm256_loadu_ps(&in[0 * 8]),
-		_mm256_loadu_ps(&in[1 * 8]),
-		_mm256_loadu_ps(&in[2 * 8]),
-		_mm256_loadu_ps(&in[3 * 8]),
-		_mm256_loadu_ps(&in[4 * 8]),
-		_mm256_loadu_ps(&in[5 * 8]),
-		_mm256_loadu_ps(&in[6 * 8]),
-		_mm256_loadu_ps(&in[7 * 8])
+		_mm256_loadu_ps(in[0]),
+		_mm256_loadu_ps(in[1]),
+		_mm256_loadu_ps(in[2]),
+		_mm256_loadu_ps(in[3]),
+		_mm256_loadu_ps(in[4]),
+		_mm256_loadu_ps(in[5]),
+		_mm256_loadu_ps(in[6]),
+		_mm256_loadu_ps(in[7])
 	};
 
 	transpose8_ps(regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], regs[6], regs[7]);
@@ -429,17 +430,17 @@ static void twoDimentionalDCTAVX(const float* in, float* out)
 
 	oneDimensionalDCT(regs);
 
-	_mm256_storeu_ps(&out[0 * 8], regs[0]);
-	_mm256_storeu_ps(&out[1 * 8], regs[1]);
-	_mm256_storeu_ps(&out[2 * 8], regs[2]);
-	_mm256_storeu_ps(&out[3 * 8], regs[3]);
-	_mm256_storeu_ps(&out[4 * 8], regs[4]);
-	_mm256_storeu_ps(&out[5 * 8], regs[5]);
-	_mm256_storeu_ps(&out[6 * 8], regs[6]);
-	_mm256_storeu_ps(&out[7 * 8], regs[7]);
+	_mm256_storeu_ps(out[0], regs[0]);
+	_mm256_storeu_ps(out[1], regs[1]);
+	_mm256_storeu_ps(out[2], regs[2]);
+	_mm256_storeu_ps(out[3], regs[3]);
+	_mm256_storeu_ps(out[4], regs[4]);
+	_mm256_storeu_ps(out[5], regs[5]);
+	_mm256_storeu_ps(out[6], regs[6]);
+	_mm256_storeu_ps(out[7], regs[7]);
 
 	// https://en.wikipedia.org/wiki/JPEG#Discrete_cosine_transform
 	// subtract 1024 from the DC coefficient, which is mathematically equivalent
 	// to center the provided data around zero.
-	out[0] -= 1024;
+	out[0][0] -= 1024;
 }

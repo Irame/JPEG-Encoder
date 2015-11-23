@@ -336,9 +336,7 @@ mat8x8 DCT::araiDCT(const mat8x8& x)
 	return y;
 }
 
-mat8x8 DCT::araiDCTAVX(const mat8x8& x)
+void DCT::araiDCTAVX(const PointerMatrix& in, PointerMatrix& out)
 {
-	mat8x8 result;
-	twoDimentionalDCTAVX(&x[0], &result[0]);
-	return result;
+	twoDimentionalDCTAVX(in, out);
 }

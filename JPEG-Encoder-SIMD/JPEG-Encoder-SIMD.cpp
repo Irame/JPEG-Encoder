@@ -158,9 +158,9 @@ void testDCT()
 	cout << "end of dct" << endl;
 
 
-	benchmark("Arai DCT AVX", runs, [&kokMatrix, &matResult]() {
+	benchmark("Arai DCT AVX", runs, [&testMatrix, &result]() {
 		for (int i = 0; i < 1024; i++) {
-			matResult = DCT::araiDCTAVX(kokMatrix);
+			DCT::araiDCTAVX(testMatrix, result);
 		}
 	});
 
@@ -170,7 +170,7 @@ void testDCT()
 		for (size_t j = 0; j < 8; j++)
 		{
 			//cout << round(result[i][j]) << " | ";
-			printf("%5.0f | ", roundf(matResult.at(i, j)));
+			printf("%5.0f | ", roundf(result[i][j]));
 		}
 		cout << endl;
 	}
