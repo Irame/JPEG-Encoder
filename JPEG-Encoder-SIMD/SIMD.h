@@ -1,4 +1,5 @@
 #pragma once
+#include "const_math.h"
 
 
 // https://software.intel.com/sites/default/files/m/d/4/1/d/8/Image_Processing_-_whitepaper_-_100pct_CCEreviewed_update.pdf
@@ -292,4 +293,148 @@ static void halfHeightResolutionAverageAVX(float* buff1, float* buff2, float* re
 
 	__m256 sum = _mm256_add_ps(b1, b2);
 	_mm256_storeu_ps(resultBuff, _mm256_div_ps(sum, normVec));
+}
+
+inline void transpose8_ps(__m256 &row0, __m256 &row1, __m256 &row2, __m256 &row3, __m256 &row4, __m256 &row5, __m256 &row6, __m256 &row7) {
+	__m256 __t0, __t1, __t2, __t3, __t4, __t5, __t6, __t7;
+	__m256 __tt0, __tt1, __tt2, __tt3, __tt4, __tt5, __tt6, __tt7;
+	__t0 = _mm256_unpacklo_ps(row0, row1);
+	__t1 = _mm256_unpackhi_ps(row0, row1);
+	__t2 = _mm256_unpacklo_ps(row2, row3);
+	__t3 = _mm256_unpackhi_ps(row2, row3);
+	__t4 = _mm256_unpacklo_ps(row4, row5);
+	__t5 = _mm256_unpackhi_ps(row4, row5);
+	__t6 = _mm256_unpacklo_ps(row6, row7);
+	__t7 = _mm256_unpackhi_ps(row6, row7);
+	__tt0 = _mm256_shuffle_ps(__t0, __t2, _MM_SHUFFLE(1, 0, 1, 0));
+	__tt1 = _mm256_shuffle_ps(__t0, __t2, _MM_SHUFFLE(3, 2, 3, 2));
+	__tt2 = _mm256_shuffle_ps(__t1, __t3, _MM_SHUFFLE(1, 0, 1, 0));
+	__tt3 = _mm256_shuffle_ps(__t1, __t3, _MM_SHUFFLE(3, 2, 3, 2));
+	__tt4 = _mm256_shuffle_ps(__t4, __t6, _MM_SHUFFLE(1, 0, 1, 0));
+	__tt5 = _mm256_shuffle_ps(__t4, __t6, _MM_SHUFFLE(3, 2, 3, 2));
+	__tt6 = _mm256_shuffle_ps(__t5, __t7, _MM_SHUFFLE(1, 0, 1, 0));
+	__tt7 = _mm256_shuffle_ps(__t5, __t7, _MM_SHUFFLE(3, 2, 3, 2));
+	row0 = _mm256_permute2f128_ps(__tt0, __tt4, 0x20);
+	row1 = _mm256_permute2f128_ps(__tt1, __tt5, 0x20);
+	row2 = _mm256_permute2f128_ps(__tt2, __tt6, 0x20);
+	row3 = _mm256_permute2f128_ps(__tt3, __tt7, 0x20);
+	row4 = _mm256_permute2f128_ps(__tt0, __tt4, 0x31);
+	row5 = _mm256_permute2f128_ps(__tt1, __tt5, 0x31);
+	row6 = _mm256_permute2f128_ps(__tt2, __tt6, 0x31);
+	row7 = _mm256_permute2f128_ps(__tt3, __tt7, 0x31);
+}
+
+constexpr float C_(size_t k) { return k == 0 ? 1.0f : (float)c_cos(k * M_PIf / 16); }
+constexpr float S_(size_t k) { return k == 0 ? M_SQRT1_2f / 2.0f : 1.0f / (4.0f * C_(k)); }
+static void oneDimensionalDCT(__m256* ref)
+{
+	constexpr float s0 = S_(0);
+	constexpr float s1 = S_(1);
+	constexpr float s2 = S_(2);
+	constexpr float s3 = S_(3);
+	constexpr float s4 = S_(4);
+	constexpr float s5 = S_(5);
+	constexpr float s6 = S_(6);
+	constexpr float s7 = S_(7);
+
+	constexpr float a1 = C_(4);
+	constexpr float a2 = C_(2) - C_(6);
+	constexpr float a3 = C_(4);
+	constexpr float a4 = C_(6) + C_(2);
+	constexpr float a5 = C_(6);
+
+	__m256 temp1[8];
+	temp1[0] = _mm256_add_ps(ref[0], ref[7]);
+	temp1[1] = _mm256_add_ps(ref[1], ref[6]);
+	temp1[2] = _mm256_add_ps(ref[2], ref[5]);
+	temp1[3] = _mm256_add_ps(ref[3], ref[4]);
+	temp1[4] = _mm256_sub_ps(ref[3], ref[4]);
+	temp1[5] = _mm256_sub_ps(ref[2], ref[5]);
+	temp1[6] = _mm256_sub_ps(ref[1], ref[6]);
+	temp1[7] = _mm256_sub_ps(ref[0], ref[7]);
+
+	ref[0] = _mm256_add_ps(temp1[0], temp1[3]);
+	ref[1] = _mm256_add_ps(temp1[1], temp1[2]);
+	ref[2] = _mm256_sub_ps(temp1[1], temp1[2]);
+	ref[3] = _mm256_sub_ps(temp1[0], temp1[3]);
+	ref[4] = _mm256_sub_ps(_mm256_sub_ps(_mm256_set1_ps(0.0f), temp1[4]), temp1[5]);
+	ref[5] = _mm256_add_ps(temp1[5], temp1[6]);
+	ref[6] = _mm256_add_ps(temp1[6], temp1[7]);
+	ref[7] = temp1[7];
+
+	temp1[0] = _mm256_add_ps(ref[0], ref[1]);
+	temp1[1] = _mm256_sub_ps(ref[0], ref[1]);
+	temp1[2] = _mm256_add_ps(ref[2], ref[3]);
+	temp1[3] = ref[3];
+	temp1[4] = ref[4];
+	temp1[5] = ref[5];
+	temp1[6] = ref[6];
+	temp1[7] = ref[7];
+
+	__m256 temp6plus4 = _mm256_add_ps(temp1[4], temp1[6]);
+	__m256 a13avx = _mm256_set1_ps(a1);
+	__m256 a2avx = _mm256_set1_ps(a2);
+	__m256 a4avx = _mm256_set1_ps(a4);
+	__m256 a5avx = _mm256_set1_ps(a5);
+	temp1[2] = _mm256_mul_ps(temp1[2], a13avx);
+	temp1[4] = _mm256_sub_ps(_mm256_mul_ps(_mm256_sub_ps(_mm256_set1_ps(0.0f), temp1[4]), a2avx), _mm256_mul_ps(temp6plus4, a5avx));
+	temp1[5] = _mm256_mul_ps(temp1[5], a13avx);;
+	temp1[6] = _mm256_sub_ps(_mm256_mul_ps(temp1[6], a4avx), _mm256_mul_ps(temp6plus4, a5avx));
+
+	__m256 temp = temp1[2];
+	temp1[2] = _mm256_add_ps(temp1[2], temp1[3]);
+	temp1[3] = _mm256_sub_ps(temp1[3], temp);
+	temp = temp1[5];
+	temp1[5] = _mm256_add_ps(temp1[5], temp1[7]);
+	temp1[7] = _mm256_sub_ps(temp1[7], temp);
+
+	ref[0] = temp1[0];
+	ref[4] = temp1[1];
+	ref[2] = temp1[2];
+	ref[6] = temp1[3];
+	ref[5] = _mm256_add_ps(temp1[4], temp1[7]);
+	ref[1] = _mm256_add_ps(temp1[5], temp1[6]);
+	ref[7] = _mm256_sub_ps(temp1[5], temp1[6]);
+	ref[3] = _mm256_sub_ps(temp1[7], temp1[4]);
+
+	ref[0] = _mm256_mul_ps(ref[0], _mm256_set1_ps(s0));
+	ref[1] = _mm256_mul_ps(ref[1], _mm256_set1_ps(s1));
+	ref[2] = _mm256_mul_ps(ref[2], _mm256_set1_ps(s2));
+	ref[3] = _mm256_mul_ps(ref[3], _mm256_set1_ps(s3));
+	ref[4] = _mm256_mul_ps(ref[4], _mm256_set1_ps(s4));
+	ref[5] = _mm256_mul_ps(ref[5], _mm256_set1_ps(s5));
+	ref[6] = _mm256_mul_ps(ref[6], _mm256_set1_ps(s6));
+	ref[7] = _mm256_mul_ps(ref[7], _mm256_set1_ps(s7));
+}
+
+static void twoDimentionalDCTAVX(const float* in, float* out)
+{
+	__m256 regs[8]
+	{
+		_mm256_loadu_ps(&in[0 * 8]),
+		_mm256_loadu_ps(&in[1 * 8]),
+		_mm256_loadu_ps(&in[2 * 8]),
+		_mm256_loadu_ps(&in[3 * 8]),
+		_mm256_loadu_ps(&in[4 * 8]),
+		_mm256_loadu_ps(&in[5 * 8]),
+		_mm256_loadu_ps(&in[6 * 8]),
+		_mm256_loadu_ps(&in[7 * 8])
+	};
+
+	transpose8_ps(regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], regs[6], regs[7]);
+
+	oneDimensionalDCT(regs);
+
+	transpose8_ps(regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], regs[6], regs[7]);
+
+	oneDimensionalDCT(regs);
+
+	_mm256_storeu_ps(&out[0 * 8], regs[0]);
+	_mm256_storeu_ps(&out[1 * 8], regs[1]);
+	_mm256_storeu_ps(&out[2 * 8], regs[2]);
+	_mm256_storeu_ps(&out[3 * 8], regs[3]);
+	_mm256_storeu_ps(&out[4 * 8], regs[4]);
+	_mm256_storeu_ps(&out[5 * 8], regs[5]);
+	_mm256_storeu_ps(&out[6 * 8], regs[6]);
+	_mm256_storeu_ps(&out[7 * 8], regs[7]);
 }

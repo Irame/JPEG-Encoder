@@ -3,6 +3,7 @@
 #include <vector>
 #include "PointerMatrix.h"
 #include "const_math.h"
+#include "SIMD.h"
 
 void DCT::directDCT(const PointerMatrix& values, PointerMatrix& result)
 {
@@ -172,22 +173,29 @@ mat8x8 DCT::kokSimple(const mat8x8& x)
 	return X;
 }
 
+// allready defined in SIMD.h
 //constexpr float C_(size_t k) { return k == 0 ? 1.0f : (float)c_cos(k * M_PIf / 16); }
 //constexpr float S_(size_t k) { return k == 0 ? M_SQRT1_2f / 2.0f : 1.0f / (4.0f * C_(k)); }
-float C_(size_t k) { return k == 0 ? 1.0f : (float)cosf(k * M_PIf / 16); }
-float S_(size_t k) { return k == 0 ? M_SQRT1_2f / 2.0f : 1.0f / (4.0f * C_(k)); }
+//float C_(size_t k) { return k == 0 ? 1.0f : (float)cosf(k * M_PIf / 16); }
+//float S_(size_t k) { return k == 0 ? M_SQRT1_2f / 2.0f : 1.0f / (4.0f * C_(k)); }
 mat8x8 DCT::araiDCT(const mat8x8& x)
 {
 	mat8x8 y; // Output
 
-	static const float C[8] = { C_(0), C_(1), C_(2), C_(3), C_(4), C_(5), C_(6), C_(7) };
-	static const float s[8] = { S_(0), S_(1), S_(2), S_(3), S_(4), S_(5), S_(6), S_(7) };
+	constexpr float s0 = S_(0);
+	constexpr float s1 = S_(1);
+	constexpr float s2 = S_(2);
+	constexpr float s3 = S_(3);
+	constexpr float s4 = S_(4);
+	constexpr float s5 = S_(5);
+	constexpr float s6 = S_(6);
+	constexpr float s7 = S_(7);
 
-	static const float a1 = C[4];
-	static const float a2 = C[2] - C[6];
-	static const float a3 = C[4];
-	static const float a4 = C[6] + C[2];
-	static const float a5 = C[6];
+	constexpr float a1 = C_(4);
+	constexpr float a2 = C_(2) - C_(6);
+	constexpr float a3 = C_(4);
+	constexpr float a4 = C_(6) + C_(2);
+	constexpr float a5 = C_(6);
 
 	for (size_t row = 0; row < 8; row++) {
 		float temp1[8];
@@ -244,14 +252,14 @@ mat8x8 DCT::araiDCT(const mat8x8& x)
 		y.at(row, 7) = temp3[5] - temp3[6];
 		y.at(row, 3) = temp3[7] - temp3[4];
 
-		y.at(row, 0) *= s[0];
-		y.at(row, 4) *= s[4];
-		y.at(row, 2) *= s[2];
-		y.at(row, 6) *= s[6];
-		y.at(row, 5) *= s[5];
-		y.at(row, 1) *= s[1];
-		y.at(row, 7) *= s[7];
-		y.at(row, 3) *= s[3];
+		y.at(row, 0) *= s0;
+		y.at(row, 4) *= s4;
+		y.at(row, 2) *= s2;
+		y.at(row, 6) *= s6;
+		y.at(row, 5) *= s5;
+		y.at(row, 1) *= s1;
+		y.at(row, 7) *= s7;
+		y.at(row, 3) *= s3;
 	}
 
 	for (size_t row = 0; row < 8; row++) {
@@ -309,15 +317,22 @@ mat8x8 DCT::araiDCT(const mat8x8& x)
 		y.atT(row, 7) = temp3[5] - temp3[6];
 		y.atT(row, 3) = temp3[7] - temp3[4];
 
-		y.atT(row, 0) *= s[0];
-		y.atT(row, 4) *= s[4];
-		y.atT(row, 2) *= s[2];
-		y.atT(row, 6) *= s[6];
-		y.atT(row, 5) *= s[5];
-		y.atT(row, 1) *= s[1];
-		y.atT(row, 7) *= s[7];
-		y.atT(row, 3) *= s[3];
+		y.atT(row, 0) *= s0;
+		y.atT(row, 4) *= s4;
+		y.atT(row, 2) *= s2;
+		y.atT(row, 6) *= s6;
+		y.atT(row, 5) *= s5;
+		y.atT(row, 1) *= s1;
+		y.atT(row, 7) *= s7;
+		y.atT(row, 3) *= s3;
 	}
 
 	return y;
+}
+
+mat8x8 DCT::araiDCTAVX(const mat8x8& x)
+{
+	mat8x8 result;
+	twoDimentionalDCTAVX(&x[0], &result[0]);
+	return result;
 }

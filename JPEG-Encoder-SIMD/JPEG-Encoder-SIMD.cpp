@@ -113,23 +113,23 @@ void testDCT()
 
 	//PointerMatrix testMatrix = PointerMatrix(arr);
 	PointerMatrix testMatrix = PointerMatrix(rowOne, rowTwo, rowThree, rowFour, rowFive, rowSix, rowSeven, rowEight);
-	mat8x8 kokMatrix = mat8x8(rowOne, rowTwo, rowThree, rowFour, rowFive, rowSix, rowSeven, rowEight);
+	auto kokMatrix = mat8x8(rowOne, rowTwo, rowThree, rowFour, rowFive, rowSix, rowSeven, rowEight);
 	
 	//DCT::directDCT(testMatrix);
 	DCT::seperateDCT(testMatrix, result);
 	//DCT::dct_ii(testMatrix);
 
-	size_t runs = 100;
+	size_t runs = 1000;
 	//benchmark("Direct DCT", runs, [&testMatrix, &result]() {
 	//	for (int i = 0; i < 1024; i++) {
 	//		DCT::directDCT(testMatrix, result);
 	//	}
 	//});
-	benchmark("Seperate DCT", runs, [&testMatrix, &result]() {
-		for (int i = 0; i < 1024; i++) {
-			DCT::seperateDCT(testMatrix, result);
-		}
-	});
+	//benchmark("Seperate DCT", runs, [&testMatrix, &result]() {
+	//	for (int i = 0; i < 1024; i++) {
+	//		DCT::seperateDCT(testMatrix, result);
+	//	}
+	//});
 	//benchmark("Kok DCT", runs, [&kokMatrix]() {
 	//	for (int i = 0; i < 1024; i++) {
 	//		mat8x8 result = DCT::kokDCT(kokMatrix);
@@ -145,29 +145,47 @@ void testDCT()
 			matResult = DCT::araiDCT(kokMatrix);
 		}
 	});
-
 	cout << endl;
-	for (int i = 0; i < 8; i++)
+	for (size_t i = 0; i < 8; i++)
 	{
-		for (int j = 0; j < 8; j++)
+		for (size_t j = 0; j < 8; j++)
 		{
 			//cout << round(result[i][j]) << " | ";
-			printf("%5.0f | ", round(matResult.at(i, j)));
+			printf("%5.0f | ", roundf(matResult.at(i, j)));
 		}
 		cout << endl;
 	}
 	cout << "end of dct" << endl;
 
+
+	benchmark("Arai DCT AVX", runs, [&kokMatrix, &matResult]() {
+		for (int i = 0; i < 1024; i++) {
+			matResult = DCT::araiDCTAVX(kokMatrix);
+		}
+	});
+
 	cout << endl;
-	for (int i = 0; i < 8; i++)
+	for (size_t i = 0; i < 8; i++)
 	{
-		for (int j = 0; j < 8; j++)
+		for (size_t j = 0; j < 8; j++)
 		{
-			printf("%5.0f | ", round(result[i][j]));
+			//cout << round(result[i][j]) << " | ";
+			printf("%5.0f | ", roundf(matResult.at(i, j)));
 		}
 		cout << endl;
 	}
 	cout << "end of dct" << endl;
+
+	//cout << endl;
+	//for (int i = 0; i < 8; i++)
+	//{
+	//	for (int j = 0; j < 8; j++)
+	//	{
+	//		printf("%5.0f | ", round(result[i][j]));
+	//	}
+	//	cout << endl;
+	//}
+	//cout << "end of dct" << endl;
 }
 
 void testHuffmanEncoding()
