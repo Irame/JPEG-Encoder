@@ -43,6 +43,41 @@ void DCT::directDCT(const PointerMatrix& values, PointerMatrix& result)
 	M[0][0] -= 1024;  
 }
 
+void DCT::directIDCT(const PointerMatrix& values, PointerMatrix& result)
+{
+	// use 8x8 blocks for DCT
+	constexpr int N = 8;
+
+	// calculate values that don't change
+	constexpr float sqrtTemp = float(1.0 / c_sqrt(2));
+	constexpr float twoN = float(2.0 * N);
+	constexpr float halfN = float(2.0 / N);
+
+	values[0][0] += 1024;
+
+	for (int x = 0; x < N; x++) {
+		// calculate values that only change with i
+		float xFactor = M_PIf * (2 * x + 1) / twoN;
+
+		for (int y = 0; y < N; y++) {
+			// calculate values that only change with j
+			float yFactor = M_PIf * (2 * y + 1) / twoN;
+
+			float temp = 0;
+			for (int i = 0; i < N; i++) {
+				float ci = i == 0 ? sqrtTemp : 1;
+				float cosi = cos(xFactor * i);
+				for (int j = 0; j < N; j++) {
+					float cj = j == 0 ? sqrtTemp : 1;
+					float cosj = cos(yFactor * j);
+					temp += values[i][j] * ci * cj * cosi * cosj;
+				}
+			}
+			result[x][y] = halfN * temp;
+		}
+	}
+}
+
 void DCT::seperateDCT(const PointerMatrix& values, PointerMatrix& result)
 {
 	// use 8x8 blocks for DCT

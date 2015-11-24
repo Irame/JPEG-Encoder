@@ -119,6 +119,19 @@ void testDCT()
 	DCT::seperateDCT(testMatrix, result);
 	//DCT::dct_ii(testMatrix);
 
+
+	cout << "Input Block:" << endl;
+	for (size_t i = 0; i < 8; i++)
+	{
+		for (size_t j = 0; j < 8; j++)
+		{
+			//cout << round(result[i][j]) << " | ";
+			printf("%5.0f | ", roundf(testMatrix[i][j]));
+		}
+		cout << endl;
+	}
+	cout << "================" << endl;
+
 	size_t runs = 1000;
 	//benchmark("Direct DCT", runs, [&testMatrix, &result]() {
 	//	for (int i = 0; i < 1024; i++) {
@@ -140,6 +153,8 @@ void testDCT()
 	//		mat8x8 result = DCT::kokSimple(kokMatrix);
 	//	}
 	//});
+
+
 	benchmark("Arai DCT", runs, [&kokMatrix, &matResult]() {
 		for (int i = 0; i < 1024; i++) {
 			matResult = DCT::araiDCT(kokMatrix);
@@ -175,6 +190,23 @@ void testDCT()
 		cout << endl;
 	}
 	cout << "end of dct" << endl;
+
+
+	benchmark("Direct IDCT", 1, [&testMatrix, &result]() {
+		DCT::directIDCT(result, testMatrix);
+	});
+
+	cout << endl;
+	for (size_t i = 0; i < 8; i++)
+	{
+		for (size_t j = 0; j < 8; j++)
+		{
+			//cout << round(result[i][j]) << " | ";
+			printf("%5.0f | ", roundf(testMatrix[i][j]));
+		}
+		cout << endl;
+	}
+	cout << "end of idct" << endl;
 
 	//cout << endl;
 	//for (int i = 0; i < 8; i++)
