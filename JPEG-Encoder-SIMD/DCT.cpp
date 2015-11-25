@@ -124,7 +124,7 @@ void DCT::seperateDCT(const PointerMatrix& values, PointerMatrix& result)
 			result[i][j] = 0.0;
 			for (k = 0; k < N; k++)
 			{
-				result[i][j] += saveResults[i][k] * a.atTransposed(k, j);
+				result[i][j] += saveResults[i][k] * a.atT(k, j);
 			}
 		}
 	}
@@ -213,10 +213,8 @@ mat8x8 DCT::kokSimple(const mat8x8& x)
 //constexpr float S_(size_t k) { return k == 0 ? M_SQRT1_2f / 2.0f : 1.0f / (4.0f * C_(k)); }
 //float C_(size_t k) { return k == 0 ? 1.0f : (float)cosf(k * M_PIf / 16); }
 //float S_(size_t k) { return k == 0 ? M_SQRT1_2f / 2.0f : 1.0f / (4.0f * C_(k)); }
-mat8x8 DCT::araiDCT(const mat8x8& x)
+void DCT::araiDCT(const PointerMatrix& in, PointerMatrix& out)
 {
-	mat8x8 y; // Output
-
 	constexpr float s0 = S_(0);
 	constexpr float s1 = S_(1);
 	constexpr float s2 = S_(2);
@@ -234,14 +232,14 @@ mat8x8 DCT::araiDCT(const mat8x8& x)
 
 	for (size_t row = 0; row < 8; row++) {
 		float temp1[8];
-		temp1[0] = x.at(row, 0) + x.at(row, 7);
-		temp1[1] = x.at(row, 1) + x.at(row, 6);
-		temp1[2] = x.at(row, 2) + x.at(row, 5);
-		temp1[3] = x.at(row, 3) + x.at(row, 4);
-		temp1[4] = x.at(row, 3) - x.at(row, 4);
-		temp1[5] = x.at(row, 2) - x.at(row, 5);
-		temp1[6] = x.at(row, 1) - x.at(row, 6);
-		temp1[7] = x.at(row, 0) - x.at(row, 7);
+		temp1[0] = in.at(row, 0) + in.at(row, 7);
+		temp1[1] = in.at(row, 1) + in.at(row, 6);
+		temp1[2] = in.at(row, 2) + in.at(row, 5);
+		temp1[3] = in.at(row, 3) + in.at(row, 4);
+		temp1[4] = in.at(row, 3) - in.at(row, 4);
+		temp1[5] = in.at(row, 2) - in.at(row, 5);
+		temp1[6] = in.at(row, 1) - in.at(row, 6);
+		temp1[7] = in.at(row, 0) - in.at(row, 7);
 
 		float temp2[8];
 		temp2[0] = temp1[0] + temp1[3];
@@ -278,35 +276,35 @@ mat8x8 DCT::araiDCT(const mat8x8& x)
 		temp3[7] -= temp;
 
 		float temp4[8];
-		y.at(row, 0) = temp3[0];
-		y.at(row, 4) = temp3[1];
-		y.at(row, 2) = temp3[2];
-		y.at(row, 6) = temp3[3];
-		y.at(row, 5) = temp3[4] + temp3[7];
-		y.at(row, 1) = temp3[5] + temp3[6];
-		y.at(row, 7) = temp3[5] - temp3[6];
-		y.at(row, 3) = temp3[7] - temp3[4];
+		out.at(row, 0) = temp3[0];
+		out.at(row, 4) = temp3[1];
+		out.at(row, 2) = temp3[2];
+		out.at(row, 6) = temp3[3];
+		out.at(row, 5) = temp3[4] + temp3[7];
+		out.at(row, 1) = temp3[5] + temp3[6];
+		out.at(row, 7) = temp3[5] - temp3[6];
+		out.at(row, 3) = temp3[7] - temp3[4];
 
-		y.at(row, 0) *= s0;
-		y.at(row, 4) *= s4;
-		y.at(row, 2) *= s2;
-		y.at(row, 6) *= s6;
-		y.at(row, 5) *= s5;
-		y.at(row, 1) *= s1;
-		y.at(row, 7) *= s7;
-		y.at(row, 3) *= s3;
+		out.at(row, 0) *= s0;
+		out.at(row, 4) *= s4;
+		out.at(row, 2) *= s2;
+		out.at(row, 6) *= s6;
+		out.at(row, 5) *= s5;
+		out.at(row, 1) *= s1;
+		out.at(row, 7) *= s7;
+		out.at(row, 3) *= s3;
 	}
 
 	for (size_t row = 0; row < 8; row++) {
 		float temp1[8];
-		temp1[0] = y.atT(row, 0) + y.atT(row, 7);
-		temp1[1] = y.atT(row, 1) + y.atT(row, 6);
-		temp1[2] = y.atT(row, 2) + y.atT(row, 5);
-		temp1[3] = y.atT(row, 3) + y.atT(row, 4);
-		temp1[4] = y.atT(row, 3) - y.atT(row, 4);
-		temp1[5] = y.atT(row, 2) - y.atT(row, 5);
-		temp1[6] = y.atT(row, 1) - y.atT(row, 6);
-		temp1[7] = y.atT(row, 0) - y.atT(row, 7);
+		temp1[0] = out.atT(row, 0) + out.atT(row, 7);
+		temp1[1] = out.atT(row, 1) + out.atT(row, 6);
+		temp1[2] = out.atT(row, 2) + out.atT(row, 5);
+		temp1[3] = out.atT(row, 3) + out.atT(row, 4);
+		temp1[4] = out.atT(row, 3) - out.atT(row, 4);
+		temp1[5] = out.atT(row, 2) - out.atT(row, 5);
+		temp1[6] = out.atT(row, 1) - out.atT(row, 6);
+		temp1[7] = out.atT(row, 0) - out.atT(row, 7);
 
 		float temp2[8];
 		temp2[0] = temp1[0] + temp1[3];
@@ -342,33 +340,30 @@ mat8x8 DCT::araiDCT(const mat8x8& x)
 		temp3[5] += temp3[7];
 		temp3[7] -= temp;
 
-		float temp4[8];
-		y.atT(row, 0) = temp3[0];
-		y.atT(row, 4) = temp3[1];
-		y.atT(row, 2) = temp3[2];
-		y.atT(row, 6) = temp3[3];
-		y.atT(row, 5) = temp3[4] + temp3[7];
-		y.atT(row, 1) = temp3[5] + temp3[6];
-		y.atT(row, 7) = temp3[5] - temp3[6];
-		y.atT(row, 3) = temp3[7] - temp3[4];
+		out.atT(row, 0) = temp3[0];
+		out.atT(row, 4) = temp3[1];
+		out.atT(row, 2) = temp3[2];
+		out.atT(row, 6) = temp3[3];
+		out.atT(row, 5) = temp3[4] + temp3[7];
+		out.atT(row, 1) = temp3[5] + temp3[6];
+		out.atT(row, 7) = temp3[5] - temp3[6];
+		out.atT(row, 3) = temp3[7] - temp3[4];
 
-		y.atT(row, 0) *= s0;
-		y.atT(row, 4) *= s4;
-		y.atT(row, 2) *= s2;
-		y.atT(row, 6) *= s6;
-		y.atT(row, 5) *= s5;
-		y.atT(row, 1) *= s1;
-		y.atT(row, 7) *= s7;
-		y.atT(row, 3) *= s3;
+		out.atT(row, 0) *= s0;
+		out.atT(row, 4) *= s4;
+		out.atT(row, 2) *= s2;
+		out.atT(row, 6) *= s6;
+		out.atT(row, 5) *= s5;
+		out.atT(row, 1) *= s1;
+		out.atT(row, 7) *= s7;
+		out.atT(row, 3) *= s3;
 	}
 
 
 	// https://en.wikipedia.org/wiki/JPEG#Discrete_cosine_transform
 	// subtract 1024 from the DC coefficient, which is mathematically equivalent
 	// to center the provided data around zero.
-	y[0] -= 1024;
-
-	return y;
+	out[0][0] -= 1024;
 }
 
 void DCT::araiDCTAVX(const PointerMatrix& in, PointerMatrix& out)

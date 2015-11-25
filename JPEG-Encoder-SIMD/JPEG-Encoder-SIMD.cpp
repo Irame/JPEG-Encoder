@@ -89,6 +89,88 @@ void bitBufferTest(string filePath)
 	//cout << bitBuffer << endl;
 }
 
+void test2DCT()
+{
+	size_t widthInBlocks = (256 + 7) / 8;
+	size_t width = widthInBlocks * 8;
+
+	size_t heightInBlocks = (256 + 7) / 8;
+	size_t height = heightInBlocks * 8;
+
+	size_t size = width * height;
+
+	vector<float> testImage(size);
+	vector<float> testDCTResult(size, 0);
+
+	for (size_t i = 0; i < size; i++)
+	{
+		testImage[i] = rand() % 256;
+	}
+	
+	vector<PointerMatrix> testImageBlocks;
+	vector<PointerMatrix> testImageResultBlocks;
+
+	for (size_t x = 0; x < width; x += 8)
+	{
+		for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
+		{
+			testImageBlocks.emplace_back(
+				&testImage[curOffset],
+				&testImage[curOffset + width * 1],
+				&testImage[curOffset + width * 2],
+				&testImage[curOffset + width * 3],
+				&testImage[curOffset + width * 4],
+				&testImage[curOffset + width * 5],
+				&testImage[curOffset + width * 6],
+				&testImage[curOffset + width * 7]
+				);
+
+			testImageResultBlocks.emplace_back(
+				&testDCTResult[curOffset],
+				&testDCTResult[curOffset + width * 1],
+				&testDCTResult[curOffset + width * 2],
+				&testDCTResult[curOffset + width * 3],
+				&testDCTResult[curOffset + width * 4],
+				&testDCTResult[curOffset + width * 5],
+				&testDCTResult[curOffset + width * 6],
+				&testDCTResult[curOffset + width * 7]
+				);
+		}
+	}
+
+	benchmark("Benchmark Direct DCT", 227, [&testImageBlocks, &testImageResultBlocks]()
+	{
+		for (size_t i = 0; i < testImageBlocks.size(); i++)
+		{
+			DCT::directDCT(testImageBlocks[i], testImageResultBlocks[i]);
+		}
+	});
+
+	benchmark("Benchmark Seperate DCT", 5882, [&testImageBlocks, &testImageResultBlocks]()
+	{
+		for (size_t i = 0; i < testImageBlocks.size(); i++)
+		{
+			DCT::seperateDCT(testImageBlocks[i], testImageResultBlocks[i]);
+		}
+	});
+
+	benchmark("Benchmark Arai DCT", 45454, [&testImageBlocks, &testImageResultBlocks]()
+	{
+		for (size_t i = 0; i < testImageBlocks.size(); i++)
+		{
+			DCT::araiDCT(testImageBlocks[i], testImageResultBlocks[i]);
+		}
+	});
+
+	benchmark("Benchmark Arai DCT (AVX)", 100000, [&testImageBlocks, &testImageResultBlocks]()
+	{
+		for (size_t i = 0; i < testImageBlocks.size(); i++)
+		{
+			DCT::araiDCTAVX(testImageBlocks[i], testImageResultBlocks[i]);
+		}
+	});
+}
+
 void testDCT()
 {
 	float rowOne[]		=	{ 140, 144, 147, 140, 140, 155, 179, 175 };
@@ -114,11 +196,6 @@ void testDCT()
 	//PointerMatrix testMatrix = PointerMatrix(arr);
 	PointerMatrix testMatrix = PointerMatrix(rowOne, rowTwo, rowThree, rowFour, rowFive, rowSix, rowSeven, rowEight);
 	auto kokMatrix = mat8x8(rowOne, rowTwo, rowThree, rowFour, rowFive, rowSix, rowSeven, rowEight);
-	
-	//DCT::directDCT(testMatrix);
-	DCT::seperateDCT(testMatrix, result);
-	//DCT::dct_ii(testMatrix);
-
 
 	cout << "Input Block:" << endl;
 	for (size_t i = 0; i < 8; i++)
@@ -155,9 +232,9 @@ void testDCT()
 	//});
 
 
-	benchmark("Arai DCT", runs, [&kokMatrix, &matResult]() {
+	benchmark("Arai DCT", runs, [&testMatrix, &result]() {
 		for (int i = 0; i < 1024; i++) {
-			matResult = DCT::araiDCT(kokMatrix);
+			DCT::araiDCT(testMatrix, result);
 		}
 	});
 	cout << endl;
@@ -166,7 +243,7 @@ void testDCT()
 		for (size_t j = 0; j < 8; j++)
 		{
 			//cout << round(result[i][j]) << " | ";
-			printf("%5.0f | ", roundf(matResult.at(i, j)));
+			printf("%5.0f | ", roundf(result[i][j]));
 		}
 		cout << endl;
 	}
@@ -326,7 +403,7 @@ int main(int argc, char* argv[])
 	std::cout << "Test DCT" << endl;
 	benchmark("Test DCT", 1, [&]()
 	{
-		testDCT();
+		test2DCT();
 	});
 
 	return 0;

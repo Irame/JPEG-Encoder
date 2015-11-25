@@ -24,13 +24,13 @@ public:
 		return data[row];
 	}
 
-	float at(size_t row, size_t col) const
+	float& at(size_t row, size_t col) const
 	{
 		assert(row <= 7, col <= 7);
 		return data[row][col];
 	}
 
-	float atTransposed(size_t row, size_t col) const
+	float& atT(size_t row, size_t col) const
 	{
 		assert(row <= 7, col <= 7);
 		return data[col][row];
