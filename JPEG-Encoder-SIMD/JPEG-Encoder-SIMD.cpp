@@ -241,58 +241,58 @@ void testDCT()
 	//});
 
 
-	//benchmark("Arai DCT", runs, [&testMatrix, &result]() {
-	//	for (int i = 0; i < 1024; i++) {
-	//		DCT::araiDCT(testMatrix, result);
-	//	}
-	//});
-	//cout << endl;
-	//for (size_t i = 0; i < 8; i++)
-	//{
-	//	for (size_t j = 0; j < 8; j++)
-	//	{
-	//		//cout << round(result[i][j]) << " | ";
-	//		printf("%5.0f | ", roundf(result[i][j]));
-	//	}
-	//	cout << endl;
-	//}
-	//cout << "end of dct" << endl;
+	benchmark("Arai DCT", runs, [&testMatrix, &result]() {
+		for (int i = 0; i < 1024; i++) {
+			DCT::araiDCT(testMatrix, result);
+		}
+	});
+	cout << endl;
+	for (size_t i = 0; i < 8; i++)
+	{
+		for (size_t j = 0; j < 8; j++)
+		{
+			//cout << round(result[i][j]) << " | ";
+			printf("%5.0f | ", roundf(result[i][j]));
+		}
+		cout << endl;
+	}
+	cout << "end of dct" << endl;
 
 
-	//benchmark("Arai DCT AVX", runs, [&testMatrix, &result]() {
-	//	for (int i = 0; i < 1024; i++) {
-	//		DCT::araiDCTAVX(testMatrix, result);
-	//	}
-	//});
+	benchmark("Arai DCT AVX", runs, [&testMatrix, &result]() {
+		for (int i = 0; i < 1024; i++) {
+			DCT::araiDCTAVX(testMatrix, result);
+		}
+	});
 
-	//cout << endl;
-	//for (size_t i = 0; i < 8; i++)
-	//{
-	//	for (size_t j = 0; j < 8; j++)
-	//	{
-	//		//cout << round(result[i][j]) << " | ";
-	//		printf("%5.0f | ", roundf(result[i][j]));
-	//	}
-	//	cout << endl;
-	//}
-	//cout << "end of dct" << endl;
+	cout << endl;
+	for (size_t i = 0; i < 8; i++)
+	{
+		for (size_t j = 0; j < 8; j++)
+		{
+			//cout << round(result[i][j]) << " | ";
+			printf("%5.0f | ", roundf(result[i][j]));
+		}
+		cout << endl;
+	}
+	cout << "end of dct" << endl;
 
 
-	//benchmark("Direct IDCT", 1, [&testMatrix, &result]() {
-	//	DCT::directIDCT(result, testMatrix);
-	//});
+	benchmark("Direct IDCT", 1, [&testMatrix, &result]() {
+		DCT::directIDCT(result, testMatrix);
+	});
 
-	//cout << endl;
-	//for (size_t i = 0; i < 8; i++)
-	//{
-	//	for (size_t j = 0; j < 8; j++)
-	//	{
-	//		//cout << round(result[i][j]) << " | ";
-	//		printf("%5.0f | ", roundf(testMatrix[i][j]));
-	//	}
-	//	cout << endl;
-	//}
-	//cout << "end of idct" << endl;
+	cout << endl;
+	for (size_t i = 0; i < 8; i++)
+	{
+		for (size_t j = 0; j < 8; j++)
+		{
+			//cout << round(result[i][j]) << " | ";
+			printf("%5.0f | ", roundf(testMatrix[i][j]));
+		}
+		cout << endl;
+	}
+	cout << "end of idct" << endl;
 
 	//cout << endl;
 	//for (int i = 0; i < 8; i++)
@@ -332,9 +332,9 @@ int main(int argc, char* argv[])
 	//	testValues[i] = rand() % 2;
 	//}
 
-	benchmark("bitBufferTest", 1, [&]() {
-		bitBufferTest(argv[2]);
-	});
+	//benchmark("bitBufferTest", 1, [&]() {
+	//	bitBufferTest(argv[2]);
+	//});
 
 	//benchmark("testHuffmanEncoding", 1, [&]() {
 	//	testHuffmanEncoding();
@@ -409,11 +409,11 @@ int main(int argc, char* argv[])
 		ImageLoader::Save(dstFile, image);
 	});*/
 
-	/*std::cout << "Test DCT" << endl;
+	std::cout << "Test DCT" << endl;
 	benchmark("Test DCT", 1, [&]()
 	{
 		test2DCT();
-	});*/
+	});
 
 	return 0;
 }

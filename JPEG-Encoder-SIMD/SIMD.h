@@ -358,7 +358,7 @@ static void oneDimensionalDCT(__m256* ref)
 	ref[1] = _mm256_add_ps(temp1[1], temp1[2]);
 	ref[2] = _mm256_sub_ps(temp1[1], temp1[2]);
 	ref[3] = _mm256_sub_ps(temp1[0], temp1[3]);
-	ref[4] = _mm256_sub_ps(_mm256_sub_ps(_mm256_set1_ps(0.0f), temp1[4]), temp1[5]);
+	ref[4] = _mm256_add_ps(temp1[4], temp1[5]);
 	ref[5] = _mm256_add_ps(temp1[5], temp1[6]);
 	ref[6] = _mm256_add_ps(temp1[6], temp1[7]);
 	ref[7] = temp1[7];
@@ -372,13 +372,13 @@ static void oneDimensionalDCT(__m256* ref)
 	temp1[6] = ref[6];
 	temp1[7] = ref[7];
 
-	__m256 temp6plus4 = _mm256_add_ps(temp1[4], temp1[6]);
+	__m256 temp6plus4 = _mm256_sub_ps(temp1[6], temp1[4]);
 	__m256 a13avx = _mm256_set1_ps(a1);
 	__m256 a2avx = _mm256_set1_ps(a2);
 	__m256 a4avx = _mm256_set1_ps(a4);
 	__m256 a5avx = _mm256_set1_ps(a5);
 	temp1[2] = _mm256_mul_ps(temp1[2], a13avx);
-	temp1[4] = _mm256_sub_ps(_mm256_mul_ps(_mm256_sub_ps(_mm256_set1_ps(0.0f), temp1[4]), a2avx), _mm256_mul_ps(temp6plus4, a5avx));
+	temp1[4] = _mm256_sub_ps(_mm256_mul_ps(temp1[4], a2avx), _mm256_mul_ps(temp6plus4, a5avx));
 	temp1[5] = _mm256_mul_ps(temp1[5], a13avx);;
 	temp1[6] = _mm256_sub_ps(_mm256_mul_ps(temp1[6], a4avx), _mm256_mul_ps(temp6plus4, a5avx));
 
