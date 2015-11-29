@@ -28,7 +28,7 @@ private:
 
 namespace JPEGSegments
 {
-	enum HuffmanTableType : byte
+	enum class HuffmanTableType : byte
 	{
 		DC = 0, AC = 1
 	};
@@ -124,25 +124,25 @@ namespace JPEGSegments
 		DefineHuffmannTable(byte htNum, HuffmanTableType htType, const HuffmanTable<byte>& huffmanTable)
 			: marker(SegmentType::DefineHuffmannTable),
 			length(2 + 1 + 16 + unsigned short(huffmanTable.getSymbolCount())),
-			htInformation(htNum | (htType << 4)),
+			htInformation((0b1111 & htNum) | (static_cast<byte>(htType) << 4)),
 			table(new byte[huffmanTable.getSymbolCount()])
 		{
 			memset(symbolCount, 0, 16);
 
 			std::vector<std::pair<byte, BitBufferPtr>> sortableMapEntries;
 
-			for (auto symbolCodePair : huffmanTable)
+			for (const auto& symbolCodePair : huffmanTable)
 			{
 				sortableMapEntries.push_back(symbolCodePair);
 			}
 
-			std::sort(sortableMapEntries.begin(), sortableMapEntries.end(), [](std::pair<byte, BitBufferPtr> a, std::pair<byte, BitBufferPtr> b)
+			std::sort(sortableMapEntries.begin(), sortableMapEntries.end(), [](std::pair<byte, BitBufferPtr>& a, std::pair<byte, BitBufferPtr>& b)
 			{
 				return a.second->getSize() < b.second->getSize();
 			});
 
 			int i = 0;
-			for (auto symbolCodePair : sortableMapEntries)
+			for (const auto& symbolCodePair : sortableMapEntries)
 			{
 				symbolCount[symbolCodePair.second->getSize() - 1] += 1;
 				table[i++] = symbolCodePair.first;

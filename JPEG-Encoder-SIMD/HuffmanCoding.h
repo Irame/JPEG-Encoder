@@ -117,8 +117,8 @@ HuffmanTablePtr<SymbolType> HuffmanTable<SymbolType>::create(size_t codeWordLeng
 		++symbolsCount[static_cast<size_t>(symbol)];
 	}
 
-	// the lower bound of the code word length is ceil(log2(numberOfDifferentSymbols))
-	if (codeWordLength < ceil(log2(symbolsCount.size()))) return nullptr;
+	// the lower bound of the code word length is ceil(log2(numberOfDifferentSymbols + 1)) (+1 => dummy symbol)
+	if (codeWordLength < ceil(log2(symbolsCount.size() + 1))) return nullptr;
 
 	// creating leaves for each symbol in symbolsCount
 	std::vector<PackageMergeTreeNodePtr> origNodes;
