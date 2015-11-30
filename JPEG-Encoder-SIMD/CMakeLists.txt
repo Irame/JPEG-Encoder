@@ -27,7 +27,8 @@ set(H_FILES
 	SIMD.h
 	SortedLinkedList.h
 	stdafx.h
-	targetver.h	
+	targetver.h
+	ZigZag.h
 ) # H_FILES
 
 add_executable(JPEG-Encoder-SIMD ${CPP_FILES} ${H_FILES})
