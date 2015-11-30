@@ -370,3 +370,7 @@ void DCT::araiDCTAVX(const PointerMatrix& in, PointerMatrix& out)
 {
 	twoDimensionalDCTAVX(in, out);
 }
+void DCT::araiDCTandQuantisationAVX(const PointerMatrix& in, const __m256* qTable, PointerMatrix& out)
+{
+	twoDimensionalDCTandQuantisationAVX(in, qTable, out);
+}

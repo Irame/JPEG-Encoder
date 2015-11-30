@@ -12,4 +12,5 @@ namespace DCT
 
 	void araiDCT(const PointerMatrix& in, PointerMatrix& out);
 	void araiDCTAVX(const PointerMatrix& in, PointerMatrix& out);
+	void araiDCTandQuantisationAVX(const PointerMatrix& in, const __m256* qTable, PointerMatrix& out);
 };
