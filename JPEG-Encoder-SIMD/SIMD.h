@@ -296,7 +296,7 @@ static void halfHeightResolutionAverageAVX(float* buff1, float* buff2, float* re
 	_mm256_storeu_ps(resultBuff, _mm256_div_ps(sum, normVec));
 }
 
-static void transpose8_ps(__m256 &row0, __m256 &row1, __m256 &row2, __m256 &row3, __m256 &row4, __m256 &row5, __m256 &row6, __m256 &row7) {
+__forceinline static void transpose8_ps(__m256 &row0, __m256 &row1, __m256 &row2, __m256 &row3, __m256 &row4, __m256 &row5, __m256 &row6, __m256 &row7) {
 	__m256 __t0, __t1, __t2, __t3, __t4, __t5, __t6, __t7;
 	__m256 __tt0, __tt1, __tt2, __tt3, __tt4, __tt5, __tt6, __tt7;
 	__t0 = _mm256_unpacklo_ps(row0, row1);
@@ -327,7 +327,7 @@ static void transpose8_ps(__m256 &row0, __m256 &row1, __m256 &row2, __m256 &row3
 
 constexpr float C_(size_t k) { return k == 0 ? 1.0f : (float)c_cos(k * M_PIf / 16); }
 constexpr float S_(size_t k) { return k == 0 ? M_SQRT1_2f / 2.0f : 1.0f / (4.0f * C_(k)); }
-static void oneDimensionalDCT(__m256* ref)
+__forceinline static void oneDimensionalDCT(__m256* ref)
 {
 	constexpr float s0 = S_(0);
 	constexpr float s1 = S_(1);
@@ -408,7 +408,35 @@ static void oneDimensionalDCT(__m256* ref)
 	ref[7] = _mm256_mul_ps(ref[7], _mm256_set1_ps(s7));
 }
 
-static void twoDimentionalDCTAVX(const PointerMatrix& in, PointerMatrix& out)
+__forceinline static void quantifyDCTAVX(__m256* ref, const __m256* qTable)
+{
+	for (size_t i = 0; i < 8; i++)
+	{
+		ref[i] = _mm256_div_ps(ref[i], qTable[i]);
+	}
+}
+
+__forceinline static void twoDimensionalDCTAVX(__m256* regs)
+{
+	float temp[8];
+
+	transpose8_ps(regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], regs[6], regs[7]);
+
+	oneDimensionalDCT(regs);
+
+	transpose8_ps(regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], regs[6], regs[7]);
+
+	oneDimensionalDCT(regs);
+
+	// https://en.wikipedia.org/wiki/JPEG#Discrete_cosine_transform
+	// subtract 1024 from the DC coefficient, which is mathematically equivalent
+	// to center the provided data around zero.
+	const __m256 dcCorrectionValue = _mm256_set_ps(1024, 0, 0, 0, 0, 0, 0, 0);
+	regs[0] = _mm256_sub_ps(regs[0], dcCorrectionValue);
+}
+
+
+static void twoDimensionalDCTAVX(const PointerMatrix& in, PointerMatrix& out)
 {
 	__m256 regs[8]
 	{
@@ -422,13 +450,7 @@ static void twoDimentionalDCTAVX(const PointerMatrix& in, PointerMatrix& out)
 		_mm256_loadu_ps(in[7])
 	};
 
-	transpose8_ps(regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], regs[6], regs[7]);
-
-	oneDimensionalDCT(regs);
-
-	transpose8_ps(regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], regs[6], regs[7]);
-
-	oneDimensionalDCT(regs);
+	twoDimensionalDCTAVX(regs);
 
 	_mm256_storeu_ps(out[0], regs[0]);
 	_mm256_storeu_ps(out[1], regs[1]);
@@ -438,9 +460,32 @@ static void twoDimentionalDCTAVX(const PointerMatrix& in, PointerMatrix& out)
 	_mm256_storeu_ps(out[5], regs[5]);
 	_mm256_storeu_ps(out[6], regs[6]);
 	_mm256_storeu_ps(out[7], regs[7]);
+}
 
-	// https://en.wikipedia.org/wiki/JPEG#Discrete_cosine_transform
-	// subtract 1024 from the DC coefficient, which is mathematically equivalent
-	// to center the provided data around zero.
-	out[0][0] -= 1024;
+static void twoDimensionalDCTandQuantisationAVX(const PointerMatrix& in, const __m256* qTable, PointerMatrix& out)
+{
+	__m256 regs[8]
+	{
+		_mm256_loadu_ps(in[0]),
+		_mm256_loadu_ps(in[1]),
+		_mm256_loadu_ps(in[2]),
+		_mm256_loadu_ps(in[3]),
+		_mm256_loadu_ps(in[4]),
+		_mm256_loadu_ps(in[5]),
+		_mm256_loadu_ps(in[6]),
+		_mm256_loadu_ps(in[7])
+	};
+
+	twoDimensionalDCTAVX(regs);
+
+	quantifyDCTAVX(regs, qTable);
+
+	_mm256_storeu_ps(out[0], regs[0]);
+	_mm256_storeu_ps(out[1], regs[1]);
+	_mm256_storeu_ps(out[2], regs[2]);
+	_mm256_storeu_ps(out[3], regs[3]);
+	_mm256_storeu_ps(out[4], regs[4]);
+	_mm256_storeu_ps(out[5], regs[5]);
+	_mm256_storeu_ps(out[6], regs[6]);
+	_mm256_storeu_ps(out[7], regs[7]);
 }

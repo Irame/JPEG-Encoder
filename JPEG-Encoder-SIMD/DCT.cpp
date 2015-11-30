@@ -368,5 +368,5 @@ void DCT::araiDCT(const PointerMatrix& in, PointerMatrix& out)
 
 void DCT::araiDCTAVX(const PointerMatrix& in, PointerMatrix& out)
 {
-	twoDimentionalDCTAVX(in, out);
+	twoDimensionalDCTAVX(in, out);
 }
