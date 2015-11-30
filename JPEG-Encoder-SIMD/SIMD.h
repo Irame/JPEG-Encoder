@@ -462,7 +462,7 @@ static void twoDimensionalDCTAVX(const PointerMatrix& in, PointerMatrix& out)
 	_mm256_storeu_ps(out[7], regs[7]);
 }
 
-static void twoDimensionalDCTandQuantisationAVX(const PointerMatrix& in, const __m256* qTable, PointerMatrix& out)
+static void twoDimensionalDCTandQuantisationAVX(const PointerMatrix& in, const QTable& qTable, PointerMatrix& out)
 {
 	__m256 regs[8]
 	{
@@ -478,7 +478,7 @@ static void twoDimensionalDCTandQuantisationAVX(const PointerMatrix& in, const _
 
 	twoDimensionalDCTAVX(regs);
 
-	quantifyDCTAVX(regs, qTable);
+	quantifyDCTAVX(regs, qTable.avx);
 
 	_mm256_storeu_ps(out[0], regs[0]);
 	_mm256_storeu_ps(out[1], regs[1]);

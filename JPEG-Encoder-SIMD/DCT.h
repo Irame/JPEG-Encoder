@@ -1,5 +1,6 @@
 #pragma once
 #include "PointerMatrix.h"
+#include "QuantizationTables.h"
 
 namespace DCT
 {
@@ -12,5 +13,5 @@ namespace DCT
 
 	void araiDCT(const PointerMatrix& in, PointerMatrix& out);
 	void araiDCTAVX(const PointerMatrix& in, PointerMatrix& out);
-	void araiDCTandQuantisationAVX(const PointerMatrix& in, const __m256* qTable, PointerMatrix& out);
+	void DCT::araiDCTandQuantisationAVX(const PointerMatrix& in, const QTable& qTable, PointerMatrix& out);
 };

@@ -6,6 +6,7 @@
 #include <algorithm>
 #include "HuffmanCoding.h"
 #include "SamplingScheme.h"
+#include "QuantizationTables.h"
 
 
 struct BEushort // datatype that swaps byteorder to have the correct order for serialization
@@ -165,9 +166,23 @@ namespace JPEGSegments
 		const HeaderSegmentMarker marker;
 		BEushort length;
 		byte info; // 0-3 bits number of QT (0-3), 4-7 accuracy of QT (0 = 8 bit, otherwise 16 bit)
-		byte* coefficients; // count = 64* (precision+1), zigzag sorted
+		byte coefficients[64]; // count = 64* (precision+1), zigzag sorted
 
-		DefineQuantizationTable() : marker(SegmentType::DefineQuantizationTable) {}
+		DefineQuantizationTable(byte qtNumber, const QTable& qTable)
+			: marker(SegmentType::DefineQuantizationTable),
+			length(2 + 1 + 64), // only if precision is always 8 bit
+			info(0b1111 & qtNumber)
+		{
+			for (int i = 0; i < 64; i++) 
+			{
+				coefficients[i] = qTable.floats[i]; // Todo zigzag sorted
+			}
+		}
+
+		~DefineQuantizationTable() 
+		{
+			delete[] coefficients;
+		}
 
 		// Ein DQT-Segment kann mehrere QT enthalten
 		// Verwenden Sie nur 8 Bit QTs
