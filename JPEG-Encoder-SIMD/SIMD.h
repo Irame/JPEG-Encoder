@@ -431,7 +431,7 @@ __forceinline static void twoDimensionalDCTAVX(__m256* regs)
 	// https://en.wikipedia.org/wiki/JPEG#Discrete_cosine_transform
 	// subtract 1024 from the DC coefficient, which is mathematically equivalent
 	// to center the provided data around zero.
-	const __m256 dcCorrectionValue = _mm256_set_ps(1024, 0, 0, 0, 0, 0, 0, 0);
+	const __m256 dcCorrectionValue = _mm256_set_ps(0, 0, 0, 0, 0, 0, 0, 1024);
 	regs[0] = _mm256_sub_ps(regs[0], dcCorrectionValue);
 }
 
