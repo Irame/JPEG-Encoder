@@ -28,7 +28,7 @@ namespace JPEGQuantization
 		72, 92, 95, 98, 112, 100, 103, 99 
 	};
 
-	static const QTable chrominance[8] { 
+	static const QTable chrominance { 
 		17, 18, 24, 47, 99, 99, 99, 99,
 		18, 21, 26, 66, 99, 99, 99, 99,
 		24, 26, 56, 99, 99, 99, 99, 99,
@@ -46,7 +46,7 @@ namespace JPEGQuantization
 
 	namespace Photoshop {
 		// Quality 12
-		static const QTable luminance12[8]{
+		static const QTable luminance12 {
 			1,	1,	1,	1,	1,	1,	1,	2,
 			1,	1,	1,	1,	1,	1,	1,	2,
 			1,	1,	1,	1,	1,	1,	2,	2,
@@ -56,7 +56,7 @@ namespace JPEGQuantization
 			1,	1,	2,	2,	3,	3,	3,	3,
 			2,	2,	2,	3,	3,	3,	3,	3,
 		};
-		static const QTable chrominance12[8]{
+		static const QTable chrominance12 {
 			1,	1,	1,	2,	3,	3,	3,	3,
 			1,	1,	1,	2,	3,	3,	3,	3,
 			1,	1,	2,	3,	3,	3,	3,	3,
@@ -68,7 +68,7 @@ namespace JPEGQuantization
 		};
 
 		// Quality 5
-		static const QTable luminance5[8]{
+		static const QTable luminance5 {
 			12,	8 ,	13,	21,	26,	32,	34,	17,
 			8 ,	9 ,	12,	20,	27,	23,	12,	12,
 			13,	12,	16,	26,	23,	12,	12,	12,
@@ -78,7 +78,7 @@ namespace JPEGQuantization
 			34,	12,	12,	12,	12,	12,	12,	12,
 			17,	12,	12,	12,	12,	12,	12,	12,
 		};
-		static const QTable chrominance5[8]{
+		static const QTable chrominance5 {
 			13,	13,	17,	27,	20,	20,	17,	17,
 			13,	14,	17,	14,	14,	12,	12,	12,
 			17,	17,	14,	14,	12,	12,	12,	12,
