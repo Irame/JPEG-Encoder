@@ -7,6 +7,7 @@
 #include "HuffmanCoding.h"
 #include "SamplingScheme.h"
 #include "QuantizationTables.h"
+#include "ZigZag.h"
 
 
 struct BEushort // datatype that swaps byteorder to have the correct order for serialization
@@ -173,15 +174,11 @@ namespace JPEGSegments
 			length(2 + 1 + 64), // only if precision is always 8 bit
 			info(0b1111 & qtNumber)
 		{
+			auto zigZagQTable = reorderByZigZag(qTable.floats);
 			for (int i = 0; i < 64; i++) 
 			{
-				coefficients[i] = qTable.floats[i]; // Todo zigzag sorted
+				coefficients[i] = zigZagQTable[i];
 			}
-		}
-
-		~DefineQuantizationTable() 
-		{
-			delete[] coefficients;
 		}
 
 		// Ein DQT-Segment kann mehrere QT enthalten

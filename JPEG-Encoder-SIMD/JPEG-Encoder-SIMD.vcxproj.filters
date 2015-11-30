@@ -69,6 +69,9 @@
     <ClInclude Include="const_math.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ZigZag.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

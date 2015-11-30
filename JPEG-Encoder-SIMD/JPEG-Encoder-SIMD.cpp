@@ -80,12 +80,17 @@ void bitBufferTest(string filePath)
 
 	JPEGSegments::DefineHuffmannTable defineHuffmanTable(3, JPEGSegments::HuffmanTableType::AC, *huffmanTable);
 
+	JPEGSegments::DefineQuantizationTable quantizationTableLuminance(0, JPEGQuantization::luminance);
+	JPEGSegments::DefineQuantizationTable quantizationTableChrominance(1, JPEGQuantization::chrominance);
+
 	JPEGSegments::EndOfImage endOfImage;
 
 	Serialize(startOfImage, bitBuffer);
 	Serialize(app0, bitBuffer);
 	Serialize(startOfFrame0, bitBuffer);
 	Serialize(defineHuffmanTable, bitBuffer);
+	Serialize(quantizationTableLuminance, bitBuffer);
+	Serialize(quantizationTableChrominance, bitBuffer);
 	Serialize(endOfImage, bitBuffer);
 
 	//for (int i = 0; i < 10000000; i++)

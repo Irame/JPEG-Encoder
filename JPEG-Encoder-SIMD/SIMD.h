@@ -1,6 +1,7 @@
 #pragma once
 #include "const_math.h"
 #include "PointerMatrix.h"
+#include "QuantizationTables.h"
 
 
 // https://software.intel.com/sites/default/files/m/d/4/1/d/8/Image_Processing_-_whitepaper_-_100pct_CCEreviewed_update.pdf
