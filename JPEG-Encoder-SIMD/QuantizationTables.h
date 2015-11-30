@@ -1,4 +1,6 @@
 #pragma once
+
+#include "immintrin.h"
 #include "PointerMatrix.h"
 
 union QTable {

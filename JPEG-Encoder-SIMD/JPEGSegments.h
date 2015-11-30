@@ -208,15 +208,11 @@ namespace JPEGSegments
 	static void Serialize(T &headerSegment, BitBuffer &buffer) {
 		buffer.push(headerSegment);
 	}
+
 	template <>
 	void Serialize(DefineHuffmannTable &headerSegment, BitBuffer &buffer) {
 		buffer.pushBits(21 * 8, &headerSegment);
 		buffer.pushBits((headerSegment.length - 19) * 8, headerSegment.table); //21-2 byte because the marker doesn't count
-	}
-	template <>
-	static void Serialize(DefineQuantizationTable &headerSegment, BitBuffer &buffer) {
-		buffer.pushBits(5 * 8, &headerSegment);
-		buffer.pushBits((headerSegment.length - 3) * 8, headerSegment.coefficients);
 	}
 };
 
