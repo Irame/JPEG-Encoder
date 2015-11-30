@@ -138,6 +138,8 @@ namespace JPEGSegments
 
 			std::sort(sortableMapEntries.begin(), sortableMapEntries.end(), [](std::pair<byte, BitBufferPtr>& a, std::pair<byte, BitBufferPtr>& b)
 			{
+				if (a.second->getSize() == b.second->getSize())
+					return *a.second < *b.second;
 				return a.second->getSize() < b.second->getSize();
 			});
 
