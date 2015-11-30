@@ -422,8 +422,6 @@ __forceinline static void quantifyDCTAVX(__m256* ref, const __m256* qTable)
 
 __forceinline static void twoDimensionalDCTAVX(__m256* regs)
 {
-	float temp[8];
-
 	transpose8_ps(regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], regs[6], regs[7]);
 
 	oneDimensionalDCT(regs);
