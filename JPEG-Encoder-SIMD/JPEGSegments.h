@@ -177,7 +177,7 @@ namespace JPEGSegments
 			auto zigZagQTable = reorderByZigZag(qTable.floats);
 			for (int i = 0; i < 64; i++) 
 			{
-				coefficients[i] = zigZagQTable[i];
+				coefficients[i] = static_cast<byte>(zigZagQTable[i]);
 			}
 		}
 

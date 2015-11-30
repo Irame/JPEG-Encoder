@@ -118,7 +118,7 @@ void test2DCT()
 
 	for (size_t i = 0; i < size; i++)
 	{
-		testImage[i] = rand() % 256;
+		testImage[i] = static_cast<float>(rand() % 256);
 	}
 	
 	vector<PointerMatrix> testImageBlocks;
@@ -200,7 +200,7 @@ void testDCT()
 
 	for (int i = 0; i < 64; i++)
 	{
-		arr[i] = i+1;
+		arr[i] = static_cast<float>(i+1);
 	}
 
 	float resultBytes[64];

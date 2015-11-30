@@ -86,19 +86,18 @@ void DCT::seperateDCT(const PointerMatrix& values, PointerMatrix& result)
 	// allocate memory
 	float aValues[64];
 	float saveResult[64];
-	float temp;
 
 	PointerMatrix a = PointerMatrix(aValues);
 	PointerMatrix saveResults = PointerMatrix(saveResult);
 
-	float C = 0;
+	float C;
 	for (int k = 0; k < N; k++)
 	{
 		for (int n = 0; n < N; n++)
 		{
-			C = k == 0.0 ? 1 / sqrtf(2.0) : 1;
+			C = k == 0.0f ? 1 / sqrtf(2.0f) : 1;
 
-			a[k][n] = C * sqrtf(2.0 / N)*cosf((2.0 * n + 1) * ((k * M_PIf) / (2.0 * N)));
+			a[k][n] = C * sqrtf(2.0f / N)*cosf((2.0f * n + 1.0f) * ((k * M_PIf) / (2.0f * N)));
 		}
 	}
 
@@ -275,7 +274,6 @@ void DCT::araiDCT(const PointerMatrix& in, PointerMatrix& out)
 		temp3[5] += temp3[7];
 		temp3[7] -= temp;
 
-		float temp4[8];
 		out.at(row, 0) = temp3[0];
 		out.at(row, 4) = temp3[1];
 		out.at(row, 2) = temp3[2];
