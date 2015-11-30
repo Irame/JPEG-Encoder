@@ -327,6 +327,10 @@ void testHuffmanEncoding()
 
 int main(int argc, char* argv[])
 {
+#if GCC
+	std::cout << "Built with g++ " << __VERSION__ << std::endl;
+#endif
+
 	//for (int i = 0; i < 10000000; i++)
 	//{
 	//	testValues[i] = rand() % 2;
