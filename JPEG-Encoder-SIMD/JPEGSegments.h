@@ -123,7 +123,7 @@ namespace JPEGSegments
 
 		DefineHuffmannTable(byte htNum, HuffmanTableType htType, const HuffmanTable<byte>& huffmanTable)
 			: marker(SegmentType::DefineHuffmannTable),
-			length(2 + 1 + 16 + unsigned short(huffmanTable.getSymbolCount())),
+			length(2 + 1 + 16 + static_cast<unsigned short>(huffmanTable.getSymbolCount())),
 			htInformation((0b1111 & htNum) | (static_cast<byte>(htType) << 4)),
 			table(new byte[huffmanTable.getSymbolCount()])
 		{
@@ -197,12 +197,12 @@ namespace JPEGSegments
 		buffer.push(headerSegment);
 	}
 	template <>
-	static void Serialize(DefineHuffmannTable &headerSegment, BitBuffer &buffer) {
+	void Serialize(DefineHuffmannTable &headerSegment, BitBuffer &buffer) {
 		buffer.pushBits(21 * 8, &headerSegment);
 		buffer.pushBits((headerSegment.length - 19) * 8, headerSegment.table); //21-2 byte because the marker doesn't count
 	}
 	template <>
-	static void Serialize(DefineQuantizationTable &headerSegment, BitBuffer &buffer) {
+	void Serialize(DefineQuantizationTable &headerSegment, BitBuffer &buffer) {
 		buffer.pushBits(5 * 8, &headerSegment);
 		buffer.pushBits((headerSegment.length - 3) * 8, headerSegment.coefficients);
 	}

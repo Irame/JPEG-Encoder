@@ -7,7 +7,9 @@
 
 #include "targetver.h"
 
+#ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
+#endif
 #include <cmath>
 
 #include <stdio.h>
@@ -27,6 +29,11 @@ inline std::ostream& operator<<(std::ostream& os, const byte& byte) {
 	os << static_cast<int>(byte);
 	return os;
 }
+
+// memcpy_s is a non standard VS extension; Alias memcpy_s to memcpy on GCC
+#ifdef GCC
+	#define memcpy_s(_dst, _dstSize, _src, _srcSize) memcpy(_dst, _src, _dstSize)
+#endif
 
 
 // TODO: reference additional headers your program requires here

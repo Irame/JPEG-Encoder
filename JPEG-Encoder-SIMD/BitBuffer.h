@@ -55,13 +55,13 @@ public:
 	{
 		pushBits(sizeof(T) * 8, &value, offset);
 	}
-
-	// specialized version for bool
-	template<>
-	void push(bool& value, size_t offset)
-	{
-		pushBit(value);
-	}
 };
+
+// specialized version for bool
+template<>
+inline void BitBuffer::push(bool& value, size_t offset)
+{
+	pushBit(value);
+}
 
 typedef std::shared_ptr<BitBuffer> BitBufferPtr;

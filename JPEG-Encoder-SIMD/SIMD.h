@@ -1,4 +1,7 @@
 #pragma once
+
+#include "immintrin.h"
+
 #include "const_math.h"
 #include "PointerMatrix.h"
 

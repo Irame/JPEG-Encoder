@@ -26,13 +26,13 @@ public:
 
 	float& at(size_t row, size_t col) const
 	{
-		assert(row <= 7, col <= 7);
+		assert(row <= 7 && col <= 7);
 		return data[row][col];
 	}
 
 	float& atT(size_t row, size_t col) const
 	{
-		assert(row <= 7, col <= 7);
+		assert(row <= 7 && col <= 7);
 		return data[col][row];
 	}
 };
