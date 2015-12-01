@@ -23,14 +23,14 @@ ImageLoader::~ImageLoader()
 {
 }
 
-ImageCCPtr ImageLoader::Load(const std::string& filename, SamplingScheme scheme)
+ImageCCPtr ImageLoader::Load(const std::string& filename, SamplingScheme scheme, QTable luminance, QTable chrominance)
 {
 	std::string ext = fileExtension(filename);
 
 	if (ext == "png") {
-		return LoadPNG(filename, scheme);
+		return LoadPNG(filename, scheme, luminance, chrominance);
 	} else if (ext == "ppm") {
-		return LoadPPM(filename, scheme);
+		return LoadPPM(filename, scheme, luminance, chrominance);
 	} else {
 		std::cout << "Failed to load image. Unknown file extension " << ext << std::endl;
 		return nullptr;
@@ -63,7 +63,7 @@ inline std::string ImageLoader::fileExtension(const std::string& filename)
 }
 
 
-ImageCCPtr ImageLoader::LoadPPM(std::string path, SamplingScheme scheme)
+ImageCCPtr ImageLoader::LoadPPM(std::string path, SamplingScheme scheme, QTable luminance, QTable chrominance)
 {
 	enum State {
 		None, Size, Pixels
@@ -134,7 +134,7 @@ ImageCCPtr ImageLoader::LoadPPM(std::string path, SamplingScheme scheme)
 		}
 	}
 
-	ImageCCPtr resultImage = make_shared<Image>(width, height, scheme);
+	ImageCCPtr resultImage = make_shared<Image>(width, height, scheme, luminance, chrominance);
 	resultImage->setRawPixelData((float*)&data[0]);
 	return resultImage;
 }
@@ -167,7 +167,7 @@ void ImageLoader::SavePPM(std::string path, ImageCCPtr image)
 	}
 }
 
-ImageCCPtr ImageLoader::LoadPNG(std::string path, SamplingScheme samplingScheme)
+ImageCCPtr ImageLoader::LoadPNG(std::string path, SamplingScheme samplingScheme, QTable luminance, QTable chrominance)
 {
 	std::vector<unsigned char> imgData;
 	unsigned imgWidth, imgHeight;
@@ -183,7 +183,7 @@ ImageCCPtr ImageLoader::LoadPNG(std::string path, SamplingScheme samplingScheme)
 		imgDataFloat[i] = imgData[i] / 255.0f;
 	}
 
-	ImageCCPtr resultImage = make_shared<Image>(imgWidth, imgHeight, samplingScheme);
+	ImageCCPtr resultImage = make_shared<Image>(imgWidth, imgHeight, samplingScheme, luminance, chrominance);
 	resultImage->setRawPixelData((float*)&imgDataFloat[0]);
 	return resultImage;
 }
@@ -216,11 +216,15 @@ void ImageLoader::SaveJPG(std::string path, ImageCCPtr image) {
 	JPEGSegments::StartOfFrame0 startOfFrame0(static_cast<short>(imageSize.width), static_cast<short>(imageSize.height), scheme);
 	JPEGSegments::EndOfImage endOfImage;
 	JPEGSegments::DefineHuffmannTable defineHuffmannTable(byte(0), JPEGSegments::HuffmanTableType::DC, *huffmann);
+	JPEGSegments::DefineQuantizationTable defineQuantizationTableLuminance(JPEGSegments::QuantizationTableType::Luminance, image->getLuminanceQTable());
+	JPEGSegments::DefineQuantizationTable defineQuantizationTableChrominance(JPEGSegments::QuantizationTableType::Chrominance, image->getChrominanceQTable());
 
 	JPEGSegments::Serialize(startOfImage, bitBuffer);
 	JPEGSegments::Serialize(app0, bitBuffer);
 	JPEGSegments::Serialize(startOfFrame0, bitBuffer);
 	JPEGSegments::Serialize(defineHuffmannTable, bitBuffer);
+	JPEGSegments::Serialize(defineQuantizationTableLuminance, bitBuffer);
+	JPEGSegments::Serialize(defineQuantizationTableChrominance, bitBuffer);
 	JPEGSegments::Serialize(endOfImage, bitBuffer);
 
 	bitBuffer.writeToFile(path);

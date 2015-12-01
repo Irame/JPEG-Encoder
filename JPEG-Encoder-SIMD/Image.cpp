@@ -3,13 +3,15 @@
 #include "Image.h"
 #include "HuffmanCoding.h"
 
-Image::Image(size_t width, size_t height, SamplingScheme scheme) 
+Image::Image(size_t width, size_t height, SamplingScheme scheme, QTable luminance, QTable chrominance)
 	: imageSize(width, height), stepSize(scheme.calcWidthStepSize(), scheme.calcHeightStepSize()),
 	simulatedSize(
 		width + (width % stepSize.width == 0 ? 0 : stepSize.width - width % stepSize.width),
 		height + (height % stepSize.height == 0 ? 0 : stepSize.height - height % stepSize.height)),
 	channelSizes { Dimension2D(simulatedSize) , Dimension2D(simulatedSize) , Dimension2D(simulatedSize) },
-	samplingScheme(scheme)
+	samplingScheme(scheme),
+	luminance(luminance),
+	chrominance(chrominance)
 {
 	channels = std::make_unique<ImageData>(simulatedSize);
 	blocksPerChannel[0] = blocksPerChannel[1] = blocksPerChannel[2] = simulatedSize.width * simulatedSize.height / 8;

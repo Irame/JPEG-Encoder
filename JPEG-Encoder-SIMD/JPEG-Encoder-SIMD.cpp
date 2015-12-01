@@ -11,6 +11,7 @@
 #include "ImageLoader.h"
 #include "PointerMatrix.h"
 #include "DCT.h"
+#include "QuantizationTables.h"
 
 using namespace std;
 
@@ -80,8 +81,8 @@ void bitBufferTest(string filePath)
 
 	JPEGSegments::DefineHuffmannTable defineHuffmanTable(3, JPEGSegments::HuffmanTableType::AC, *huffmanTable);
 
-	JPEGSegments::DefineQuantizationTable quantizationTableLuminance(0, JPEGQuantization::luminance);
-	JPEGSegments::DefineQuantizationTable quantizationTableChrominance(1, JPEGQuantization::chrominance);
+	JPEGSegments::DefineQuantizationTable quantizationTableLuminance(JPEGSegments::QuantizationTableType::Luminance, JPEGQuantization::luminance);
+	JPEGSegments::DefineQuantizationTable quantizationTableChrominance(JPEGSegments::QuantizationTableType::Chrominance, JPEGQuantization::chrominance);
 
 	JPEGSegments::EndOfImage endOfImage;
 
@@ -350,23 +351,23 @@ int main(int argc, char* argv[])
 	//});
 	//return  0;
 
-	/*if (argc < 3) {
-		cerr << "Usage: " << argv[0] << " <Source File> <Destination File>" << endl;
-		return 1;
-	}
+	//if (argc < 3) {
+	//	cerr << "Usage: " << argv[0] << " <Source File> <Destination File>" << endl;
+	//	return 1;
+	//}
 
-	string srcFile(argv[1]);
-	string dstFile(argv[2]);
+	//string srcFile(argv[1]);
+	//string dstFile(argv[2]);
 
-	SamplingScheme scheme = SamplingScheme::Scheme422;
+	//SamplingScheme scheme = SamplingScheme::Scheme422;
 
-	cout << "Load image file: " << srcFile << endl;
-	ImageCCPtr image = nullptr;
-	
+	//cout << "Load image file: " << srcFile << endl;
+	//ImageCCPtr image = nullptr;
+	//
 
-	benchmark("ImageLoader::Load()",1, [&]() {
-		image = ImageLoader::Load(srcFile, scheme);
-	});*/
+	//benchmark("ImageLoader::Load()",1, [&]() {
+	//	image = ImageLoader::Load(srcFile, scheme, JPEGQuantization::luminance, JPEGQuantization::chrominance);
+	//});
 
 
 
@@ -413,10 +414,10 @@ int main(int argc, char* argv[])
 	//	image->applySepia();
 	//});
 
-	/*cout << "Save image file: " << dstFile << endl;
-	benchmark("ImageLoader::Save()", 1, [&]() {
-		ImageLoader::Save(dstFile, image);
-	});*/
+	//cout << "Save image file: " << dstFile << endl;
+	//benchmark("ImageLoader::Save()", 1, [&]() {
+	//	ImageLoader::Save(dstFile, image);
+	//});
 
 	std::cout << "Test DCT" << endl;
 	benchmark("Test DCT", 1, [&]()

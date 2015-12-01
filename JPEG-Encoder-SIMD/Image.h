@@ -5,6 +5,7 @@
 #include "SamplingScheme.h"
 #include <vector>
 #include "HuffmanCoding.h"
+#include "QuantizationTables.h"
 
 class Image;
 
@@ -86,6 +87,8 @@ class Image
 	Dimension2D channelSizes[3];
 
 	const SamplingScheme samplingScheme;
+	const QTable luminance;
+	const QTable chrominance;
 
 	void setRawPixelDataDirect(float* rgbaData);
 
@@ -95,7 +98,7 @@ class Image
 	void reduceHeightResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
 
 public:
-	Image(size_t width, size_t height, SamplingScheme scheme);
+	Image(size_t width, size_t height, SamplingScheme scheme, QTable luminance, QTable chrominance);
 
 	const Dimension2D& getImageSize() const;
 	const Dimension2D& getSimulatedSize() const;
@@ -116,6 +119,8 @@ public:
 	void reduceResolutionBySchema();
 
 	const SamplingScheme& getSamplingScheme() const  { return samplingScheme; }
+	const QTable& getLuminanceQTable() const { return luminance; }
+	const QTable& getChrominanceQTable() const { return chrominance; }
 
 	const HuffmanTablePtr<byte> getHuffmanTable();
 };
