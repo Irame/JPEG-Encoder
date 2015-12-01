@@ -352,6 +352,34 @@ void Image::reduceResolutionBySchema()
 
 const HuffmanTablePtr<byte> Image::getHuffmanTable()
 {
+	//std::vector<PointerMatrix> yBlocks = getBlocks(YCbCrColorName::Y);
+	//std::vector<PointerMatrix> cbBlocks = getBlocks(YCbCrColorName::Cb);
+	//std::vector<PointerMatrix> crlocks = getBlocks(YCbCrColorName::Cr);
 	std::vector<byte> allSymbols{ 0, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
 	return HuffmanTable<byte>::create(16, allSymbols);
+}
+
+const std::vector<PointerMatrix> Image::getBlocks(ColorChannelName colorChannelName) 
+{
+	float* channel = channels->getChannel(colorChannelName);
+	size_t height = channelSizes[colorChannelName].height; // TODO: something is strange, i used a picture with 200x200 resolution and channelsize width = 208 and heigth = 200
+	size_t width = channelSizes[colorChannelName].width;
+	std::vector<PointerMatrix> blocks;
+	for (int y = 0; y < height; y += 8) {
+		for (int x = 0; x < width; x += 8) {
+			blocks.push_back(
+				PointerMatrix(
+					channel + x + width * 0 + height * y,
+					channel + x + width * 1 + height * y,
+					channel + x + width * 2 + height * y,
+					channel + x + width * 3 + height * y,
+					channel + x + width * 4 + height * y,
+					channel + x + width * 5 + height * y,
+					channel + x + width * 6 + height * y,
+					channel + x + width * 7 + height * y
+					)
+				);
+		}
+	}
+	return blocks;
 }

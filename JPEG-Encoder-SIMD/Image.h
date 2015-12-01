@@ -97,6 +97,7 @@ class Image
 	void reduceWidthResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
 	void reduceHeightResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
 
+	const std::vector<PointerMatrix> Image::getBlocks(ColorChannelName colorChannelName);
 public:
 	Image(size_t width, size_t height, SamplingScheme scheme, QTable luminance, QTable chrominance);
 
