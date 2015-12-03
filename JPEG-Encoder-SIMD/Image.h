@@ -97,7 +97,7 @@ class Image
 	void reduceWidthResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
 	void reduceHeightResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
 
-	const std::vector<PointerMatrix> Image::getBlocks(ColorChannelName colorChannelName);
+	std::vector<PointerMatrix> getBlocks(ColorChannelName colorChannelName) const;
 public:
 	Image(size_t width, size_t height, SamplingScheme scheme, QTable luminance, QTable chrominance);
 
@@ -123,5 +123,5 @@ public:
 	const QTable& getLuminanceQTable() const { return luminance; }
 	const QTable& getChrominanceQTable() const { return chrominance; }
 
-	const HuffmanTablePtr<byte> getHuffmanTable();
+	HuffmanTablePtr<byte> getHuffmanTable() const;
 };
