@@ -119,7 +119,7 @@ void test2DCT()
 
 	for (size_t i = 0; i < size; i++)
 	{
-		testImage[i] = static_cast<float>(rand() % 256);
+		testImage[i] = i%256;
 	}
 	
 	vector<PointerMatrix> testImageBlocks;
@@ -153,7 +153,7 @@ void test2DCT()
 		}
 	}
 
-	benchmark("Benchmark Direct DCT", 227, [&testImageBlocks, &testImageResultBlocks]()
+	benchmark("Benchmark Direct DCT", 231, [&testImageBlocks, &testImageResultBlocks]()
 	{
 		for (size_t i = 0; i < testImageBlocks.size(); i++)
 		{
@@ -161,7 +161,7 @@ void test2DCT()
 		}
 	});
 
-	benchmark("Benchmark Seperate DCT", 5882, [&testImageBlocks, &testImageResultBlocks]()
+	benchmark("Benchmark Seperate DCT", 5903, [&testImageBlocks, &testImageResultBlocks]()
 	{
 		for (size_t i = 0; i < testImageBlocks.size(); i++)
 		{
@@ -169,7 +169,7 @@ void test2DCT()
 		}
 	});
 
-	benchmark("Benchmark Arai DCT", 45454, [&testImageBlocks, &testImageResultBlocks]()
+	benchmark("Benchmark Arai DCT", 47393, [&testImageBlocks, &testImageResultBlocks]()
 	{
 		for (size_t i = 0; i < testImageBlocks.size(); i++)
 		{
@@ -177,7 +177,7 @@ void test2DCT()
 		}
 	});
 
-	benchmark("Benchmark Arai DCT (AVX)", 100000, [&testImageBlocks, &testImageResultBlocks]()
+	benchmark("Benchmark Arai DCT (AVX)", 147059, [&testImageBlocks, &testImageResultBlocks]()
 	{
 		for (size_t i = 0; i < testImageBlocks.size(); i++)
 		{

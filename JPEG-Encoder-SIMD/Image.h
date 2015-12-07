@@ -77,6 +77,11 @@ public:
 
 class Image
 {
+	void setRawPixelDataDirect(float* rgbaData);
+
+	size_t getPixelPos(ColorChannelName channelIdx, size_t x, size_t y) const;
+
+protected:
 	std::unique_ptr<ImageData> channels;
 
 	const Dimension2D imageSize;
@@ -90,16 +95,9 @@ class Image
 	const QTable luminance;
 	const QTable chrominance;
 
-	void setRawPixelDataDirect(float* rgbaData);
-
-	size_t getPixelPos(ColorChannelName channelIdx, size_t x, size_t y) const;
-
-	void reduceWidthResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
-	void reduceHeightResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
-
-	std::vector<PointerMatrix> getBlocks(ColorChannelName colorChannelName) const;
 public:
 	Image(size_t width, size_t height, SamplingScheme scheme, QTable luminance, QTable chrominance);
+	Image(Image& origImage);
 
 	const Dimension2D& getImageSize() const;
 	const Dimension2D& getSimulatedSize() const;
@@ -112,16 +110,9 @@ public:
 	void setPixel(size_t x, size_t y, const PixelData32& color);
 	void getPixel(PixelData32& ref, size_t x, size_t y) const;
 
-	void convertToYCbCr();
-	void convertToRGB();
 	void applySepia();
-	void multiplyColorChannelBy(ColorChannelName colorChannel, float val);
-
-	void reduceResolutionBySchema();
 
 	const SamplingScheme& getSamplingScheme() const  { return samplingScheme; }
 	const QTable& getLuminanceQTable() const { return luminance; }
 	const QTable& getChrominanceQTable() const { return chrominance; }
-
-	HuffmanTablePtr<byte> getHuffmanTable(ColorChannelName colorChannelName) const;
 };
