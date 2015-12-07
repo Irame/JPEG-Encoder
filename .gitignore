@@ -257,3 +257,5 @@ _Pvt_Extensions
 *.exe
 *.out
 *.app
+
+*VC.opendb
