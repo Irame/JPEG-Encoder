@@ -10,7 +10,7 @@
 class Image;
 
 typedef unsigned int uint;
-typedef std::shared_ptr<Image> ImageCCPtr;
+typedef std::shared_ptr<Image> ImagePtr;
 
 struct PixelData32 {
 	float R, G, B, A;

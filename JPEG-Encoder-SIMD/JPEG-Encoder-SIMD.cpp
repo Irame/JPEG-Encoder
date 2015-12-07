@@ -119,7 +119,7 @@ void test2DCT()
 
 	for (size_t i = 0; i < size; i++)
 	{
-		testImage[i] = i%256;
+		testImage[i] = static_cast<float>(i%256);
 	}
 	
 	vector<PointerMatrix> testImageBlocks;
@@ -362,7 +362,7 @@ int main(int argc, char* argv[])
 	//SamplingScheme scheme = SamplingScheme::Scheme422;
 
 	//cout << "Load image file: " << srcFile << endl;
-	//ImageCCPtr image = nullptr;
+	//ImagePtr image = nullptr;
 	//
 
 	//benchmark("ImageLoader::Load()",1, [&]() {

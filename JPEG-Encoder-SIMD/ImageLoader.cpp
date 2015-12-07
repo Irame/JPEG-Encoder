@@ -23,7 +23,7 @@ ImageLoader::~ImageLoader()
 {
 }
 
-ImageCCPtr ImageLoader::Load(const std::string& filename, SamplingScheme scheme, QTable luminance, QTable chrominance)
+ImagePtr ImageLoader::Load(const std::string& filename, SamplingScheme scheme, QTable luminance, QTable chrominance)
 {
 	std::string ext = fileExtension(filename);
 
@@ -37,7 +37,7 @@ ImageCCPtr ImageLoader::Load(const std::string& filename, SamplingScheme scheme,
 	}
 }
 
-void ImageLoader::Save(const std::string& filename, ImageCCPtr image)
+void ImageLoader::Save(const std::string& filename, ImagePtr image)
 {
 	std::string ext = fileExtension(filename);
 
@@ -45,8 +45,8 @@ void ImageLoader::Save(const std::string& filename, ImageCCPtr image)
 		return SavePNG(filename, image);
 	} else if (ext == "ppm") {
 		return SavePPM(filename, image);
-	} else if (ext == "jpg" || ext == "jpeg"){
-		return SaveJPG(filename, image);
+	//} else if (ext == "jpg" || ext == "jpeg"){
+	//	return SaveJPG(filename, image);
 	} else {
 		std::cout << "Failed to save image. Unknown file extension " << ext << std::endl;
 	}
@@ -63,7 +63,7 @@ inline std::string ImageLoader::fileExtension(const std::string& filename)
 }
 
 
-ImageCCPtr ImageLoader::LoadPPM(std::string path, SamplingScheme scheme, QTable luminance, QTable chrominance)
+ImagePtr ImageLoader::LoadPPM(std::string path, SamplingScheme scheme, QTable luminance, QTable chrominance)
 {
 	enum State {
 		None, Size, Pixels
@@ -134,12 +134,12 @@ ImageCCPtr ImageLoader::LoadPPM(std::string path, SamplingScheme scheme, QTable 
 		}
 	}
 
-	ImageCCPtr resultImage = make_shared<Image>(width, height, scheme, luminance, chrominance);
+	ImagePtr resultImage = make_shared<Image>(width, height, scheme, luminance, chrominance);
 	resultImage->setRawPixelData((float*)&data[0]);
 	return resultImage;
 }
 
-void ImageLoader::SavePPM(std::string path, ImageCCPtr image)
+void ImageLoader::SavePPM(std::string path, ImagePtr image)
 {
 	ofstream fileStream = ofstream(path);
 
@@ -167,7 +167,7 @@ void ImageLoader::SavePPM(std::string path, ImageCCPtr image)
 	}
 }
 
-ImageCCPtr ImageLoader::LoadPNG(std::string path, SamplingScheme samplingScheme, QTable luminance, QTable chrominance)
+ImagePtr ImageLoader::LoadPNG(std::string path, SamplingScheme samplingScheme, QTable luminance, QTable chrominance)
 {
 	std::vector<unsigned char> imgData;
 	unsigned imgWidth, imgHeight;
@@ -183,12 +183,12 @@ ImageCCPtr ImageLoader::LoadPNG(std::string path, SamplingScheme samplingScheme,
 		imgDataFloat[i] = imgData[i] / 255.0f;
 	}
 
-	ImageCCPtr resultImage = make_shared<Image>(imgWidth, imgHeight, samplingScheme, luminance, chrominance);
+	ImagePtr resultImage = make_shared<Image>(imgWidth, imgHeight, samplingScheme, luminance, chrominance);
 	resultImage->setRawPixelData((float*)&imgDataFloat[0]);
 	return resultImage;
 }
 
-void ImageLoader::SavePNG(std::string path, ImageCCPtr image)
+void ImageLoader::SavePNG(std::string path, ImagePtr image)
 {
 	const Dimension2D& simulatedSize = image->getSimulatedSize();
 
@@ -204,7 +204,7 @@ void ImageLoader::SavePNG(std::string path, ImageCCPtr image)
 		std::cout << "Failed to encode png " << path << " with error: " << error << ": " << lodepng_error_text(error) << std::endl;
 	}
 }
-void ImageLoader::SaveJPG(std::string path, ImageCCPtr image) {
+void ImageLoader::SaveJPG(std::string path, EncoderPtr image) {
 	const Dimension2D& imageSize = image->getImageSize();
 	const SamplingScheme& scheme = image->getSamplingScheme();
 	const HuffmanTablePtr<byte> huffmann = image->getHuffmanTable(YCbCrColorName::Y);

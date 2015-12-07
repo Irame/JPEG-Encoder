@@ -1,7 +1,7 @@
 #pragma once
 #include "Image.h"
 
-class Encoder : private Image
+class Encoder : public Image
 {
 	void reduceWidthResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
 	void reduceHeightResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
@@ -21,4 +21,6 @@ public:
 
 	HuffmanTablePtr<byte> getHuffmanTable(ColorChannelName colorChannelName) const;
 };
+
+typedef std::shared_ptr<Encoder> EncoderPtr;
 
