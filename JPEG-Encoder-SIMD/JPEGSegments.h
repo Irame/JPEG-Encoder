@@ -8,6 +8,7 @@
 #include "SamplingScheme.h"
 #include "QuantizationTables.h"
 #include "ZigZag.h"
+#include "ColorNames.h"
 
 
 struct BEushort // datatype that swaps byteorder to have the correct order for serialization
@@ -45,10 +46,10 @@ namespace JPEGSegments
 		StartOfScan = 0xDA, // SOS
 	};
 
-	enum class QuantizationTableType : byte {
-		Luminance = 0,
-		Chrominance = 1
-	};
+	//enum class QuantizationTableType : byte {
+	//	Luminance = 0,
+	//	Chrominance = 1
+	//};
 
 	struct HeaderSegmentMarker {
 		const byte headerBegin = 0xff;
@@ -113,11 +114,11 @@ namespace JPEGSegments
 			byte crheight = (maxFactor / scheme.crReductionOptions.heightFactor) << 4;
 			byte crwidth = maxFactor / scheme.crReductionOptions.widthFactor;
 			Y[1] = yheight | ywidth;
-			Y[2] = static_cast<byte>(QuantizationTableType::Luminance);
+			Y[2] = static_cast<byte>(YCbCrColorName::Y);
 			Cb[1] = cbheight | cbwidth;
-			Cb[2] = static_cast<byte>(QuantizationTableType::Chrominance);
+			Cb[2] = static_cast<byte>(YCbCrColorName::Cb);
 			Cr[1] = crheight | crwidth;
-			Cr[2] = static_cast<byte>(QuantizationTableType::Chrominance);
+			Cr[2] = static_cast<byte>(YCbCrColorName::Cr);
 		}
 	};
 
@@ -174,9 +175,9 @@ namespace JPEGSegments
 		byte info; // 0-3 bits number of QT (0-3), 4-7 accuracy of QT (0 = 8 bit, otherwise 16 bit)
 		byte coefficients[64]; // count = 64* (precision+1), zigzag sorted
 
-		DefineQuantizationTable(QuantizationTableType qType, const QTable& qTable)
+		DefineQuantizationTable(ColorChannelName colorChannel, const QTable& qTable)
 			: marker(SegmentType::DefineQuantizationTable),
-			info(static_cast<byte>(qType))
+			info(static_cast<byte>(colorChannel))
 		{
 			auto zigZagQTable = reorderByZigZag(qTable.floats);
 			for (int i = 0; i < 64; i++) 

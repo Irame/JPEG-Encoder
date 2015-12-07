@@ -3,24 +3,26 @@
 #include "Image.h"
 #include "HuffmanCoding.h"
 
-Image::Image(size_t width, size_t height, SamplingScheme scheme, QTable luminance, QTable chrominance)
+Image::Image(size_t width, size_t height, SamplingScheme scheme, std::array<QTable, 3> qtables)
 	: imageSize(width, height), stepSize(scheme.calcWidthStepSize(), scheme.calcHeightStepSize()),
 	simulatedSize(
 		width + (width % stepSize.width == 0 ? 0 : stepSize.width - width % stepSize.width),
 		height + (height % stepSize.height == 0 ? 0 : stepSize.height - height % stepSize.height)),
 	channelSizes { Dimension2D(simulatedSize) , Dimension2D(simulatedSize) , Dimension2D(simulatedSize) },
 	samplingScheme(scheme),
-	luminance(luminance),
-	chrominance(chrominance)
+	qTables(qtables)
 {
 	channels = std::make_unique<ImageData>(simulatedSize);
 	blocksPerChannel[0] = blocksPerChannel[1] = blocksPerChannel[2] = simulatedSize.width * simulatedSize.height / 8;
 }
 
 Image::Image(Image& origImage)
-	: imageSize(origImage.imageSize), stepSize(origImage.stepSize), simulatedSize(origImage.simulatedSize), 
+	: imageSize(origImage.imageSize), 
+	stepSize(origImage.stepSize), 
+	simulatedSize(origImage.simulatedSize), 
 	channelSizes{ origImage.channelSizes[0], origImage.channelSizes[1], origImage.channelSizes[2] }, 
-	samplingScheme(origImage.samplingScheme), luminance(origImage.luminance), chrominance(origImage.chrominance)
+	samplingScheme(origImage.samplingScheme), 
+	qTables(origImage.qTables)
 {
 	channels = std::make_unique<ImageData>(simulatedSize);
 	memcpy(blocksPerChannel, origImage.blocksPerChannel, sizeof(blocksPerChannel));
