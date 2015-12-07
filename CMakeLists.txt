@@ -34,29 +34,29 @@ if ("${CMAKE_GENERATOR}" MATCHES "Visual Studio*")
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-	add_definitions(-DMSVC) # define MSVC
-	add_definitions(-D_USE_MATH_DEFINES) # define M_PI etc for <cmath>
+	add_definitions(-D MSVC) # define MSVC
+	add_definitions(-D _USE_MATH_DEFINES) # define M_PI etc for <cmath>
 	
 
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-	add_definitions(-DCLANG) # define CLANG
+	add_definitions(-D CLANG) # define CLANG
 	
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-	add_definitions(-DINTEL) # define INTEL
+	add_definitions(-D INTEL) # define INTEL
 	
 # Workaround for missing macros with VS2015 Update 1
 # https://software.intel.com/en-us/articles/limits1120-error-identifier-builtin-nanf-is-undefined
 
-	add_definitions(-D"__builtin_huge_val()=HUGE_VAL" 
-					-D"__builtin_huge_valf()=HUGE_VALF" 
-					-D__builtin_nan=nan 
-					-D__builtin_nanf=nanf 
-					-D__builtin_nans=nan 
-					-D__builtin_nansf=nanf)
+	add_definitions(-D "__builtin_huge_val()=HUGE_VAL" 
+					-D "__builtin_huge_valf()=HUGE_VALF" 
+					-D __builtin_nan=nan 
+					-D __builtin_nanf=nanf 
+					-D __builtin_nans=nan 
+					-D __builtin_nansf=nanf )
 	
 endif()
 
