@@ -333,6 +333,9 @@ void testHuffmanEncoding()
 
 int main(int argc, char* argv[])
 {
+#if MSVC
+	std::cout << "Built with msvc " << _MSC_VER << std::endl;
+#endif
 #if GCC
 	std::cout << "Built with g++ " << __VERSION__ << std::endl;
 #endif
