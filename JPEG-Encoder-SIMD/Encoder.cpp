@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Encoder.h"
 #include "SIMD.h"
-
+#include "ZigZag.h"
 
 Encoder::Encoder(Image image) : Image(image)
 {}
@@ -165,39 +165,189 @@ void Encoder::reduceResolutionBySchema()
 	reduceHeightResolutionColorChannel(Cr, samplingScheme.crReductionOptions.heightFactor, samplingScheme.crReductionOptions.heightMethod);
 }
 
-HuffmanTablePtr<byte> Encoder::getHuffmanTable(ColorChannelName colorChannelName) const
+void Encoder::ensurePointerMatrix(ColorChannelName colorChannelName)
 {
-	//std::vector<PointerMatrix> blocks = getBlocks(colorChannelName);
-	//for (PointerMatrix& matrix : blocks) {
-	//	twoDimensionalDCTandQuantisationAVX(matrix, qTables[colorChannelName], matrix);
-	//}
-	std::vector<byte> allSymbols{ 0, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
-	return HuffmanTable<byte>::create(16, allSymbols);
-}
+	if (blocks[colorChannelName].size() == 0)
+	{
+		float* channel = channels->getChannel(colorChannelName);
+		size_t height = channelSizes[colorChannelName].height;
+		size_t width = channelSizes[colorChannelName].width;
 
-std::vector<PointerMatrix> Encoder::getBlocks(ColorChannelName colorChannelName) const
-{
-	float* channel = channels->getChannel(colorChannelName);
-	size_t height = channelSizes[colorChannelName].height;
-	size_t width = channelSizes[colorChannelName].width;
+		blocks[colorChannelName].reserve(height * width / 8 * 8);
 
-	std::vector<PointerMatrix> blocks;
-	blocks.reserve(height*width / 8 * 8);
+		size_t line[8];
+		line[0] = 0;
+		line[1] = width;
+		line[2] = width * 2;
+		line[3] = width * 3;
+		line[4] = width * 4;
+		line[5] = width * 5;
+		line[6] = width * 6;
+		line[7] = width * 7;
 
-	for (int y = 0; y < height; y += 8) {
-		for (int x = 0; x < width; x += 8) {
-			blocks.emplace_back(
-				channel + x + width * 0 + height * y,
-				channel + x + width * 1 + height * y,
-				channel + x + width * 2 + height * y,
-				channel + x + width * 3 + height * y,
-				channel + x + width * 4 + height * y,
-				channel + x + width * 5 + height * y,
-				channel + x + width * 6 + height * y,
-				channel + x + width * 7 + height * y
+		for (size_t y = 0; y < height; y += 8)
+		{
+			size_t heightY = height*y;
+			for (size_t x = 0; x < width; x += 8)
+			{
+				float* position = channel + x + heightY;
+				blocks[colorChannelName].emplace_back(
+					position + line[0],
+					position + line[1],
+					position + line[2],
+					position + line[3],
+					position + line[4],
+					position + line[5],
+					position + line[6],
+					position + line[7]
 				);
+			}
 		}
 	}
+}
 
-	return blocks;
+void Encoder::applyDCT(ColorChannelName colorChannelName)
+{
+	ensurePointerMatrix(colorChannelName);
+	for (PointerMatrix& matrix : blocks[colorChannelName])
+	{
+		twoDimensionalDCTandQuantisationAVX(matrix, qTables[colorChannelName], matrix);
+	}
+
+	auto zigZag = createZigZagOffsetArray(channelSizes[colorChannelName].width);
+	calculateDCValues(zigZag, colorChannelName);
+	calculateACValues(zigZag, colorChannelName);
+}
+
+void Encoder::calculateDCValues(OffsetArray zigZag, ColorChannelName colorChannelName)
+{
+	bitPattern[colorChannelName][CoefficientType::DC].reserve(blocks[colorChannelName].size());
+	categories[colorChannelName][CoefficientType::DC].reserve(blocks[colorChannelName].size());
+
+	short lastDC = 0;
+	for (PointerMatrix& matrix : blocks[colorChannelName])
+	{
+		float* dcValuePointer = matrix[0] + zigZag[0];
+		short dcValue = static_cast<short>(*dcValuePointer);
+		short diff = dcValue - lastDC;
+		unsigned short pattern = static_cast<unsigned short>(diff);
+
+		//if value is negative we need to use the inverse of the positive value, see jpeg spec p.17
+		if (diff < 0)
+		{
+			pattern = ~(static_cast<unsigned short>(-diff));
+		}
+
+		//calculates category/length of the bitpattern
+		byte category;
+		if (diff == 0)
+		{
+			category = 0;
+		}
+		else
+		{
+			category = static_cast<byte>(log2f(diff) + 1);
+		}
+
+		//align pattern first bit to the most left bit
+		pattern = pattern << (16 - category);
+
+		bitPattern[colorChannelName][CoefficientType::DC].push_back(BEushort(pattern));
+		categories[colorChannelName][CoefficientType::DC].push_back(category);
+		lastDC = dcValue;
+	}
+}
+
+void Encoder::calculateACValues(OffsetArray zigZag, ColorChannelName colorChannelName) 
+{
+	bitPattern[colorChannelName][CoefficientType::AC].reserve(blocks[colorChannelName].size() * 63);
+	categories[colorChannelName][CoefficientType::AC].reserve(blocks[colorChannelName].size() * 63);
+
+	for (PointerMatrix& matrix : blocks[colorChannelName])
+	{
+		int zeros = 0;
+		for (int i = 1; i < 64; i++)
+		{
+			float* acValuePointer = matrix[0] + zigZag[i];
+			short acValue = static_cast<short>(*acValuePointer);
+
+			if (acValue != 0)
+			{
+				while (zeros > 15)
+				{
+					//16 null values are encoded as 0xF0 which is equivalent to the tuple (15,0)
+					bitPattern[colorChannelName][CoefficientType::AC].push_back(0);
+					categories[colorChannelName][CoefficientType::AC].push_back(0xF0);//15 << 4 | 0
+					zeros -= 16;
+				}
+
+				unsigned short pattern = static_cast<unsigned short>(acValue);
+				//if temp is negative we need to use the inverse of the positive value, see jpeg spec p.17
+				if (acValue < 0)
+				{
+					acValue = ~(static_cast<unsigned short>(-acValue));
+				}
+
+				//calculates category/length of the bitpattern
+				byte category = static_cast<byte>(log2f(acValue) + 1);
+
+				//align pattern first bit to the most left bit
+				pattern = pattern << (16 - category);
+
+				bitPattern[colorChannelName][CoefficientType::AC].push_back(BEushort(pattern));
+				categories[colorChannelName][CoefficientType::AC].push_back(zeros << 4 | category);
+				zeros = 0;
+			}
+			else
+			{
+				++zeros;
+			}
+		}
+		// when there are still zeros left to the end of the block it is encoded as a EOB (End of Block) as Tuple (0,0)
+		if (zeros != 0)
+		{
+			bitPattern[colorChannelName][CoefficientType::AC].push_back(0);
+			categories[colorChannelName][CoefficientType::AC].push_back(0);
+			zeros = 0;
+		}
+	}
+}
+
+void Encoder::createHuffmanTable(CoefficientType type, ColorChannelName colorChannelName)
+{
+	if (colorChannelName == YCbCrColorName::Cb || colorChannelName == YCbCrColorName::Cr)
+	{
+		if (huffmanTables[YCbCrColorName::Cb][type] != nullptr)
+		{
+			return;
+		}
+		// if color channel is cb or cr we have to combine them to one because normally there is only one huffman table for both cb and cr channels
+		std::vector<byte> cat = std::vector<byte>(categories[YCbCrColorName::Cb][type]);
+		cat.insert(cat.end(), categories[YCbCrColorName::Cr][type].begin(), categories[YCbCrColorName::Cr][type].end());
+		huffmanTables[YCbCrColorName::Cb][type] = HuffmanTable<byte>::create(16, cat);
+	}
+	else
+	{
+		if (huffmanTables[colorChannelName][type] != nullptr)
+		{
+			return;
+		}
+		huffmanTables[colorChannelName][type] = HuffmanTable<byte>::create(16, categories[colorChannelName][type]);
+	}
+}
+
+HuffmanTablePtr<byte> Encoder::getHuffmanTable(CoefficientType type, ColorChannelName colorChannelName)
+{
+	//createHuffmanTable(type, colorChannelName);
+	//if (colorChannelName == YCbCrColorName::Cb || colorChannelName == YCbCrColorName::Cr)
+	//{
+	//	return huffmanTables[YCbCrColorName::Cb][type];
+	//}
+	//else
+	//{
+	//	return huffmanTables[colorChannelName][type];
+	//}
+
+	std::vector<byte> allSymbols{ 0, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
+	return HuffmanTable<byte>::create(16, allSymbols);
 }

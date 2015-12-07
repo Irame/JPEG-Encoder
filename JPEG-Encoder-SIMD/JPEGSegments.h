@@ -11,23 +11,7 @@
 #include "ColorNames.h"
 
 
-struct BEushort // datatype that swaps byteorder to have the correct order for serialization
-{
-	BEushort() : value(0) {};
 
-	BEushort(unsigned short v)
-	{
-		value = _byteswap_ushort(v);
-	}
-
-	operator unsigned short() const
-	{
-		return _byteswap_ushort(value);
-	}
-
-private:
-	unsigned short value;
-};
 
 namespace JPEGSegments
 {
