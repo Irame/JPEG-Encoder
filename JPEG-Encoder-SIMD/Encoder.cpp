@@ -164,7 +164,7 @@ void Encoder::reduceResolutionBySchema()
 	reduceHeightResolutionColorChannel(Cr, samplingScheme.crReductionOptions.heightFactor, samplingScheme.crReductionOptions.heightMethod);
 }
 
-void Encoder::ensurePointerMatrix(ColorChannelName colorChannelName)
+void Encoder::ensurePointerMatrix(const ColorChannelName colorChannelName)
 {
 	if (blocks[colorChannelName].size() == 0)
 	{
@@ -218,13 +218,13 @@ void Encoder::applyDCT(ColorChannelName colorChannelName)
 	calculateACValues(zigZag, colorChannelName);
 }
 
-void Encoder::calculateDCValues(OffsetArray zigZag, ColorChannelName colorChannelName)
+void Encoder::calculateDCValues(const OffsetArray& zigZag, const ColorChannelName colorChannelName)
 {
 	bitPattern[colorChannelName][CoefficientType::DC].reserve(blocks[colorChannelName].size());
 	categories[colorChannelName][CoefficientType::DC].reserve(blocks[colorChannelName].size());
 
 	short lastDC = 0;
-	for (PointerMatrix& matrix : blocks[colorChannelName])
+	for (const PointerMatrix& matrix : blocks[colorChannelName])
 	{
 		float* dcValuePointer = matrix[0] + zigZag[0];
 		short dcValue = static_cast<short>(*dcValuePointer);
@@ -257,12 +257,12 @@ void Encoder::calculateDCValues(OffsetArray zigZag, ColorChannelName colorChanne
 	}
 }
 
-void Encoder::calculateACValues(OffsetArray zigZag, ColorChannelName colorChannelName) 
+void Encoder::calculateACValues(const OffsetArray& zigZag, const ColorChannelName colorChannelName)
 {
 	bitPattern[colorChannelName][CoefficientType::AC].reserve(blocks[colorChannelName].size() * 63);
 	categories[colorChannelName][CoefficientType::AC].reserve(blocks[colorChannelName].size() * 63);
 
-	for (PointerMatrix& matrix : blocks[colorChannelName])
+	for (const PointerMatrix& matrix : blocks[colorChannelName])
 	{
 		int zeros = 0;
 		for (int i = 1; i < 64; i++)
@@ -312,7 +312,7 @@ void Encoder::calculateACValues(OffsetArray zigZag, ColorChannelName colorChanne
 	}
 }
 
-void Encoder::createHuffmanTable(CoefficientType type, ColorChannelName colorChannelName)
+void Encoder::createHuffmanTable(const CoefficientType type, const ColorChannelName colorChannelName)
 {
 	if (colorChannelName == YCbCrColorName::Cb || colorChannelName == YCbCrColorName::Cr)
 	{

@@ -18,10 +18,10 @@ private:
 	HuffmanTablePtr<byte> huffmanTables[2][2];
 	std::vector<PointerMatrix> blocks[3];
 
-	void ensurePointerMatrix(ColorChannelName colorChannelName);
-	void calculateACValues(OffsetArray zigZag, ColorChannelName colorChannelName);
-	void calculateDCValues(OffsetArray zigZag, ColorChannelName colorChannelName);
-	void createHuffmanTable(CoefficientType type, ColorChannelName colorChannelName);
+	void ensurePointerMatrix(const ColorChannelName colorChannelName);
+	void calculateACValues(const OffsetArray& zigZag, const ColorChannelName colorChannelName);
+	void calculateDCValues(const OffsetArray& zigZag, const ColorChannelName colorChannelName);
+	void createHuffmanTable(const CoefficientType type, const ColorChannelName colorChannelName);
 
 	void reduceWidthResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
 	void reduceHeightResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
