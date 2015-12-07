@@ -336,6 +336,12 @@ int main(int argc, char* argv[])
 #if GCC
 	std::cout << "Built with g++ " << __VERSION__ << std::endl;
 #endif
+#if CLANG
+	std::cout << "Built with clang++ " << __clang_version__ << std::endl;
+#endif
+#if INTEL
+	std::cout << "Built with the intel compiler " << __ICL << std::endl;
+#endif
 
 	//for (int i = 0; i < 10000000; i++)
 	//{
