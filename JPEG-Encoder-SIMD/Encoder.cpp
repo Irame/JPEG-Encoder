@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "Encoder.h"
 #include "SIMD.h"
-#include "ZigZag.h"
 
 Encoder::Encoder(Image image) : Image(image)
 {}
