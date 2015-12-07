@@ -280,18 +280,19 @@ void Encoder::calculateACValues(const OffsetArray& zigZag, const ColorChannelNam
 					zeros -= 16;
 				}
 
-				unsigned short pattern = static_cast<unsigned short>(acValue);
-				//if temp is negative we need to use the inverse of the positive value, see jpeg spec p.17
-				if (acValue < 0)
-				{
-					acValue = ~(static_cast<unsigned short>(-acValue));
+				unsigned short pattern;
+				//if 'acValue' is negative we need to use the inverse of the positive value, see jpeg spec p.17
+				if (acValue < 0) {
+					pattern = ~(static_cast<unsigned short>(-acValue));
+				} else {
+					pattern = static_cast<unsigned short>(acValue);
 				}
 
 				//calculates category/length of the bitpattern
 				byte category = static_cast<byte>(log2f(acValue) + 1);
 
 				//align pattern first bit to the most left bit
-				pattern = pattern << (16 - category);
+				pattern <<= (16 - category);
 
 				bitPattern[colorChannelName][CoefficientType::AC].push_back(BEushort(pattern));
 				categories[colorChannelName][CoefficientType::AC].push_back(zeros << 4 | category);
