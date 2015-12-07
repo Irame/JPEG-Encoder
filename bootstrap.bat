@@ -36,7 +36,7 @@ REM GCC
 echo.
 echo Generating GCC files
 cd gcc
-cmake -G  "MinGW Makefiles" ../../
+cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ../../
 cd..
 
 REM leave build folder
