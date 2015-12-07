@@ -81,8 +81,8 @@ void bitBufferTest(string filePath)
 
 	JPEGSegments::DefineHuffmannTable defineHuffmanTable(3, JPEGSegments::HuffmanTableType::AC, *huffmanTable);
 
-	JPEGSegments::DefineQuantizationTable quantizationTableLuminance(JPEGSegments::QuantizationTableType::Luminance, JPEGQuantization::luminance);
-	JPEGSegments::DefineQuantizationTable quantizationTableChrominance(JPEGSegments::QuantizationTableType::Chrominance, JPEGQuantization::chrominance);
+	JPEGSegments::DefineQuantizationTable quantizationTableLuminance(YCbCrColorName::Y, JPEGQuantization::luminance);
+	JPEGSegments::DefineQuantizationTable quantizationTableChrominance(YCbCrColorName::Cb, JPEGQuantization::chrominance);
 
 	JPEGSegments::EndOfImage endOfImage;
 
@@ -370,59 +370,58 @@ int main(int argc, char* argv[])
 	//cout << "Load image file: " << srcFile << endl;
 	//ImagePtr image = nullptr;
 	//
-
 	//benchmark("ImageLoader::Load()",1, [&]() {
-	//	image = ImageLoader::Load(srcFile, scheme, JPEGQuantization::luminance, JPEGQuantization::chrominance);
+	//	image = ImageLoader::Load(srcFile, scheme, std::array<QTable, 3> { JPEGQuantization::luminance, JPEGQuantization::chrominance, JPEGQuantization::chrominance });
 	//});
 
-
-
+	//EncoderPtr encoder = std::make_shared<Encoder>(*image);
+	
 	//std::cout << "Convert image to YCbCr." << std::endl;
 	//benchmark("convertToYCbCr",1, [&]() {
-	//	image->convertToYCbCr();
+	//	encoder->convertToYCbCr();
 	//});
 	
 	//std::cout << "Aplying Sepia Filter." << std::endl;
 	//benchmark("applySepia",1, [&]() {
-	//	image->applySepia();
+	//	encoder->applySepia();
 	//});
 
 	//std::cout << "Convert image to YCbCr AVX." << std::endl;
 	//benchmark("convertToYCbCr",1, [&]() {
-	//	image->convertToYCbCr();
+	//	encoder->convertToYCbCr();
 	//});
 
 
 	//cout << "Reduce channel resolution for scheme." << endl;
 	//benchmark("reduceResolutionBySchema", 1, [&]() {
-	//	image->reduceResolutionBySchema();
+	//	encoder->reduceResolutionBySchema();
 	//});
 
 
 	//std::cout << "Cancle out Cb and Cr Channel." << std::endl;
 	//benchmark("multiplyColorChannelBy",1, [&]() {
-	//	image->multiplyColorChannelBy(0, 0);
-	//	image->multiplyColorChannelBy(1, 0);
+	//	encoder->multiplyColorChannelBy(0, 0);
+	//	encoder->multiplyColorChannelBy(1, 0);
 	//});
 
 	//std::cout << "Convert image to RGB AVX." << std::endl;
 	//benchmark("convertToRGB",1, [&]() {
-	//	image->convertToRGB();
+	//	encoder->convertToRGB();
 	//});
 
 	//std::cout << "Convert image to RGB." << std::endl;
 	//benchmark("convertToRGB",1, [&]() {
-	//	image->convertToRGB();
+	//	encoder->convertToRGB();
 	//});
 
 	//std::cout << "Apply Sebia filter" << std::endl;
 	//benchmark("applySepia",1, [&]() {
-	//	image->applySepia();
+	//	encoder->applySepia();
 	//});
 
 	//cout << "Save image file: " << dstFile << endl;
 	//benchmark("ImageLoader::Save()", 1, [&]() {
-	//	ImageLoader::Save(dstFile, image);
+	//	ImageLoader::Save(dstFile, encoder);
 	//});
 
 	std::cout << "Test DCT" << endl;

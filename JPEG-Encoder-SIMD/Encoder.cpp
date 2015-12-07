@@ -169,7 +169,7 @@ HuffmanTablePtr<byte> Encoder::getHuffmanTable(ColorChannelName colorChannelName
 {
 	//std::vector<PointerMatrix> blocks = getBlocks(colorChannelName);
 	//for (PointerMatrix& matrix : blocks) {
-	//	twoDimensionalDCTandQuantisationAVX(matrix, luminance, matrix);
+	//	twoDimensionalDCTandQuantisationAVX(matrix, qTables[colorChannelName], matrix);
 	//}
 	std::vector<byte> allSymbols{ 0, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
 	return HuffmanTable<byte>::create(16, allSymbols);

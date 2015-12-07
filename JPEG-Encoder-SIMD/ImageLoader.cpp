@@ -23,14 +23,14 @@ ImageLoader::~ImageLoader()
 {
 }
 
-ImagePtr ImageLoader::Load(const std::string& filename, SamplingScheme scheme, QTable luminance, QTable chrominance)
+ImagePtr ImageLoader::Load(const std::string& filename, SamplingScheme scheme, std::array<QTable,3> qTables)
 {
 	std::string ext = fileExtension(filename);
 
 	if (ext == "png") {
-		return LoadPNG(filename, scheme, luminance, chrominance);
+		return LoadPNG(filename, scheme, qTables);
 	} else if (ext == "ppm") {
-		return LoadPPM(filename, scheme, luminance, chrominance);
+		return LoadPPM(filename, scheme, qTables);
 	} else {
 		std::cout << "Failed to load image. Unknown file extension " << ext << std::endl;
 		return nullptr;
@@ -63,7 +63,7 @@ inline std::string ImageLoader::fileExtension(const std::string& filename)
 }
 
 
-ImagePtr ImageLoader::LoadPPM(std::string path, SamplingScheme scheme, QTable luminance, QTable chrominance)
+ImagePtr ImageLoader::LoadPPM(std::string path, SamplingScheme scheme, std::array<QTable, 3> qTables)
 {
 	enum State {
 		None, Size, Pixels
@@ -134,7 +134,8 @@ ImagePtr ImageLoader::LoadPPM(std::string path, SamplingScheme scheme, QTable lu
 		}
 	}
 
-	ImagePtr resultImage = make_shared<Image>(width, height, scheme, luminance, chrominance);
+
+	ImagePtr resultImage = make_shared<Image>(width, height, scheme, qTables);
 	resultImage->setRawPixelData((float*)&data[0]);
 	return resultImage;
 }
@@ -167,7 +168,7 @@ void ImageLoader::SavePPM(std::string path, ImagePtr image)
 	}
 }
 
-ImagePtr ImageLoader::LoadPNG(std::string path, SamplingScheme samplingScheme, QTable luminance, QTable chrominance)
+ImagePtr ImageLoader::LoadPNG(std::string path, SamplingScheme samplingScheme, std::array<QTable, 3> qTables)
 {
 	std::vector<unsigned char> imgData;
 	unsigned imgWidth, imgHeight;
@@ -183,7 +184,7 @@ ImagePtr ImageLoader::LoadPNG(std::string path, SamplingScheme samplingScheme, Q
 		imgDataFloat[i] = imgData[i] / 255.0f;
 	}
 
-	ImagePtr resultImage = make_shared<Image>(imgWidth, imgHeight, samplingScheme, luminance, chrominance);
+	ImagePtr resultImage = make_shared<Image>(imgWidth, imgHeight, samplingScheme, qTables);
 	resultImage->setRawPixelData((float*)&imgDataFloat[0]);
 	return resultImage;
 }
@@ -216,8 +217,9 @@ void ImageLoader::SaveJPG(std::string path, EncoderPtr image) {
 	JPEGSegments::StartOfFrame0 startOfFrame0(static_cast<short>(imageSize.width), static_cast<short>(imageSize.height), scheme);
 	JPEGSegments::EndOfImage endOfImage;
 	JPEGSegments::DefineHuffmannTable defineHuffmannTable(byte(0), JPEGSegments::HuffmanTableType::DC, *huffmann);
-	JPEGSegments::DefineQuantizationTable defineQuantizationTableLuminance(JPEGSegments::QuantizationTableType::Luminance, image->getLuminanceQTable());
-	JPEGSegments::DefineQuantizationTable defineQuantizationTableChrominance(JPEGSegments::QuantizationTableType::Chrominance, image->getChrominanceQTable());
+	JPEGSegments::DefineQuantizationTable defineQuantizationTableLuminance(YCbCrColorName::Y, image->getQTable(YCbCrColorName::Y));
+	JPEGSegments::DefineQuantizationTable defineQuantizationTableChrominance(YCbCrColorName::Cb, image->getQTable(YCbCrColorName::Cb));
+	JPEGSegments::DefineQuantizationTable defineQuantizationTableChrominance2(YCbCrColorName::Cr, image->getQTable(YCbCrColorName::Cr));
 
 	JPEGSegments::Serialize(startOfImage, bitBuffer);
 	JPEGSegments::Serialize(app0, bitBuffer);
@@ -225,6 +227,7 @@ void ImageLoader::SaveJPG(std::string path, EncoderPtr image) {
 	JPEGSegments::Serialize(defineHuffmannTable, bitBuffer);
 	JPEGSegments::Serialize(defineQuantizationTableLuminance, bitBuffer);
 	JPEGSegments::Serialize(defineQuantizationTableChrominance, bitBuffer);
+	JPEGSegments::Serialize(defineQuantizationTableChrominance2, bitBuffer);
 	JPEGSegments::Serialize(endOfImage, bitBuffer);
 
 	bitBuffer.writeToFile(path);
