@@ -1,6 +1,7 @@
 set(CPP_FILES 
 	BitBuffer.cpp
 	DCT.cpp
+	Encoder.cpp
 	Image.cpp
 	ImageLoader.cpp
 	JPEG-Encoder-SIMD.cpp
@@ -15,6 +16,7 @@ set(H_FILES
 	ColorNames.h
 	const_math.h
 	DCT.h
+	Encoder.h
 	HuffmanCoding.h
 	Image.h
 	ImageLoader.h
