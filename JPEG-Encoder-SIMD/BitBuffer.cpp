@@ -175,7 +175,7 @@ inline byte BitBuffer::joinTwoBytes(byte leftByte, byte rightByte, size_t leftCo
 	byte leftMask = 0xff << rightCount;
 	byte rightMask = 0xff >> leftCount;
 
-	return leftByte & leftMask | rightByte & rightMask;
+	return (leftByte & leftMask) | (rightByte & rightMask);
 }
 
 void BitBuffer::writeToFile(std::string filePath)

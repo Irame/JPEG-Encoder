@@ -6,11 +6,14 @@
 #include "PointerMatrix.h"
 #include "QuantizationTables.h"
 
+#define AVXCALL_(ReturnType) __forceinline static ReturnType _vectorcall
+#define AVXCALL AVXCALL_(void)
+
 
 // https://software.intel.com/sites/default/files/m/d/4/1/d/8/Image_Processing_-_whitepaper_-_100pct_CCEreviewed_update.pdf
 // https://gist.github.com/rygorous/4172889
 
-static void transposeFloatSSE(float *pSrc, float *pDst, unsigned int imageSize)
+AVXCALL transposeFloatSSE(float *pSrc, float *pDst, unsigned int imageSize)
 {
 	if (imageSize % 16 != 0)
 	{
@@ -33,7 +36,7 @@ static void transposeFloatSSE(float *pSrc, float *pDst, unsigned int imageSize)
 
 /// Transforms a Pixel stream (RGBA RGBA RGBA ...) 
 /// into blocks of 8 pixels (RRRRRRRR GGGGGGGG ...)
-static void transposeFloatAVX(float *pSrc, float *pDstR, float *pDstG, float *pDstB, size_t imageSize)
+AVXCALL transposeFloatAVX(float *pSrc, float *pDstR, float *pDstG, float *pDstB, size_t imageSize)
 {
 	size_t size = imageSize * 4; // per Pixel: RGBA
 	size_t i = 0;
@@ -72,7 +75,7 @@ static void transposeFloatAVX(float *pSrc, float *pDstR, float *pDstG, float *pD
 
 /// Transforms blocks of 8 pixels (RRRRRRRR GGGGGGGG ...)
 /// into a Pixel stream (RGBA RGBA RGBA ...) 
-static void transposeFloatAVX_reverse(float *pSrcR, float *pSrcG, float *pSrcB, float *pDst, size_t imageSize)
+AVXCALL transposeFloatAVX_reverse(float *pSrcR, float *pSrcG, float *pSrcB, float *pDst, size_t imageSize)
 {
 	static const __m256 alpha { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
 
@@ -125,7 +128,7 @@ union Vec4
 };
 
 /// dual linear combination using AVX instructions on YMM regs
-static inline __m256 twolincomb_AVX_8(__m256 A01, const Mat44 &B)
+AVXCALL_(__m256) twolincomb_AVX_8(__m256 A01, const Mat44 &B)
 {
 	__m256 result;
 	result = _mm256_mul_ps(_mm256_shuffle_ps(A01, A01, 0x00), _mm256_broadcast_ps(&B.row[0]));
@@ -135,7 +138,7 @@ static inline __m256 twolincomb_AVX_8(__m256 A01, const Mat44 &B)
 	return result;
 }
 
-static void matmult_AVX_8(Mat44 &out, const Mat44 &A, const Mat44 &B)
+AVXCALL matmult_AVX_8(Mat44 &out, const Mat44 &A, const Mat44 &B)
 {
 	_mm256_zeroupper();
 	__m256 A01 = _mm256_loadu_ps(&A.m[0][0]);
@@ -149,7 +152,7 @@ static void matmult_AVX_8(Mat44 &out, const Mat44 &A, const Mat44 &B)
 }
 
 template<int shuffleNum>
-static inline void calcOneRowRGBToYCbCr(float* refFloatPtr, __m128& row, __m256& V0, __m256& V1, __m256& V2, const __m256& V3, __m256& vAdd)
+AVXCALL calcOneRowRGBToYCbCr(float* refFloatPtr, __m128& row, __m256& V0, __m256& V1, __m256& V2, const __m256& V3, __m256& vAdd)
 {
 	__m256 MRow = _mm256_broadcast_ps(&row);
 	__m256 resultRow = _mm256_mul_ps(_mm256_shuffle_ps(MRow, MRow, 0x00), V0);
@@ -160,7 +163,7 @@ static inline void calcOneRowRGBToYCbCr(float* refFloatPtr, __m128& row, __m256&
 	_mm256_storeu_ps(refFloatPtr, resultRow);
 }
 
-static void convertRGBToYCbCrAVXImpl(float* refR, float* refG, float* refB)
+AVXCALL convertRGBToYCbCrAVXImpl(float* refR, float* refG, float* refB)
 {
 	static const __m256 alpha{ 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
 	static Mat44 M = { 
@@ -181,7 +184,7 @@ static void convertRGBToYCbCrAVXImpl(float* refR, float* refG, float* refB)
 	calcOneRowRGBToYCbCr<0xaa>(refB, M.row[2], V0, V1, V2, alpha, vAdd);
 }
 
-static void convertYCbCrToRGBAVXImpl(float* refR, float* refG, float* refB)
+AVXCALL convertYCbCrToRGBAVXImpl(float* refR, float* refG, float* refB)
 {
 	static const __m256 alpha{ 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
 	static Mat44 M = { 
@@ -211,7 +214,7 @@ static void convertYCbCrToRGBAVXImpl(float* refR, float* refG, float* refB)
 	}
 }
 
-static void applySepiaFilterAVXImpl(float* refR, float* refG, float* refB)
+AVXCALL applySepiaFilterAVXImpl(float* refR, float* refG, float* refB)
 {
 	static const __m256 alpha{ 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
 	static Mat44 M = {
@@ -239,7 +242,7 @@ static void applySepiaFilterAVXImpl(float* refR, float* refG, float* refB)
 	}
 }
 
-static void multiplyAVX(float* ref, float val, size_t dataSize)
+AVXCALL multiplyAVX(float* ref, float val, size_t dataSize)
 {
 	__m128 supportArray = { val, val, val, val };
 
@@ -253,7 +256,7 @@ static void multiplyAVX(float* ref, float val, size_t dataSize)
 	}
 }
 
-static void halfWidthResolutionAverageAVX(float* buff1, float* buff2, float* resultBuff)
+AVXCALL halfWidthResolutionAverageAVX(float* buff1, float* buff2, float* resultBuff)
 {
 	// doesn't work for any image resolution
 	// works for even width
@@ -272,7 +275,7 @@ static void halfWidthResolutionAverageAVX(float* buff1, float* buff2, float* res
 	_mm256_storeu_ps(resultBuff, _mm256_div_ps(sum, normVec)); // 0a+b 1a+b 2a+b 3a+b 4a+b 5a+b 6a+b 7a+b => 0 1 2 3 4 5 6 7
 }
 
-static void halfWidthResolutionSubsamplingAVX(float* buff1, float* buff2, float* resultBuff)
+AVXCALL halfWidthResolutionSubsamplingAVX(float* buff1, float* buff2, float* resultBuff)
 {
 	// doesn't work for any image resolution
 	// works for even width
@@ -284,12 +287,11 @@ static void halfWidthResolutionSubsamplingAVX(float* buff1, float* buff2, float*
 	__m256 r2 = _mm256_permute2f128_ps(b1, b2, _MM_SHUFFLE(0, 3, 0, 1)); // 0a 0b 1a 1b 2a 2b 3a 3b | 4a 4b 5a 5b 6a 6b 7a 7b => 2a 2b 3a 3b 6a 6b 7a 7b
 
 	__m256 l1 = _mm256_shuffle_ps(r1, r2, _MM_SHUFFLE(2, 0, 2, 0)); // 0a 0b 1a 1b 4a 4b 5a 5b | 2a 2b 3a 3b 6a 6b 7a 7b => 0a 1a 2a 3a 4a 5a 6a 7a
-	__m256 l2 = _mm256_shuffle_ps(r1, r2, _MM_SHUFFLE(3, 1, 3, 1)); // 0a 0b 1a 1b 4a 4b 5a 5b | 2a 2b 3a 3b 6a 6b 7a 7b => 0b 1b 2b 3b 4b 5b 6b 7b
-
+	
 	_mm256_storeu_ps(resultBuff, l1); // 0a+b 1a+b 2a+b 3a+b 4a+b 5a+b 6a+b 7a+b => 0 1 2 3 4 5 6 7
 }
 
-static void halfHeightResolutionAverageAVX(float* buff1, float* buff2, float* resultBuff)
+AVXCALL halfHeightResolutionAverageAVX(float* buff1, float* buff2, float* resultBuff)
 {
 	static const __m256 normVec{ 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f };
 
@@ -300,7 +302,7 @@ static void halfHeightResolutionAverageAVX(float* buff1, float* buff2, float* re
 	_mm256_storeu_ps(resultBuff, _mm256_div_ps(sum, normVec));
 }
 
-__forceinline static void transpose8_ps(__m256 &row0, __m256 &row1, __m256 &row2, __m256 &row3, __m256 &row4, __m256 &row5, __m256 &row6, __m256 &row7) {
+AVXCALL transpose8_ps(__m256 &row0, __m256 &row1, __m256 &row2, __m256 &row3, __m256 &row4, __m256 &row5, __m256 &row6, __m256 &row7) {
 	__m256 __t0, __t1, __t2, __t3, __t4, __t5, __t6, __t7;
 	__m256 __tt0, __tt1, __tt2, __tt3, __tt4, __tt5, __tt6, __tt7;
 	__t0 = _mm256_unpacklo_ps(row0, row1);
@@ -331,7 +333,7 @@ __forceinline static void transpose8_ps(__m256 &row0, __m256 &row1, __m256 &row2
 
 constexpr float C_(size_t k) { return k == 0 ? 1.0f : (float)c_cos(k * M_PIf / 16); }
 constexpr float S_(size_t k) { return k == 0 ? M_SQRT1_2f / 2.0f : 1.0f / (4.0f * C_(k)); }
-__forceinline static void oneDimensionalDCT(__m256* ref)
+AVXCALL oneDimensionalDCT(__m256* ref)
 {
 	constexpr float s0 = S_(0);
 	constexpr float s1 = S_(1);
@@ -412,7 +414,7 @@ __forceinline static void oneDimensionalDCT(__m256* ref)
 	ref[7] = _mm256_mul_ps(ref[7], _mm256_set1_ps(s7));
 }
 
-__forceinline static void quantifyDCTAVX(__m256* ref, const __m256* qTable)
+AVXCALL quantifyDCTAVX(__m256* ref, const __m256* qTable)
 {
 	for (size_t i = 0; i < 8; i++)
 	{
@@ -420,7 +422,7 @@ __forceinline static void quantifyDCTAVX(__m256* ref, const __m256* qTable)
 	}
 }
 
-__forceinline static void twoDimensionalDCTAVX(__m256* regs)
+AVXCALL twoDimensionalDCTAVX(__m256* regs)
 {
 	transpose8_ps(regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], regs[6], regs[7]);
 
@@ -438,7 +440,7 @@ __forceinline static void twoDimensionalDCTAVX(__m256* regs)
 }
 
 
-static void twoDimensionalDCTAVX(const PointerMatrix& in, PointerMatrix& out)
+AVXCALL twoDimensionalDCTAVX(const PointerMatrix& in, PointerMatrix& out)
 {
 	__m256 regs[8]
 	{
@@ -464,7 +466,7 @@ static void twoDimensionalDCTAVX(const PointerMatrix& in, PointerMatrix& out)
 	_mm256_storeu_ps(out[7], regs[7]);
 }
 
-static void twoDimensionalDCTandQuantisationAVX(const PointerMatrix& in, const QTable& qTable, PointerMatrix& out)
+AVXCALL twoDimensionalDCTandQuantisationAVX(const PointerMatrix& in, const QTable& qTable, PointerMatrix& out)
 {
 	__m256 regs[8]
 	{
@@ -478,9 +480,35 @@ static void twoDimensionalDCTandQuantisationAVX(const PointerMatrix& in, const Q
 		_mm256_loadu_ps(in[7])
 	};
 
+	const __m256 factor256 = _mm256_set1_ps(255);
+	//for (size_t i = 0; i < 8; i++)
+	//{
+		regs[0] = _mm256_mul_ps(regs[0], factor256);
+		regs[1] = _mm256_mul_ps(regs[1], factor256);
+		regs[2] = _mm256_mul_ps(regs[2], factor256);
+		regs[3] = _mm256_mul_ps(regs[3], factor256);
+		regs[4] = _mm256_mul_ps(regs[4], factor256);
+		regs[5] = _mm256_mul_ps(regs[5], factor256);
+		regs[6] = _mm256_mul_ps(regs[6], factor256);
+		regs[7] = _mm256_mul_ps(regs[7], factor256);
+	//}
+
 	twoDimensionalDCTAVX(regs);
 
 	quantifyDCTAVX(regs, qTable.avx);
+
+	const __m256 roundAddend = _mm256_set1_ps(0.5f);
+	//for (size_t i = 0; i < 8; i++)
+	//{
+		regs[0] = _mm256_add_ps(regs[0], roundAddend);
+		regs[1] = _mm256_add_ps(regs[1], roundAddend);
+		regs[2] = _mm256_add_ps(regs[2], roundAddend);
+		regs[3] = _mm256_add_ps(regs[3], roundAddend);
+		regs[4] = _mm256_add_ps(regs[4], roundAddend);
+		regs[5] = _mm256_add_ps(regs[5], roundAddend);
+		regs[6] = _mm256_add_ps(regs[6], roundAddend);
+		regs[7] = _mm256_add_ps(regs[7], roundAddend);
+	//}
 
 	_mm256_storeu_ps(out[0], regs[0]);
 	_mm256_storeu_ps(out[1], regs[1]);
