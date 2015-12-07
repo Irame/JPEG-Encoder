@@ -350,11 +350,12 @@ void Image::reduceResolutionBySchema()
 	reduceHeightResolutionColorChannel(Cr, samplingScheme.crReductionOptions.heightFactor, samplingScheme.crReductionOptions.heightMethod);
 }
 
-HuffmanTablePtr<byte> Image::getHuffmanTable() const
+HuffmanTablePtr<byte> Image::getHuffmanTable(ColorChannelName colorChannelName) const
 {
-	//std::vector<PointerMatrix> yBlocks = getBlocks(YCbCrColorName::Y);
-	//std::vector<PointerMatrix> cbBlocks = getBlocks(YCbCrColorName::Cb);
-	//std::vector<PointerMatrix> crlocks = getBlocks(YCbCrColorName::Cr);
+	//std::vector<PointerMatrix> blocks = getBlocks(colorChannelName);
+	//for (PointerMatrix& matrix : blocks) {
+	//	twoDimensionalDCTandQuantisationAVX(matrix, luminance, matrix);
+	//}
 	std::vector<byte> allSymbols{ 0, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
 	return HuffmanTable<byte>::create(16, allSymbols);
 }
@@ -362,7 +363,7 @@ HuffmanTablePtr<byte> Image::getHuffmanTable() const
 std::vector<PointerMatrix> Image::getBlocks(ColorChannelName colorChannelName) const
 {
 	float* channel = channels->getChannel(colorChannelName);
-	size_t height = channelSizes[colorChannelName].height; // TODO: something is strange, i used a picture with 200x200 resolution and channelsize width = 208 and heigth = 200
+	size_t height = channelSizes[colorChannelName].height;
 	size_t width = channelSizes[colorChannelName].width;
 
 	std::vector<PointerMatrix> blocks;

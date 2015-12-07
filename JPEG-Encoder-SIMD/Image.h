@@ -123,5 +123,5 @@ public:
 	const QTable& getLuminanceQTable() const { return luminance; }
 	const QTable& getChrominanceQTable() const { return chrominance; }
 
-	HuffmanTablePtr<byte> getHuffmanTable() const;
+	HuffmanTablePtr<byte> getHuffmanTable(ColorChannelName colorChannelName) const;
 };
