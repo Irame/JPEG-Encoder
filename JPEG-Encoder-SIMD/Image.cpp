@@ -22,7 +22,12 @@ Image::Image(Image& origImage)
 	channelSizes{ origImage.channelSizes[0], origImage.channelSizes[1], origImage.channelSizes[2] }, 
 	samplingScheme(origImage.samplingScheme), luminance(origImage.luminance), chrominance(origImage.chrominance)
 {
+	channels = std::make_unique<ImageData>(simulatedSize);
 	memcpy(blocksPerChannel, origImage.blocksPerChannel, sizeof(blocksPerChannel));
+	size_t bytesPerChannel = simulatedSize.width * simulatedSize.height * sizeof(float);
+	memcpy(channels->red(), origImage.channels->red(), bytesPerChannel);
+	memcpy(channels->green(), origImage.channels->green(), bytesPerChannel);
+	memcpy(channels->blue(), origImage.channels->blue(), bytesPerChannel);
 }
 
 const Dimension2D& Image::getImageSize() const
