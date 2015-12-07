@@ -46,11 +46,7 @@ if ("${CMAKE_GENERATOR}" MATCHES "Visual Studio*")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${warnings}")
 	
 	setCXXFlag("/arch:AVX") # enable AVX
-	setCXXFlag("/GL") # whole program optimization
-	setCXXFlag("/MP") # Multi processor compilation
-	setCXXFlag("/Ot") # Favor speed over size
-	setCXXFlag("/Oi") # Generate Intrinsic Functions
-	
+		
 	set(CMAKE_CONFIGURATION_TYPES Release Debug)
 endif()
 
@@ -58,8 +54,13 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	add_definitions(-D MSVC) # define MSVC
 	add_definitions(-D _USE_MATH_DEFINES) # define M_PI etc for <cmath>
 	
-	setLinkerFlag_Release("/LTCG")
-
+	setCXXFlag("/MP") 		  # Multi processor compilation
+	
+	setCXXFlag_Release("/Ot") 	   # Favor speed over size
+	setCXXFlag_Release("/Oi") 	   # Generate Intrinsic Functions	
+	setCXXFlag_Release("/GL") 	   # whole program optimization
+	
+	setLinkerFlag_Release("/LTCG") # link time code generation
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
