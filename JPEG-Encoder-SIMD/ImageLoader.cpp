@@ -207,7 +207,7 @@ void ImageLoader::SavePNG(std::string path, ImageCCPtr image)
 void ImageLoader::SaveJPG(std::string path, ImageCCPtr image) {
 	const Dimension2D& imageSize = image->getImageSize();
 	const SamplingScheme& scheme = image->getSamplingScheme();
-	const HuffmanTablePtr<byte> huffmann = image->getHuffmanTable();
+	const HuffmanTablePtr<byte> huffmann = image->getHuffmanTable(YCbCrColorName::Y);
 
 	BitBuffer bitBuffer;
 
