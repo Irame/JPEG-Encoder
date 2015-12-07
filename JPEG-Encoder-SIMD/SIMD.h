@@ -344,7 +344,7 @@ __forceinline static void oneDimensionalDCT(__m256* ref)
 
 	constexpr float a1 = C_(4);
 	constexpr float a2 = C_(2) - C_(6);
-	constexpr float a3 = C_(4);
+	//constexpr float a3 = C_(4); == a1
 	constexpr float a4 = C_(6) + C_(2);
 	constexpr float a5 = C_(6);
 

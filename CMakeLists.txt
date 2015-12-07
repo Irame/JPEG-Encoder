@@ -42,7 +42,9 @@ endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 	add_definitions(-D CLANG) # define CLANG
-	
+
+	setCXXFlag("-Wno-missing-braces")
+	setCXXFlag("-Wno-unused-function")
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
