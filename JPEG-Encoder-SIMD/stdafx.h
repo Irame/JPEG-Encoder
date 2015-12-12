@@ -52,6 +52,7 @@ inline std::ostream& operator<<(std::ostream& os, const byte& byte) {
 // memcpy_s is a non standard VS extension; Alias memcpy_s to memcpy on GCC
 #ifdef GCC
 	#define memcpy_s(_dst, _dstSize, _src, _srcSize) memcpy(_dst, _src, _dstSize)
+	#define _vectorcall
 #endif
 
 

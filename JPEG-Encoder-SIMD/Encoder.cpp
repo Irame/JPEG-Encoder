@@ -104,7 +104,7 @@ void Encoder::reduceHeightResolutionColorChannel(ColorChannelName channelName, i
 	Dimension2D oldchannelSize = channelSizes[channelName];
 
 	// calc new channel info
-	size_t newChannelDataSize = channelDataSize / factor;
+	//size_t newChannelDataSize = channelDataSize / factor;
 	size_t newChannelHeight = oldchannelSize.height / factor;
 	blocksPerChannel[channelName] /= factor;
 	channelSizes[channelName].height = newChannelHeight;
