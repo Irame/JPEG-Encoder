@@ -4,7 +4,10 @@
 #pragma pack(push, 1)
 
 #include <algorithm>
+
 #include "HuffmanCoding.h"
+#include "HuffmanCodingByte.h"
+
 #include "SamplingScheme.h"
 #include "QuantizationTables.h"
 #include "ZigZag.h"

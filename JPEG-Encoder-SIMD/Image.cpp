@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "SIMD.h"
 #include "Image.h"
-#include "HuffmanCoding.h"
+#include "HuffmanCodingByte.h"
 
 Image::Image(size_t width, size_t height, SamplingScheme scheme, std::array<QTable, 3> qtables)
 	: imageSize(width, height), stepSize(scheme.calcWidthStepSize(), scheme.calcHeightStepSize()),

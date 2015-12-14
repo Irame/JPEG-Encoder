@@ -4,7 +4,7 @@
 #include "ColorNames.h"
 #include "SamplingScheme.h"
 #include <vector>
-#include "HuffmanCoding.h"
+#include "HuffmanCodingByte.h"
 #include "QuantizationTables.h"
 
 class Image;

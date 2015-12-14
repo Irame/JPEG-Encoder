@@ -18,6 +18,7 @@ set(H_FILES
 	DCT.h
 	Encoder.h
 	HuffmanCoding.h
+	HuffmanCodingByte.h
 	Image.h
 	ImageLoader.h
 	JPEGSegments.h
