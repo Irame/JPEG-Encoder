@@ -25,10 +25,10 @@ public:
 	// Adds the given bit at the end of the BitBuffer
 	void pushBit(bool val);
 	// Adds a certen number of bits from a specific location with an offset
-	void pushBits(size_t numOfBits, const void* buffer, size_t offset);
+	void pushBits(size_t numOfBits, const void* buffer, size_t offset, bool escape = false);
 	// Adds a certen number of bits from a specific location
-	void pushBits(size_t numOfBits, const void* buffer);
-	void pushBits(const BitBuffer& buffer);
+	void pushBits(size_t numOfBits, const void* buffer, bool escape = false);
+	void pushBits(const BitBuffer& buffer, bool escape = false);
 
 	// Returns the bit at the given index
 	bool getBit(size_t index) const;
@@ -53,9 +53,15 @@ public:
 
 	// Generic write method
 	template<typename T>
-	void push(T& value, size_t offset = 0)
+	void push(T& value, size_t offset)
 	{
 		pushBits(sizeof(T) * 8, &value, offset);
+	}
+
+	template<typename T>
+	void push(T& value)
+	{
+		pushBits(sizeof(T) * 8, &value);
 	}
 };
 

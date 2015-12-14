@@ -21,7 +21,7 @@ void BitBuffer::pushBit(bool val)
 	dataBitOffset++;
 }
 
-void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid, size_t offset)
+void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid, size_t offset, bool escape)
 {
 	if (numOfBits == 0) return;
 
@@ -52,6 +52,13 @@ void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid, size_t off
 			dataBitOffset += freeBits;
 			freeBits = 8;
 
+			if (escape && data[byteOffset - 1] == 0xff)
+			{
+				ensureFreeSpace(numOfBits + 8);
+				data[byteOffset++] = 0x00;
+				dataBitOffset += 8;
+			}
+
 			// write remaining bitsToWrite to the next data byte
 			data[byteOffset] |= srcBuffer[0] << (8 - bitsToWrite);
 			numOfBits -= bitsToWrite;
@@ -65,18 +72,23 @@ void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid, size_t off
 			data[byteOffset] &= 0xff << (freeBits - bitsToWrite);
 			numOfBits -= bitsToWrite;
 			dataBitOffset += bitsToWrite;
-			freeBits = 8 - dataBitOffset % 8;
-			byteOffset = dataBitOffset / 8;
+
+			if (escape && freeBits == bitsToWrite && data[byteOffset] == 0xff)
+			{
+				ensureFreeSpace(numOfBits + 8);
+				data[++byteOffset] = 0x00;
+				dataBitOffset += 8;
+			}
 		}
 		srcBuffer++;
 
 		if (numOfBits == 0) return;
 	}
 	
-	pushBits(numOfBits, srcBuffer);
+	pushBits(numOfBits, srcBuffer, escape);
 }
 
-void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid)
+void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid, bool escape)
 {
 	if (numOfBits == 0) return;
 	ensureFreeSpace(numOfBits);
@@ -85,18 +97,18 @@ void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid)
 	size_t freeBits = 8 - dataBitOffset % 8;						// number of bits to fill data up to byte boundary
 	size_t byteOffset = dataBitOffset / 8;
 
-	if (freeBits == 8) // use memcpy if data is byte aligned
-	{
-		size_t bytesToCopy = (numOfBits + 7) / 8;
-		memcpy(&data[byteOffset], srcBuffer, bytesToCopy);
-		size_t srcBitsRemaining = numOfBits % 8;
-		if (srcBitsRemaining != 0)
-		{
-			data[byteOffset + bytesToCopy - 1] &= 0xff << (8 - srcBitsRemaining);
-		}
-		dataBitOffset += numOfBits;
-		return;
-	}
+	//if (freeBits == 8) // use memcpy if data is byte aligned
+	//{
+	//	size_t bytesToCopy = (numOfBits + 7) / 8;
+	//	memcpy(&data[byteOffset], srcBuffer, bytesToCopy);
+	//	size_t srcBitsRemaining = numOfBits % 8;
+	//	if (srcBitsRemaining != 0)
+	//	{
+	//		data[byteOffset + bytesToCopy - 1] &= 0xff << (8 - srcBitsRemaining);
+	//	}
+	//	dataBitOffset += numOfBits;
+	//	return;
+	//}
 
 	if (numOfBits <= freeBits)
 	{
@@ -110,6 +122,13 @@ void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid)
 		data[byteOffset++] |= (srcBuffer[0] >> (8 - freeBits));
 		dataBitOffset += freeBits;
 
+		if (escape && data[byteOffset - 1] == 0xff)
+		{
+			ensureFreeSpace(numOfBits + 8);
+			data[byteOffset++] = 0x00;
+			dataBitOffset += 8;
+		}
+
 		size_t srcOffset = freeBits;
 		size_t srcByteOffset = 0;
 		size_t leftCount = 8 - freeBits;
@@ -119,6 +138,14 @@ void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid)
 			// fill data with joined whole bytes
 			data[byteOffset++] = joinTwoBytes(srcBuffer[srcByteOffset], srcBuffer[srcByteOffset + 1], leftCount);
 			srcByteOffset++;
+
+			if (escape && data[byteOffset - 1] == 0xff)
+			{
+				ensureFreeSpace(numOfBits - srcOffset + 8);
+				data[byteOffset++] = 0x00;
+				dataBitOffset += 8;
+			}
+
 			dataBitOffset += 8;
 			srcOffset += 8;
 		}
@@ -128,9 +155,9 @@ void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid)
 	}
 }
 
-void BitBuffer::pushBits(const BitBuffer& buffer)
+void BitBuffer::pushBits(const BitBuffer& buffer, bool escape)
 {
-	pushBits(buffer.getSize(), buffer.data.data());
+	pushBits(buffer.getSize(), buffer.data.data(), escape);
 }
 
 bool BitBuffer::getBit(size_t index) const
