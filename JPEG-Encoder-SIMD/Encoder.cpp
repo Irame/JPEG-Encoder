@@ -246,7 +246,7 @@ void Encoder::calculateDCValues(const OffsetArray& zigZag, const ColorChannelNam
 		}
 		else
 		{
-			category = static_cast<byte>(log2f(diff) + 1);
+			category = static_cast<byte>(log2f(abs(diff)) + 1);
 		}
 
 		//align pattern first bit to the most left bit
@@ -296,7 +296,7 @@ void Encoder::calculateACValues(const OffsetArray& zigZag, const ColorChannelNam
 				}
 
 				//calculates category/length of the bitpattern
-				byte category = static_cast<byte>(log2f(acValue) + 1);
+				byte category = static_cast<byte>(log2f(abs(acValue)) + 1);
 
 				//align pattern first bit to the most left bit
 				pattern <<= (16 - category);
