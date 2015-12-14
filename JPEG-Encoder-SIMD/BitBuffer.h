@@ -26,6 +26,8 @@ public:
 	// Get the maximum number of bits that can be stored at the moment
 	size_t getCapacity() const { return bufferSizeInByte * 8; };
 
+	void fillToByteBorder();
+
 	// Appends a single bit at the end of the BitBuffer
 	void pushBit(bool val);
 

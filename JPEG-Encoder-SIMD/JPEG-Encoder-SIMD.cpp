@@ -300,7 +300,7 @@ void testDCT()
 
 void EncodeJPEG(string srcFile, string dstFile)
 {
-	SamplingScheme scheme = SamplingScheme::Scheme422;
+	SamplingScheme scheme = SamplingScheme::Scheme420;
 
 	cout << "Load image file: " << srcFile << endl;
 	ImagePtr image = nullptr;

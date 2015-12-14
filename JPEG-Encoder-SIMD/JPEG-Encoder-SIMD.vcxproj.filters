@@ -75,6 +75,9 @@
     <ClInclude Include="Encoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HuffmanCodingByte.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

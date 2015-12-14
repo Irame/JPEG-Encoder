@@ -166,6 +166,7 @@
     <ClInclude Include="DCT.h" />
     <ClInclude Include="Encoder.h" />
     <ClInclude Include="HuffmanCoding.h" />
+    <ClInclude Include="HuffmanCodingByte.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="ImageLoader.h" />
     <ClInclude Include="JPEGSegments.h" />

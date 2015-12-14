@@ -497,17 +497,17 @@ AVXCALL twoDimensionalDCTandQuantisationAVX(const PointerMatrix& in, const QTabl
 
 	quantifyDCTAVX(regs, qTable.avx);
 
-	const __m256 roundAddend = _mm256_set1_ps(0.5f);
+	static const int roundingParameter = (_MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
 	//for (size_t i = 0; i < 8; i++)
 	//{
-		regs[0] = _mm256_add_ps(regs[0], roundAddend);
-		regs[1] = _mm256_add_ps(regs[1], roundAddend);
-		regs[2] = _mm256_add_ps(regs[2], roundAddend);
-		regs[3] = _mm256_add_ps(regs[3], roundAddend);
-		regs[4] = _mm256_add_ps(regs[4], roundAddend);
-		regs[5] = _mm256_add_ps(regs[5], roundAddend);
-		regs[6] = _mm256_add_ps(regs[6], roundAddend);
-		regs[7] = _mm256_add_ps(regs[7], roundAddend);
+		regs[0] = _mm256_round_ps(regs[0], roundingParameter);
+		regs[1] = _mm256_round_ps(regs[1], roundingParameter);
+		regs[2] = _mm256_round_ps(regs[2], roundingParameter);
+		regs[3] = _mm256_round_ps(regs[3], roundingParameter);
+		regs[4] = _mm256_round_ps(regs[4], roundingParameter);
+		regs[5] = _mm256_round_ps(regs[5], roundingParameter);
+		regs[6] = _mm256_round_ps(regs[6], roundingParameter);
+		regs[7] = _mm256_round_ps(regs[7], roundingParameter);
 	//}
 
 	_mm256_storeu_ps(out[0], regs[0]);

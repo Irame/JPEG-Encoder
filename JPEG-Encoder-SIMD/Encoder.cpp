@@ -371,7 +371,7 @@ HuffmanTablePtr<byte> Encoder::getHuffmanTable(CoefficientType type, ColorChanne
 	createHuffmanTable(type, colorChannelName);
 	if (colorChannelName == YCbCrColorName::Cr)
 	{
-		colorChannelName == YCbCrColorName::Cb;
+		colorChannelName = YCbCrColorName::Cb;
 	}
 	return huffmanTables[colorChannelName][type];
 }
@@ -406,6 +406,7 @@ void Encoder::serialize(BitBuffer &bitBuffer)
 			pushBlock(bitBuffer, YCbCrColorName::Cr, i*crfactor + count);
 		}
 	}
+	bitBuffer.fillToByteBorder();
 }
 
 void Encoder::pushBlock(BitBuffer &bitBuffer, ColorChannelName colorChannelName, size_t block)
@@ -424,6 +425,6 @@ void Encoder::pushBlock(BitBuffer &bitBuffer, ColorChannelName colorChannelName,
 	{
 		category = categoriesAC[colorChannelName][block][i];
 		bitBuffer.pushBitsEscaped(*huffmanTables[huffmannColorChannel][CoefficientType::AC]->encode(category));
-		bitBuffer.pushBitsEscaped(category, &bitPatternAC[colorChannelName][block][i]);
+		bitBuffer.pushBitsEscaped(0b1111 & category, &bitPatternAC[colorChannelName][block][i]);
 	}
 }

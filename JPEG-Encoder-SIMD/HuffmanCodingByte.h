@@ -24,7 +24,13 @@ public:
 
 	public:
 		const_iterator(IteratorType innerIterator, IteratorType endIterator) 
-			: innerIterator(innerIterator), endIterator(endIterator) { }
+			: innerIterator(innerIterator), endIterator(endIterator)
+		{
+			while(this->innerIterator != this->endIterator && this->innerIterator->first == 0)
+			{
+				++(this->innerIterator);
+			}
+		}
 
 		const_reference operator*() { return *innerIterator; }
 		bool operator==(const const_iterator& other) const { return innerIterator == other.innerIterator; }

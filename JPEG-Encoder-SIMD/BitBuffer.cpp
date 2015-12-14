@@ -9,6 +9,11 @@ BitBuffer::BitBuffer(size_t initialBufferSizeInBit)
 	data(bufferSizeInByte, 0), dataBitOffset(0)
 {}
 
+void BitBuffer::fillToByteBorder()
+{
+	dataBitOffset += dataBitOffset - (dataBitOffset / 8) * 8;
+}
+
 void BitBuffer::pushBit(bool val)
 {
 	ensureFreeSpace(1);
