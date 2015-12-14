@@ -21,6 +21,37 @@ void BitBuffer::pushBit(bool val)
 	dataBitOffset++;
 }
 
+void BitBuffer::pushBits(const BitBuffer& buffer)
+{
+	pushBits(buffer, false);
+}
+
+void BitBuffer::pushBits(size_t numOfBits, const void* buffer)
+{
+	pushBits(numOfBits, buffer, false);
+}
+
+void BitBuffer::pushBits(size_t numOfBits, const void* buffer, size_t offset)
+{
+	pushBits(numOfBits, buffer, offset, false);
+}
+
+void BitBuffer::pushBitsEscaped(const BitBuffer& buffer)
+{
+	pushBits(buffer, true);
+}
+
+void BitBuffer::pushBitsEscaped(size_t numOfBits, const void* buffer)
+{
+	pushBits(numOfBits, buffer, true);
+}
+
+void BitBuffer::pushBitsEscaped(size_t numOfBits, const void* buffer, size_t offset)
+{
+	pushBits(numOfBits, buffer, offset, true);
+}
+
+
 void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid, size_t offset, bool escape)
 {
 	if (numOfBits == 0) return;
