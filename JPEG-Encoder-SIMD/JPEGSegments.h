@@ -185,7 +185,13 @@ namespace JPEGSegments
 		byte Cr[2]{ 0x03 };
 		const byte irrelevant[3]{ 0x00, 0x3f, 0x00 };
 
-		StartOfScan() : marker(SegmentType::StartOfScan) {}
+		StartOfScan(std::array<byte, 3> acHT, std::array<byte, 3> dcHT) 
+			: marker(SegmentType::StartOfScan)
+		{
+			Y[1] = ((0b1111 & acHT[YCbCrColorName::Y]) << 4) | (0b1111 & dcHT[YCbCrColorName::Y]);
+			Cb[1] = ((0b1111 & acHT[YCbCrColorName::Cb]) << 4) | (0b1111 & dcHT[YCbCrColorName::Cb]);
+			Cr[1] = ((0b1111 & acHT[YCbCrColorName::Cr]) << 4) | (0b1111 & dcHT[YCbCrColorName::Cr]);
+		}
 
 		// Kommt innerhalb eines Segmentes irgendwann das Byte 0xff vor, muss die Bytefolge 0xff 0x00 ausgegeben werden
 		// Dadurch ist ein Decoder später in der Lage, beschädigte Dateien zu dekodieren und sich auf Segmentgrenzen zu synchronisieren

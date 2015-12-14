@@ -298,6 +298,47 @@ void testDCT()
 	cout << "End direct IDCT" << endl;
 }
 
+void EncodeJPEG(string srcFile, string dstFile)
+{
+	SamplingScheme scheme = SamplingScheme::Scheme422;
+
+	cout << "Load image file: " << srcFile << endl;
+	ImagePtr image = nullptr;
+
+	benchmark("ImageLoader::Load()", 1, [&]()
+	{
+		image = ImageLoader::Load(srcFile, scheme, std::array<QTable, 3> { JPEGQuantization::luminance, JPEGQuantization::chrominance, JPEGQuantization::chrominance });
+	});
+
+	EncoderPtr encoder = std::make_shared<Encoder>(*image);
+
+	std::cout << "Convert image to YCbCr AVX." << std::endl;
+	benchmark("convertToYCbCr",1, [&]() {
+		encoder->convertToYCbCr();
+	});
+
+
+	cout << "Reduce channel resolution for scheme." << endl;
+	benchmark("reduceResolutionBySchema", 1, [&]() {
+		encoder->reduceResolutionBySchema();
+	});
+
+	std::cout << "Apply DCT." << std::endl;
+	benchmark("applyDCT", 1, [&]()
+	{
+		encoder->applyDCT(YCbCrColorName::Y);
+		encoder->applyDCT(YCbCrColorName::Cb);
+		encoder->applyDCT(YCbCrColorName::Cr);
+	});
+
+	cout << "Save image file: " << dstFile << endl;
+	benchmark("ImageLoader::Save()", 1, [&]()
+	{
+		ImageLoader::Save(dstFile, encoder);
+	});
+
+}
+
 void testHuffmanEncoding()
 {
 	vector<byte> allSymbols{ 0, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
@@ -346,78 +387,25 @@ int main(int argc, char* argv[])
 	//});
 	//return  0;
 
-	//if (argc < 3) {
-	//	cerr << "Usage: " << argv[0] << " <Source File> <Destination File>" << endl;
-	//	return 1;
-	//}
+	if (argc < 3) {
+		cerr << "Usage: " << argv[0] << " <Source File> <Destination File>" << endl;
+		return 1;
+	}
 
-	//string srcFile(argv[1]);
-	//string dstFile(argv[2]);
+	string srcFile(argv[1]);
+	string dstFile(argv[2]);
 
-	//SamplingScheme scheme = SamplingScheme::Scheme422;
-
-	//cout << "Load image file: " << srcFile << endl;
-	//ImagePtr image = nullptr;
-	//
-	//benchmark("ImageLoader::Load()",1, [&]() {
-	//	image = ImageLoader::Load(srcFile, scheme, std::array<QTable, 3> { JPEGQuantization::luminance, JPEGQuantization::chrominance, JPEGQuantization::chrominance });
-	//});
-
-	//EncoderPtr encoder = std::make_shared<Encoder>(*image);
-	
-	//std::cout << "Convert image to YCbCr." << std::endl;
-	//benchmark("convertToYCbCr",1, [&]() {
-	//	encoder->convertToYCbCr();
-	//});
-	
-	//std::cout << "Aplying Sepia Filter." << std::endl;
-	//benchmark("applySepia",1, [&]() {
-	//	encoder->applySepia();
-	//});
-
-	//std::cout << "Convert image to YCbCr AVX." << std::endl;
-	//benchmark("convertToYCbCr",1, [&]() {
-	//	encoder->convertToYCbCr();
-	//});
-
-
-	//cout << "Reduce channel resolution for scheme." << endl;
-	//benchmark("reduceResolutionBySchema", 1, [&]() {
-	//	encoder->reduceResolutionBySchema();
-	//});
-
-
-	//std::cout << "Cancle out Cb and Cr Channel." << std::endl;
-	//benchmark("multiplyColorChannelBy",1, [&]() {
-	//	encoder->multiplyColorChannelBy(0, 0);
-	//	encoder->multiplyColorChannelBy(1, 0);
-	//});
-
-	//std::cout << "Convert image to RGB AVX." << std::endl;
-	//benchmark("convertToRGB",1, [&]() {
-	//	encoder->convertToRGB();
-	//});
-
-	//std::cout << "Convert image to RGB." << std::endl;
-	//benchmark("convertToRGB",1, [&]() {
-	//	encoder->convertToRGB();
-	//});
-
-	//std::cout << "Apply Sebia filter" << std::endl;
-	//benchmark("applySepia",1, [&]() {
-	//	encoder->applySepia();
-	//});
-
-	//cout << "Save image file: " << dstFile << endl;
-	//benchmark("ImageLoader::Save()", 1, [&]() {
-	//	ImageLoader::Save(dstFile, encoder);
-	//});
-
-	std::cout << "Test DCT" << endl;
-	benchmark("Test DCT", 1, [&]()
+	std::cout << "Test EncodeJPEG" << endl;
+	benchmark("Test EncodeJPEG", 1, [&]()
 	{
-		testDCT();
-	});
+		EncodeJPEG(srcFile, dstFile);
+	});	
+	
+	//std::cout << "Test DCT" << endl;
+	//benchmark("Test DCT", 1, [&]()
+	//{
+	//	test2DCT();
+	//});
 
 	return 0;
 }

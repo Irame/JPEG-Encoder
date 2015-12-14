@@ -95,7 +95,7 @@ void DCT::seperateDCT(const PointerMatrix& values, PointerMatrix& result)
 	{
 		for (int n = 0; n < N; n++)
 		{
-			C = k == 0.0f ? 1 / sqrtf(2.0f) : 1;
+			C = k == 0.0f ? M_SQRT1_2f : 1;
 
 			a[k][n] = C * sqrtf(2.0f / N)*cosf((2.0f * n + 1.0f) * ((k * M_PIf) / (2.0f * N)));
 		}

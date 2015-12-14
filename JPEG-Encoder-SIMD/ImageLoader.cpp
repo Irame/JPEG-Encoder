@@ -45,8 +45,8 @@ void ImageLoader::Save(const std::string& filename, ImagePtr image)
 		return SavePNG(filename, image);
 	} else if (ext == "ppm") {
 		return SavePPM(filename, image);
-	//} else if (ext == "jpg" || ext == "jpeg"){
-	//	return SaveJPG(filename, image);
+	} else if (ext == "jpg" || ext == "jpeg"){
+		return SaveJPG(filename, std::static_pointer_cast<Encoder, Image>(image));
 	} else {
 		std::cout << "Failed to save image. Unknown file extension " << ext << std::endl;
 	}
@@ -208,26 +208,47 @@ void ImageLoader::SavePNG(std::string path, ImagePtr image)
 void ImageLoader::SaveJPG(std::string path, EncoderPtr image) {
 	const Dimension2D& imageSize = image->getImageSize();
 	const SamplingScheme& scheme = image->getSamplingScheme();
-	const HuffmanTablePtr<byte> huffmann = image->getHuffmanTable(Encoder::CoefficientType::DC, YCbCrColorName::Y);
-
+	const HuffmanTablePtr<byte> huffmannDCY = image->getHuffmanTable(Encoder::CoefficientType::DC, YCbCrColorName::Y);
+	const HuffmanTablePtr<byte> huffmannDCCb = image->getHuffmanTable(Encoder::CoefficientType::DC, YCbCrColorName::Cb);
+	const HuffmanTablePtr<byte> huffmannACY = image->getHuffmanTable(Encoder::CoefficientType::AC, YCbCrColorName::Y);
+	const HuffmanTablePtr<byte> huffmannACCb = image->getHuffmanTable(Encoder::CoefficientType::AC, YCbCrColorName::Cb);
+	auto acHT = std::array<byte, 3>();
+	auto dcHT = std::array<byte, 3>();
 	BitBuffer bitBuffer;
 
 	JPEGSegments::StartOfImage startOfImage;
 	JPEGSegments::APP0 app0;
 	JPEGSegments::StartOfFrame0 startOfFrame0(static_cast<short>(imageSize.width), static_cast<short>(imageSize.height), scheme);
-	JPEGSegments::EndOfImage endOfImage;
-	JPEGSegments::DefineHuffmannTable defineHuffmannTable(byte(0), JPEGSegments::HuffmanTableType::DC, *huffmann);
+	JPEGSegments::DefineHuffmannTable defineHuffmannTableDCY(YCbCrColorName::Y, JPEGSegments::HuffmanTableType::DC, *huffmannDCY);
+	JPEGSegments::DefineHuffmannTable defineHuffmannTableDCCb(YCbCrColorName::Cb, JPEGSegments::HuffmanTableType::DC, *huffmannDCCb);
+	JPEGSegments::DefineHuffmannTable defineHuffmannTableACY(YCbCrColorName::Y, JPEGSegments::HuffmanTableType::AC, *huffmannACY);
+	JPEGSegments::DefineHuffmannTable defineHuffmannTableACCb(YCbCrColorName::Cb, JPEGSegments::HuffmanTableType::AC, *huffmannACCb);
 	JPEGSegments::DefineQuantizationTable defineQuantizationTableLuminance(YCbCrColorName::Y, image->getQTable(YCbCrColorName::Y));
 	JPEGSegments::DefineQuantizationTable defineQuantizationTableChrominance(YCbCrColorName::Cb, image->getQTable(YCbCrColorName::Cb));
 	JPEGSegments::DefineQuantizationTable defineQuantizationTableChrominance2(YCbCrColorName::Cr, image->getQTable(YCbCrColorName::Cr));
+	
+	acHT[YCbCrColorName::Y] = YCbCrColorName::Y;
+	acHT[YCbCrColorName::Cb] = YCbCrColorName::Cb;
+	acHT[YCbCrColorName::Cr] = YCbCrColorName::Cb;
+	dcHT[YCbCrColorName::Y] = YCbCrColorName::Y;
+	dcHT[YCbCrColorName::Cb] = YCbCrColorName::Cb;
+	dcHT[YCbCrColorName::Cr] = YCbCrColorName::Cb;
+	
+	JPEGSegments::StartOfScan startOfScan(acHT, dcHT);
+	JPEGSegments::EndOfImage endOfImage;
+
 
 	JPEGSegments::Serialize(startOfImage, bitBuffer);
 	JPEGSegments::Serialize(app0, bitBuffer);
 	JPEGSegments::Serialize(startOfFrame0, bitBuffer);
-	JPEGSegments::Serialize(defineHuffmannTable, bitBuffer);
+	JPEGSegments::Serialize(defineHuffmannTableDCY, bitBuffer);
+	JPEGSegments::Serialize(defineHuffmannTableDCCb, bitBuffer);
+	JPEGSegments::Serialize(defineHuffmannTableACY, bitBuffer);
+	JPEGSegments::Serialize(defineHuffmannTableACCb, bitBuffer);
 	JPEGSegments::Serialize(defineQuantizationTableLuminance, bitBuffer);
 	JPEGSegments::Serialize(defineQuantizationTableChrominance, bitBuffer);
 	JPEGSegments::Serialize(defineQuantizationTableChrominance2, bitBuffer);
+	JPEGSegments::Serialize(startOfScan, bitBuffer);
 	JPEGSegments::Serialize(endOfImage, bitBuffer);
 
 	bitBuffer.writeToFile(path);
