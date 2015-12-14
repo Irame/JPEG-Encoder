@@ -25,7 +25,9 @@ public:
 	// Adds the given bit at the end of the BitBuffer
 	void pushBit(bool val);
 	// Adds a certen number of bits from a specific location with an offset
-	void pushBits(size_t numOfBits, const void* buffer, size_t offset = 0);
+	void pushBits(size_t numOfBits, const void* buffer, size_t offset);
+	// Adds a certen number of bits from a specific location
+	void pushBits(size_t numOfBits, const void* buffer);
 	void pushBits(const BitBuffer& buffer);
 
 	// Returns the bit at the given index

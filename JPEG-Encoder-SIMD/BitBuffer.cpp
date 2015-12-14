@@ -24,7 +24,6 @@ void BitBuffer::pushBit(bool val)
 void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid, size_t offset)
 {
 	if (numOfBits == 0) return;
-	ensureFreeSpace(numOfBits);
 
 	const byte* srcBuffer = static_cast<const byte*>(srcBufferVoid);
 	size_t freeBits = 8 - dataBitOffset % 8;						// number of bits to fill data up to byte boundary
@@ -41,6 +40,8 @@ void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid, size_t off
 	if (offset > 0) {
 		size_t bitsToSrcByteBoundary = 8 - offset;
 		size_t bitsToWrite = std::min(bitsToSrcByteBoundary, numOfBits);		// has range 1..8
+
+		ensureFreeSpace(bitsToWrite);
 
 		if (freeBits < bitsToWrite) // not enough space in actual data byte
 		{
@@ -71,7 +72,20 @@ void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid, size_t off
 
 		if (numOfBits == 0) return;
 	}
-	else if (offset == 0 && freeBits == 8) // use memcpy if data is byte aligned
+	
+	pushBits(numOfBits, srcBuffer);
+}
+
+void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid)
+{
+	if (numOfBits == 0) return;
+	ensureFreeSpace(numOfBits);
+
+	const byte* srcBuffer = static_cast<const byte*>(srcBufferVoid);
+	size_t freeBits = 8 - dataBitOffset % 8;						// number of bits to fill data up to byte boundary
+	size_t byteOffset = dataBitOffset / 8;
+
+	if (freeBits == 8) // use memcpy if data is byte aligned
 	{
 		size_t bytesToCopy = (numOfBits + 7) / 8;
 		memcpy(&data[byteOffset], srcBuffer, bytesToCopy);
