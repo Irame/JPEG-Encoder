@@ -11,7 +11,7 @@ BitBuffer::BitBuffer(size_t initialBufferSizeInBit)
 
 void BitBuffer::fillToByteBorder()
 {
-	dataBitOffset += dataBitOffset - (dataBitOffset / 8) * 8;
+	dataBitOffset = ((dataBitOffset + 7) / 8) * 8;
 }
 
 void BitBuffer::pushBit(bool val)
