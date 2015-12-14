@@ -10,7 +10,7 @@ class HuffmanTable<byte>
 {
 private:
 	typedef uint64_t InternalCodeType;
-	typedef std::vector<std::pair<byte, BitBufferPtr>> InnerCodeMap;
+	typedef std::array<std::pair<byte, BitBufferPtr>, 256> InnerCodeMap;
 
 public:
 	// Special iterator to skip zero symbol entires in innerCodeMap
@@ -36,7 +36,7 @@ public:
 	};
 
 public:
-	HuffmanTable(size_t maxCodewordLength) : codeMap(256), maxCodewordLength(maxCodewordLength), codedSymbolCount(0) {};
+	HuffmanTable(size_t maxCodewordLength) : codeMap({}), maxCodewordLength(maxCodewordLength), codedSymbolCount(0) {};
 
 	InnerCodeMap codeMap;
 	size_t maxCodewordLength;
