@@ -417,13 +417,13 @@ void Encoder::pushBlock(BitBuffer &bitBuffer, ColorChannelName colorChannelName,
 	}
 
 	byte category = categoriesDC[colorChannelName][block];
-	bitBuffer.push(huffmanTables[huffmannColorChannel][CoefficientType::DC]->encode(category));
-	bitBuffer.push(bitPatternDC[colorChannelName][block], category);
+	bitBuffer.pushBitsEscaped(*huffmanTables[huffmannColorChannel][CoefficientType::DC]->encode(category));
+	bitBuffer.pushBitsEscaped(category, &bitPatternDC[colorChannelName][block]);
 
 	for (int i = 0; i < categoriesAC[colorChannelName][block].size(); i++)
 	{
 		category = categoriesAC[colorChannelName][block][i];
-		bitBuffer.push(huffmanTables[huffmannColorChannel][CoefficientType::AC]->encode(category));
-		bitBuffer.push(bitPatternAC[colorChannelName][block][i], category);
+		bitBuffer.pushBitsEscaped(*huffmanTables[huffmannColorChannel][CoefficientType::AC]->encode(category));
+		bitBuffer.pushBitsEscaped(category, &bitPatternAC[colorChannelName][block][i]);
 	}
 }
