@@ -66,7 +66,7 @@ public:
 
 inline size_t HuffmanTable<byte>::getSymbolCount() const
 {
-	return 0; // TODO
+	return codedSymbolCount;
 }
 
 inline HuffmanTable<byte>::const_iterator HuffmanTable<byte>::begin() const
