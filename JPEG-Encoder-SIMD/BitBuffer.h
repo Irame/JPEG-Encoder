@@ -14,6 +14,10 @@ class BitBuffer
 	
 	static byte joinTwoBytes(byte leftByte, byte rightByte, size_t leftCount);
 
+	void pushBits(const BitBuffer& buffer, bool escape);
+	void pushBits(size_t numOfBits, const void* buffer, bool escape);
+	void pushBits(size_t numOfBits, const void* buffer, size_t offset, bool escape);
+
 public:
 	BitBuffer(size_t initialBufferSize = 0);
 	
@@ -22,13 +26,24 @@ public:
 	// Get the maximum number of bits that can be stored at the moment
 	size_t getCapacity() const { return bufferSizeInByte * 8; };
 
-	// Adds the given bit at the end of the BitBuffer
+	// Appends a single bit at the end of the BitBuffer
 	void pushBit(bool val);
-	// Adds a certen number of bits from a specific location with an offset
-	void pushBits(size_t numOfBits, const void* buffer, size_t offset, bool escape = false);
-	// Adds a certen number of bits from a specific location
-	void pushBits(size_t numOfBits, const void* buffer, bool escape = false);
-	void pushBits(const BitBuffer& buffer, bool escape = false);
+
+	// Adds the content of buffer.
+	void pushBits(const BitBuffer& buffer);
+	// Adds a certain number of bits from a specific location with an offset
+	void pushBits(size_t numOfBits, const void* buffer, size_t offset);
+	// Adds a certain number of bits from a specific location
+	void pushBits(size_t numOfBits, const void* buffer);
+	
+
+	// Adds the content of buffer. 0xFF bytes will be escaped.
+	void pushBitsEscaped(const BitBuffer& buffer);
+	// Adds a certain number of bits from a specific location. 0xFF bytes will be escaped.
+	void pushBitsEscaped(size_t numOfBits, const void* buffer);
+	// Adds a certain number of bits from a specific location with an offset. 0xFF bytes will be escaped.
+	void pushBitsEscaped(size_t numOfBits, const void* buffer, size_t offset);
+	
 
 	// Returns the bit at the given index
 	bool getBit(size_t index) const;
