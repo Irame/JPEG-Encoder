@@ -218,98 +218,84 @@ void testDCT()
 		for (size_t j = 0; j < 8; j++)
 		{
 			//cout << round(result[i][j]) << " | ";
-			printf("%5.0f | ", roundf(testMatrix[i][j]));
+			printf("%8.2f | ", roundf(testMatrix[i][j]));
 		}
 		cout << endl;
 	}
 	cout << "================" << endl;
 
-	size_t runs = 1000;
-	//benchmark("Direct DCT", runs, [&testMatrix, &result]() {
-	//	for (int i = 0; i < 1024; i++) {
-	//		DCT::directDCT(testMatrix, result);
-	//	}
-	//});
-	//benchmark("Seperate DCT", runs, [&testMatrix, &result]() {
-	//	for (int i = 0; i < 1024; i++) {
-	//		DCT::seperateDCT(testMatrix, result);
-	//	}
-	//});
-	//benchmark("Kok DCT", runs, [&kokMatrix]() {
-	//	for (int i = 0; i < 1024; i++) {
-	//		mat8x8 result = DCT::kokDCT(kokMatrix);
-	//	}
-	//});
-	//benchmark("Kok Simple DCT", runs, [&kokMatrix]() {
-	//	for (int i = 0; i < 1024; i++) {
-	//		mat8x8 result = DCT::kokSimple(kokMatrix);
-	//	}
-	//});
-
-
-	benchmark("Arai DCT", runs, [&testMatrix, &result]() {
-		for (int i = 0; i < 1024; i++) {
-			DCT::araiDCT(testMatrix, result);
-		}
-	});
+	cout << "Start direct DCT" << endl;
+	DCT::directDCT(testMatrix, result);
 	cout << endl;
 	for (size_t i = 0; i < 8; i++)
 	{
 		for (size_t j = 0; j < 8; j++)
 		{
-			//cout << round(result[i][j]) << " | ";
-			printf("%5.0f | ", roundf(result[i][j]));
+			printf("%8.2f | ", result[i][j]);
 		}
 		cout << endl;
 	}
-	cout << "end of dct" << endl;
+	cout << "End direct DCT" << endl;
 
+	cout << "================" << endl;
 
-	benchmark("Arai DCT AVX", runs, [&testMatrix, &result]() {
-		for (int i = 0; i < 1024; i++) {
-			DCT::araiDCTAVX(testMatrix, result);
-		}
-	});
-
+	cout << "Start seperate DCT" << endl;
+	DCT::seperateDCT(testMatrix, result);
 	cout << endl;
 	for (size_t i = 0; i < 8; i++)
 	{
 		for (size_t j = 0; j < 8; j++)
 		{
-			//cout << round(result[i][j]) << " | ";
-			printf("%5.0f | ", roundf(result[i][j]));
+			printf("%8.2f | ", result[i][j]);
 		}
 		cout << endl;
 	}
-	cout << "end of dct" << endl;
+	cout << "End seperate DCT" << endl;
 
+	cout << "================" << endl;
 
-	benchmark("Direct IDCT", 1, [&testMatrix, &result]() {
-		DCT::directIDCT(result, testMatrix);
-	});
-
+	cout << "Start arai DCT" << endl;
+	DCT::araiDCT(testMatrix, result);
 	cout << endl;
 	for (size_t i = 0; i < 8; i++)
 	{
 		for (size_t j = 0; j < 8; j++)
 		{
-			//cout << round(result[i][j]) << " | ";
-			printf("%5.0f | ", roundf(testMatrix[i][j]));
+			printf("%8.2f | ", result[i][j]);
 		}
 		cout << endl;
 	}
-	cout << "end of idct" << endl;
+	cout << "End arai DCT" << endl;
 
-	//cout << endl;
-	//for (int i = 0; i < 8; i++)
-	//{
-	//	for (int j = 0; j < 8; j++)
-	//	{
-	//		printf("%5.0f | ", round(result[i][j]));
-	//	}
-	//	cout << endl;
-	//}
-	//cout << "end of dct" << endl;
+	cout << "================" << endl;
+
+	cout << "Start arai DCT (AVX)" << endl;
+	DCT::araiDCTAVX(testMatrix, result);
+	cout << endl;
+	for (size_t i = 0; i < 8; i++)
+	{
+		for (size_t j = 0; j < 8; j++)
+		{
+			printf("%8.2f | ", result[i][j]);
+		}
+		cout << endl;
+	}
+	cout << "End arai DCT (AVX)" << endl;
+
+	cout << "================" << endl;
+
+	cout << "Start direct IDCT" << endl;
+	DCT::directIDCT(result, testMatrix);
+	cout << endl;
+	for (size_t i = 0; i < 8; i++)
+	{
+		for (size_t j = 0; j < 8; j++)
+		{
+			printf("%8.2f | ", testMatrix[i][j]);
+		}
+		cout << endl;
+	}
+	cout << "End direct IDCT" << endl;
 }
 
 void testHuffmanEncoding()
@@ -430,7 +416,7 @@ int main(int argc, char* argv[])
 	std::cout << "Test DCT" << endl;
 	benchmark("Test DCT", 1, [&]()
 	{
-		test2DCT();
+		testDCT();
 	});
 
 	return 0;
