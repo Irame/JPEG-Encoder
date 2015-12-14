@@ -26,7 +26,7 @@ public:
 		const_iterator(IteratorType innerIterator, IteratorType endIterator) 
 			: innerIterator(innerIterator), endIterator(endIterator)
 		{
-			while(this->innerIterator != this->endIterator && this->innerIterator->first == 0)
+			while(this->innerIterator != this->endIterator && this->innerIterator->second == nullptr)
 			{
 				++(this->innerIterator);
 			}
@@ -36,7 +36,7 @@ public:
 		bool operator==(const const_iterator& other) const { return innerIterator == other.innerIterator; }
 		bool operator!=(const const_iterator& other) const { return innerIterator != other.innerIterator; }
 		const_iterator& operator++() { 
-			while ((++innerIterator) != endIterator && (*innerIterator).first == 0);
+			while ((++innerIterator) != endIterator && (*innerIterator).second == nullptr);
 			return *this; 
 		}
 	};
