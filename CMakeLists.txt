@@ -46,8 +46,6 @@ if ("${CMAKE_GENERATOR}" MATCHES "Visual Studio*")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${warnings}")
 	
 	setCXXFlag("/arch:AVX") # enable AVX
-		
-	set(CMAKE_CONFIGURATION_TYPES Release Debug)
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
