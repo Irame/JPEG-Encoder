@@ -13,8 +13,10 @@ public:
 private:
 
 	//first index is ColorChannelName second index is CoefficientType
-	std::vector<BEushort> bitPattern[3][2];
-	std::vector<byte> categories[3][2];
+	std::vector<BEushort> bitPatternDC[3];
+	std::vector<byte> categoriesDC[3];
+	std::vector<std::vector<BEushort>> bitPatternAC[3];
+	std::vector<std::vector<byte>> categoriesAC[3];
 	HuffmanTablePtr<byte> huffmanTables[2][2];
 	std::vector<PointerMatrix> blocks[3];
 
@@ -22,6 +24,8 @@ private:
 	void calculateACValues(const OffsetArray& zigZag, const ColorChannelName colorChannelName);
 	void calculateDCValues(const OffsetArray& zigZag, const ColorChannelName colorChannelName);
 	void createHuffmanTable(const CoefficientType type, const ColorChannelName colorChannelName);
+
+	void pushBlock(BitBuffer &bitBuffer, ColorChannelName colorChannelName, size_t block);
 
 	void reduceWidthResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
 	void reduceHeightResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
@@ -36,7 +40,10 @@ public:
 
 	void reduceResolutionBySchema();
 
+	//std::vector<BEushort> getBitPattern(CoefficientType type, ColorChannelName colorChannelName) { return bitPattern[colorChannelName][type]; }
+	//std::vector<byte> getCategories(CoefficientType type, ColorChannelName colorChannelName) { return categories[colorChannelName][type]; }
 	HuffmanTablePtr<byte> getHuffmanTable(CoefficientType type, ColorChannelName colorChannelName);
+	void serialize(BitBuffer &bitBuffer);
 
 	void applyDCT(ColorChannelName colorChannelName);	
 };

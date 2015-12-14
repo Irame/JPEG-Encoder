@@ -249,6 +249,9 @@ void ImageLoader::SaveJPG(std::string path, EncoderPtr image) {
 	JPEGSegments::Serialize(defineQuantizationTableChrominance, bitBuffer);
 	JPEGSegments::Serialize(defineQuantizationTableChrominance2, bitBuffer);
 	JPEGSegments::Serialize(startOfScan, bitBuffer);
+
+	image->serialize(bitBuffer);
+
 	JPEGSegments::Serialize(endOfImage, bitBuffer);
 
 	bitBuffer.writeToFile(path);
