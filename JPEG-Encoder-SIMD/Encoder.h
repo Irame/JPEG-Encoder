@@ -20,16 +20,16 @@ private:
 	HuffmanTablePtr<byte> huffmanTables[2][2];
 	std::vector<PointerMatrix> blocks[3];
 
-	void ensurePointerMatrix(const ColorChannelName colorChannelName);
-	void calculateACValues(const OffsetArray& zigZag, const ColorChannelName colorChannelName);
-	void calculateDCValues(const OffsetArray& zigZag, const ColorChannelName colorChannelName);
+	void ensurePointerMatrix(const ColorChannelName channelName);
+	void calculateACValues(const OffsetArray& zigZag, const ColorChannelName channelName);
+	void calculateDCValues(const OffsetArray& zigZag, const ColorChannelName channelName);
 
 	// Optimized bit category lookup of an AC/DC value
 	byte lookupBitCategory(short value) const;
 
-	HuffmanTablePtr<byte> createHuffmanTable(const CoefficientType type, const ColorChannelName channel);
+	HuffmanTablePtr<byte> createHuffmanTable(const CoefficientType type, const ColorChannelName channelName);
 
-	void pushBlock(BitBuffer &bitBuffer, ColorChannelName colorChannelName, size_t block);
+	void pushBlock(BitBuffer &bitBuffer, ColorChannelName channelName, size_t block);
 
 	void reduceWidthResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
 	void reduceHeightResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
@@ -44,9 +44,9 @@ public:
 
 	void reduceResolutionBySchema();
 
-	//std::vector<BEushort> getBitPattern(CoefficientType type, ColorChannelName colorChannelName) { return bitPattern[colorChannelName][type]; }
-	//std::vector<byte> getCategories(CoefficientType type, ColorChannelName colorChannelName) { return categories[colorChannelName][type]; }
-	HuffmanTablePtr<byte> getHuffmanTable(CoefficientType type, ColorChannelName colorChannelName);
+	//std::vector<BEushort> getBitPattern(CoefficientType type, ColorChannelName channelName) { return bitPattern[channelName][type]; }
+	//std::vector<byte> getCategories(CoefficientType type, ColorChannelName channelName) { return categories[channelName][type]; }
+	HuffmanTablePtr<byte> getHuffmanTable(CoefficientType type, ColorChannelName channelName);
 	void serialize(BitBuffer &bitBuffer);
 
 	void applyDCT(ColorChannelName colorChannelName);	
