@@ -23,7 +23,7 @@ private:
 	void ensurePointerMatrix(const ColorChannelName colorChannelName);
 	void calculateACValues(const OffsetArray& zigZag, const ColorChannelName colorChannelName);
 	void calculateDCValues(const OffsetArray& zigZag, const ColorChannelName colorChannelName);
-	void createHuffmanTable(const CoefficientType type, const ColorChannelName colorChannelName);
+	HuffmanTablePtr<byte> createHuffmanTable(const CoefficientType type, const ColorChannelName channel);
 
 	void pushBlock(BitBuffer &bitBuffer, ColorChannelName colorChannelName, size_t block);
 

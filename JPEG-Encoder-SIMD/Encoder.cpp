@@ -232,13 +232,13 @@ void Encoder::calculateDCValues(const OffsetArray& zigZag, const ColorChannelNam
 		short diff = dcValue - lastDC;
 		unsigned short pattern = static_cast<unsigned short>(diff);
 
-		//if value is negative we need to use the inverse of the positive value, see jpeg spec p.17
+		// if value is negative we need to use the inverse of the positive value, see jpeg spec p.17
 		if (diff < 0)
 		{
 			pattern = ~(static_cast<unsigned short>(-diff));
 		}
 
-		//calculates category/length of the bitpattern
+		// calculates category/length of the bitpattern
 		byte category;
 		if (diff == 0)
 		{
@@ -249,7 +249,7 @@ void Encoder::calculateDCValues(const OffsetArray& zigZag, const ColorChannelNam
 			category = static_cast<byte>(log2f(abs(diff)) + 1);
 		}
 
-		//align pattern first bit to the most left bit
+		// align pattern first bit to the most left bit
 		pattern = pattern << (16 - category);
 
 		bitPatternDC[colorChannelName].push_back(BEushort(pattern));
@@ -281,24 +281,24 @@ void Encoder::calculateACValues(const OffsetArray& zigZag, const ColorChannelNam
 			{
 				while (zeros > 15)
 				{
-					//16 null values are encoded as 0xF0 which is equivalent to the tuple (15,0)
+					// 16 zero values are encoded as 0xF0 which is equivalent to the tuple (15,0)
 					bitPattern.push_back(0);
-					categories.push_back(0xF0);//15 << 4 | 0
+					categories.push_back(0xF0); // 15 << 4 | 0
 					zeros -= 16;
 				}
 
 				unsigned short pattern;
-				//if 'acValue' is negative we need to use the inverse of the positive value, see jpeg spec p.17
+				// if 'acValue' is negative we need to use the inverse of the positive value, see jpeg spec p.17
 				if (acValue < 0) {
 					pattern = ~(static_cast<unsigned short>(-acValue));
 				} else {
 					pattern = static_cast<unsigned short>(acValue);
 				}
 
-				//calculates category/length of the bitpattern
+				// calculates category/length of the bitpattern
 				byte category = static_cast<byte>(log2f(abs(acValue)) + 1);
 
-				//align pattern first bit to the most left bit
+				// align pattern first bit to the most left bit
 				pattern <<= (16 - category);
 
 				bitPattern.push_back(BEushort(pattern));
@@ -317,31 +317,29 @@ void Encoder::calculateACValues(const OffsetArray& zigZag, const ColorChannelNam
 			categories.push_back(0);
 			zeros = 0;
 		}
+
 		bitPatternAC[colorChannelName].push_back(bitPattern);
 		categoriesAC[colorChannelName].push_back(categories);
 	}
 }
 
-void Encoder::createHuffmanTable(const CoefficientType type, const ColorChannelName colorChannelName)
+HuffmanTablePtr<byte> Encoder::createHuffmanTable(const CoefficientType type, const ColorChannelName channel)
 {
-	ColorChannelName channel = colorChannelName;
-	if (channel == YCbCrColorName::Cr)
-	{
-		channel = YCbCrColorName::Cb;
-	}
-	if (huffmanTables[channel][type] != nullptr)
-	{
-		return;
-	}
-	// if color channel is cb or cr we have to combine them to one because normally there is only one huffman table for both cb and cr channels
+	// Can't create huffmantable for Cr alone because Cr and Cb are combined in a single table. Use Cb instead. 
+	assert(channel != YCbCrColorName::Cr);
+
+	// If color channel is cb or cr we have to combine them to one because normally there is only one huffman table for both cb and cr channels
 	std::vector<byte> cat;
+
 	if (type == CoefficientType::AC)
 	{
+		// AC
 		cat.reserve(categoriesAC[channel].size() * 63);
 		for (std::vector<byte>& v : categoriesAC[channel])
 		{
 			cat.insert(cat.end(), v.begin(), v.end());
 		}
+
 		if (channel == YCbCrColorName::Cb)
 		{
 			for (std::vector<byte>& v : categoriesAC[YCbCrColorName::Cr])
@@ -349,10 +347,10 @@ void Encoder::createHuffmanTable(const CoefficientType type, const ColorChannelN
 				cat.insert(cat.end(), v.begin(), v.end());
 			}
 		}
-		huffmanTables[channel][type] = HuffmanTable<byte>::create(16, cat);
 	}
 	else
 	{
+		// DC
 		if (channel == YCbCrColorName::Cb)
 		{
 			cat.insert(cat.end(), categoriesDC[channel].begin(), categoriesDC[channel].end());
@@ -362,18 +360,30 @@ void Encoder::createHuffmanTable(const CoefficientType type, const ColorChannelN
 		{
 			cat = categoriesDC[channel];
 		}
-		huffmanTables[channel][type] = HuffmanTable<byte>::create(16, cat);
 	}
+
+	return HuffmanTable<byte>::create(16, cat);
 }
 
 HuffmanTablePtr<byte> Encoder::getHuffmanTable(CoefficientType type, ColorChannelName colorChannelName)
 {
-	createHuffmanTable(type, colorChannelName);
+	// Use Cb channel for both Cr and Cb
 	if (colorChannelName == YCbCrColorName::Cr)
 	{
 		colorChannelName = YCbCrColorName::Cb;
 	}
-	return huffmanTables[colorChannelName][type];
+
+	// Lazily create huffman table
+	if (!huffmanTables[colorChannelName][type])
+	{
+		auto table = createHuffmanTable(type, colorChannelName);
+		huffmanTables[colorChannelName][type] = table;
+		return table;
+	}
+	else 
+	{
+		return huffmanTables[colorChannelName][type];
+	}
 }
 
 void Encoder::serialize(BitBuffer &bitBuffer)
