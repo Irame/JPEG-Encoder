@@ -239,15 +239,7 @@ void Encoder::calculateDCValues(const OffsetArray& zigZag, const ColorChannelNam
 		}
 
 		// calculates category/length of the bitpattern
-		byte category;
-		if (diff == 0)
-		{
-			category = 0;
-		}
-		else
-		{
-			category = static_cast<byte>(log2f(abs(diff)) + 1);
-		}
+		byte category = lookupBitCategory(diff);
 
 		// align pattern first bit to the most left bit
 		pattern = pattern << (16 - category);
@@ -296,7 +288,7 @@ void Encoder::calculateACValues(const OffsetArray& zigZag, const ColorChannelNam
 				}
 
 				// calculates category/length of the bitpattern
-				byte category = static_cast<byte>(log2f(abs(acValue)) + 1);
+				byte category = lookupBitCategory(acValue);
 
 				// align pattern first bit to the most left bit
 				pattern <<= (16 - category);
@@ -321,6 +313,30 @@ void Encoder::calculateACValues(const OffsetArray& zigZag, const ColorChannelNam
 		bitPatternAC[colorChannelName].push_back(bitPattern);
 		categoriesAC[colorChannelName].push_back(categories);
 	}
+}
+
+byte Encoder::lookupBitCategory(short value) const
+{
+	assert(value != SHRT_MIN && value != SHRT_MAX);
+
+	value = abs(value);
+	if (value & (1 << 14)) return 15;
+	if (value & (1 << 13)) return 14;
+	if (value & (1 << 12)) return 13;
+	if (value & (1 << 11)) return 12;
+	if (value & (1 << 10)) return 11;
+	if (value & (1 <<  9)) return 10;
+	if (value & (1 <<  8)) return 9;
+	if (value & (1 <<  7)) return 8;
+	if (value & (1 <<  6)) return 7;
+	if (value & (1 <<  5)) return 6;
+	if (value & (1 <<  4)) return 5;
+	if (value & (1 <<  3)) return 4;
+	if (value & (1 <<  2)) return 3;
+	if (value & (1 <<  1)) return 2;
+	if (value & (1 <<  0)) return 1;
+
+	return 0;
 }
 
 HuffmanTablePtr<byte> Encoder::createHuffmanTable(const CoefficientType type, const ColorChannelName channel)
