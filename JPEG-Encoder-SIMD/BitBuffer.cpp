@@ -151,6 +151,15 @@ void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid, bool escap
 		// copy source to dest and reset overlaped bits back to 0
 		data[byteOffset] |= (srcBuffer[0] >> (8 - freeBits)) & byte(0xff << (freeBits - numOfBits));
 		dataBitOffset += numOfBits;
+
+		if (escape && data[byteOffset] == 0xff)
+		{
+			ensureFreeSpace(numOfBits + 8);
+			data[byteOffset+1] = 0x00;
+			dataBitOffset += 8;
+		}
+
+		return;
 	}
 	else
 	{
@@ -257,6 +266,15 @@ inline byte BitBuffer::joinTwoBytes(byte leftByte, byte rightByte, size_t leftCo
 
 void BitBuffer::writeToFile(std::string filePath)
 {
+	for (size_t i = 0; i < data.size(); i++)
+	{
+		if (data[i] == 0xFF && data[i + 1] != 0x00)
+		{
+			printf("\n%d\n", i);
+		}
+	}
+
+
 	std::ofstream fileStream;
 
 	fileStream.open(filePath, std::ios::out | std::ios::trunc | std::ios::binary);
