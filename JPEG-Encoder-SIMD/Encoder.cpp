@@ -173,33 +173,34 @@ void Encoder::ensurePointerMatrix(const ColorChannelName channelName)
 		size_t height = channelSizes[channelName].height;
 		size_t width = channelSizes[channelName].width;
 
-		blocks[channelName].reserve(height * width / 8 * 8);
+		blocks[channelName].reserve(height * width / 64);
 
-		size_t line[8];
-		line[0] = 0;
-		line[1] = width;
-		line[2] = width * 2;
-		line[3] = width * 3;
-		line[4] = width * 4;
-		line[5] = width * 5;
-		line[6] = width * 6;
-		line[7] = width * 7;
+		size_t lineOffsets[8]{
+			0,
+			width,
+			width * 2,
+			width * 3,
+			width * 4,
+			width * 5,
+			width * 6,
+			width * 7
+		};
 
 		for (size_t y = 0; y < height; y += 8)
 		{
-			size_t heightY = height*y;
+			size_t row = width * y;
 			for (size_t x = 0; x < width; x += 8)
 			{
-				float* position = channel + x + heightY;
+				float* position = channel + row + x;
 				blocks[channelName].emplace_back(
-					position + line[0],
-					position + line[1],
-					position + line[2],
-					position + line[3],
-					position + line[4],
-					position + line[5],
-					position + line[6],
-					position + line[7]
+					position + lineOffsets[0],
+					position + lineOffsets[1],
+					position + lineOffsets[2],
+					position + lineOffsets[3],
+					position + lineOffsets[4],
+					position + lineOffsets[5],
+					position + lineOffsets[6],
+					position + lineOffsets[7]
 				);
 			}
 		}
