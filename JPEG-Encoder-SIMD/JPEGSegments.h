@@ -211,7 +211,7 @@ namespace JPEGSegments
 	}
 
 	template <>
-	static void Serialize(DefineHuffmannTable &headerSegment, BitBuffer &buffer) {
+	inline void Serialize(DefineHuffmannTable &headerSegment, BitBuffer &buffer) {
 		buffer.pushBits(21 * 8, &headerSegment);
 		buffer.pushBits((headerSegment.length - 19) * 8, headerSegment.table); //21-2 byte because the marker doesn't count
 	}
