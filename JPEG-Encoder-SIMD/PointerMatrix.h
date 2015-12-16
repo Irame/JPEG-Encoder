@@ -20,7 +20,7 @@ public:
 
 	float* operator[](size_t row) const
 	{
-		assert(row <= 8);
+		assert(row <= 7);
 		return data[row];
 	}
 

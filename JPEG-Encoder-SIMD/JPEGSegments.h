@@ -138,6 +138,9 @@ namespace JPEGSegments
 				return a.second->getSize() < b.second->getSize();
 			});
 
+			assert(huffmanTable.getSymbolCount() > 0);
+			assert(huffmanTable.getSymbolCount() == sortableMapEntries.size());
+
 			int i = 0;
 			for (const auto& symbolCodePair : sortableMapEntries)
 			{
