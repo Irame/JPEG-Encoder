@@ -319,24 +319,14 @@ byte Encoder::lookupBitCategory(short value) const
 {
 	assert(value != SHRT_MIN && value != SHRT_MAX);
 
-	value = abs(value);
-	if (value & (1 << 14)) return 15;
-	if (value & (1 << 13)) return 14;
-	if (value & (1 << 12)) return 13;
-	if (value & (1 << 11)) return 12;
-	if (value & (1 << 10)) return 11;
-	if (value & (1 <<  9)) return 10;
-	if (value & (1 <<  8)) return 9;
-	if (value & (1 <<  7)) return 8;
-	if (value & (1 <<  6)) return 7;
-	if (value & (1 <<  5)) return 6;
-	if (value & (1 <<  4)) return 5;
-	if (value & (1 <<  3)) return 4;
-	if (value & (1 <<  2)) return 3;
-	if (value & (1 <<  1)) return 2;
-	if (value & (1 <<  0)) return 1;
-
-	return 0;
+	if (value == 0) return 0;
+#ifdef GCC
+	return 32 - __builtin_clz(static_cast<unsigned int>(abs(value)));
+#else
+	unsigned long result;
+	_BitScanReverse(&result, static_cast<long>(abs(value)));
+	return static_cast<byte>(result + 1);
+#endif
 }
 
 HuffmanTablePtr<byte> Encoder::createHuffmanTable(const CoefficientType type, const ColorChannelName channelName)
@@ -414,9 +404,13 @@ void Encoder::serialize(BitBuffer &bitBuffer)
 
 	size_t maxValue = std::max(yfactor, std::max(cbfactor, crfactor));
 	
-	yfactor = (1.0 / yfactor)*maxValue;
-	cbfactor = (1.0 / cbfactor)*maxValue;
-	crfactor = (1.0 / crfactor)*maxValue;
+	assert(maxValue % yfactor == 0);
+	assert(maxValue % cbfactor == 0);
+	assert(maxValue % crfactor == 0);
+
+	yfactor = maxValue / yfactor;
+	cbfactor = maxValue / cbfactor;
+	crfactor = maxValue / crfactor;
 	for (int i = 0; i < yBlockSize/yfactor; i++)
 	{
 		for (int count = 0; count < yfactor; count++)
