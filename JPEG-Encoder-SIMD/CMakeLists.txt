@@ -16,6 +16,7 @@ set(H_FILES
 	ColorNames.h
 	const_math.h
 	DCT.h
+	Dimension2D.h
 	Encoder.h
 	HuffmanCoding.h
 	HuffmanCodingByte.h

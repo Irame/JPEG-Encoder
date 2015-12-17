@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "SamplingScheme.h"
 #include <algorithm>
+#include "ColorNames.h"
 
 const SamplingScheme SamplingScheme::Scheme444(
 	ChannelReductionOptions{ 1, Subsampling, 1, Subsampling },		// y
@@ -44,19 +45,42 @@ const SamplingScheme SamplingScheme::Scheme311(
 	ChannelReductionOptions{ 3, Subsampling, 1, Subsampling },		// cb
 	ChannelReductionOptions{ 3, Subsampling, 1, Subsampling });		// br
 
-SamplingScheme::SamplingScheme(ChannelReductionOptions yReductionOptions, ChannelReductionOptions cbReductionOptions, ChannelReductionOptions crReductionOptions)
-	: yReductionOptions(yReductionOptions),cbReductionOptions(cbReductionOptions),crReductionOptions(crReductionOptions)
+static int gcd(int a, int b)
+{
+	if (a == 0) return b;
+	while (b != 0)
+	{
+		if (a > b)
+			a = a - b;
+		else
+			b = b - a;
+	}
+	return a;
+}
 
-{}
+static int lcm(int a, int b)
+{
+	return (a * b) / gcd(a, b);
+}
+
+SamplingScheme::SamplingScheme(ChannelReductionOptions yReductionOptions, ChannelReductionOptions cbReductionOptions, ChannelReductionOptions crReductionOptions)
+	: reductionOptions{ yReductionOptions, cbReductionOptions, crReductionOptions }
+{
+	int widthLCM = lcm(lcm(yReductionOptions.widthFactor, cbReductionOptions.widthFactor), crReductionOptions.widthFactor);
+	int heightLCM = lcm(lcm(yReductionOptions.heightFactor, cbReductionOptions.heightFactor), crReductionOptions.heightFactor);
+	inverseFactor[Y] = Dimension2D(widthLCM / yReductionOptions.widthFactor, heightLCM / yReductionOptions.heightFactor);
+	inverseFactor[Cb] = Dimension2D(widthLCM / cbReductionOptions.widthFactor, heightLCM / cbReductionOptions.heightFactor);
+	inverseFactor[Cr] = Dimension2D(widthLCM / crReductionOptions.widthFactor, heightLCM / crReductionOptions.heightFactor);
+}
 
 int SamplingScheme::calcWidthStepSize()
 {
-	return std::max(yReductionOptions.widthFactor, 
-		std::max(cbReductionOptions.widthFactor, crReductionOptions.widthFactor)) * 8;
+	return std::max(reductionOptions[Y].widthFactor,
+		std::max(reductionOptions[Cb].widthFactor, reductionOptions[Cr].widthFactor)) * 8;
 }
 
 int SamplingScheme::calcHeightStepSize()
 {
-	return std::max(yReductionOptions.heightFactor,
-		std::max(cbReductionOptions.heightFactor, crReductionOptions.heightFactor)) * 8;
+	return std::max(reductionOptions[Y].heightFactor,
+		std::max(reductionOptions[Cb].heightFactor, reductionOptions[Cr].heightFactor)) * 8;
 }

@@ -2,10 +2,10 @@
 #include <memory>
 #include <assert.h>
 #include "ColorNames.h"
-#include "SamplingScheme.h"
 #include <vector>
-#include "HuffmanCodingByte.h"
+#include "Dimension2D.h"
 #include "QuantizationTables.h"
+#include "SamplingScheme.h"
 
 class Image;
 
@@ -20,21 +20,6 @@ struct PixelData32 {
 	PixelData32(float r, float g, float b, float a = 1.0f)
 		: R(r), G(g), B(b), A(a)
 	{}
-};
-
-struct Dimension2D
-{
-	size_t width;
-	size_t height;
-
-	Dimension2D(size_t width, size_t height)
-		: width(width), height(height)
-	{}
-
-	bool operator==(const Dimension2D& other) const
-	{
-		return other.width == width && other.height == height;
-	}
 };
 
 struct ColorBlock
@@ -96,7 +81,7 @@ protected:
 
 public:
 	Image(size_t width, size_t height, SamplingScheme scheme, std::array<QTable,3> qtables);
-	Image(Image& origImage);
+	Image(const Image& origImage);
 
 	const Dimension2D& getImageSize() const;
 	const Dimension2D& getSimulatedSize() const;

@@ -1,4 +1,5 @@
 #pragma once
+#include "Dimension2D.h"
 
 enum ReductionMethod
 {
@@ -25,9 +26,12 @@ public:
 	static const SamplingScheme Scheme422Average, Scheme422Height, Scheme422HeightAverage, Scheme311;
 
 
-	const ChannelReductionOptions yReductionOptions, cbReductionOptions, crReductionOptions;
+	const ChannelReductionOptions reductionOptions[3];
+	Dimension2D inverseFactor[3];
 
 	int calcWidthStepSize();
 	int calcHeightStepSize();
+
+
 };
 

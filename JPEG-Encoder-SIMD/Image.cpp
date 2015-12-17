@@ -16,7 +16,7 @@ Image::Image(size_t width, size_t height, SamplingScheme scheme, std::array<QTab
 	blocksPerChannel[0] = blocksPerChannel[1] = blocksPerChannel[2] = simulatedSize.width * simulatedSize.height / 8;
 }
 
-Image::Image(Image& origImage)
+Image::Image(const Image& origImage)
 	: imageSize(origImage.imageSize), 
 	stepSize(origImage.stepSize), 
 	simulatedSize(origImage.simulatedSize), 

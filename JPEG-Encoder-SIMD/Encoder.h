@@ -1,6 +1,7 @@
 #pragma once
 #include "Image.h"
 #include "ZigZag.h"
+#include "HuffmanCodingByte.h"
 
 class Encoder : public Image
 {
@@ -35,7 +36,7 @@ private:
 	void reduceHeightResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
 
 public:
-	Encoder(Image image);
+	Encoder(const Image& image);
 
 	void convertToYCbCr();
 	void convertToRGB();

@@ -1,9 +1,8 @@
 #include "stdafx.h"
 #include "Encoder.h"
 #include "SIMD.h"
-#include <algorithm>
 
-Encoder::Encoder(Image image) : Image(image)
+Encoder::Encoder(const Image& image) : Image(image)
 {}
 
 void Encoder::convertToYCbCr()
@@ -156,26 +155,29 @@ void Encoder::reduceHeightResolutionColorChannel(ColorChannelName channelName, i
 
 void Encoder::reduceResolutionBySchema()
 {
-	reduceWidthResolutionColorChannel(Y, samplingScheme.yReductionOptions.widthFactor, samplingScheme.yReductionOptions.widthMethod);
-	reduceWidthResolutionColorChannel(Cb, samplingScheme.cbReductionOptions.widthFactor, samplingScheme.cbReductionOptions.widthMethod);
-	reduceWidthResolutionColorChannel(Cr, samplingScheme.crReductionOptions.widthFactor, samplingScheme.crReductionOptions.widthMethod);
+	reduceWidthResolutionColorChannel(Y, samplingScheme.reductionOptions[Y].widthFactor, samplingScheme.reductionOptions[Y].widthMethod);
+	reduceWidthResolutionColorChannel(Cb, samplingScheme.reductionOptions[Cb].widthFactor, samplingScheme.reductionOptions[Cb].widthMethod);
+	reduceWidthResolutionColorChannel(Cr, samplingScheme.reductionOptions[Cr].widthFactor, samplingScheme.reductionOptions[Cr].widthMethod);
 
-	reduceHeightResolutionColorChannel(Y, samplingScheme.yReductionOptions.heightFactor, samplingScheme.yReductionOptions.heightMethod);
-	reduceHeightResolutionColorChannel(Cb, samplingScheme.cbReductionOptions.heightFactor, samplingScheme.cbReductionOptions.heightMethod);
-	reduceHeightResolutionColorChannel(Cr, samplingScheme.crReductionOptions.heightFactor, samplingScheme.crReductionOptions.heightMethod);
+	reduceHeightResolutionColorChannel(Y, samplingScheme.reductionOptions[Y].heightFactor, samplingScheme.reductionOptions[Y].heightMethod);
+	reduceHeightResolutionColorChannel(Cb, samplingScheme.reductionOptions[Cb].heightFactor, samplingScheme.reductionOptions[Cb].heightMethod);
+	reduceHeightResolutionColorChannel(Cr, samplingScheme.reductionOptions[Cr].heightFactor, samplingScheme.reductionOptions[Cr].heightMethod);
 }
 
 void Encoder::ensurePointerMatrix(const ColorChannelName channelName)
 {
 	if (blocks[channelName].size() == 0)
 	{
-		float* channel = channels->getChannel(channelName);
-		size_t height = channelSizes[channelName].height;
-		size_t width = channelSizes[channelName].width;
+		float* const channel = channels->getChannel(channelName);
+		const size_t height = channelSizes[channelName].height;
+		const size_t width = channelSizes[channelName].width;
+		const size_t size = height * width;
 
-		blocks[channelName].reserve(height * width / 64);
+		const Dimension2D& factors = samplingScheme.inverseFactor[channelName];
 
-		size_t lineOffsets[8]{
+		blocks[channelName].reserve(size / 64);
+
+		const size_t lineOffsets[8]{
 			0,
 			width,
 			width * 2,
@@ -186,22 +188,36 @@ void Encoder::ensurePointerMatrix(const ColorChannelName channelName)
 			width * 7
 		};
 
-		for (size_t y = 0; y < height; y += 8)
+		const size_t blockWidth = 8;
+		const size_t blockHeight = 8;
+
+		const size_t mcuHeight = blockHeight * factors.height;
+		const size_t mcuWidth = blockWidth * factors.width;
+
+		const size_t mcuRowSize = width * mcuHeight;
+		const size_t blockRowSize = width * blockHeight;
+
+		for (size_t mcuYpos = 0; mcuYpos < size; mcuYpos += mcuRowSize)
 		{
-			size_t row = width * y;
-			for (size_t x = 0; x < width; x += 8)
+			for (size_t mcuXpos = 0; mcuXpos < width; mcuXpos += mcuWidth)
 			{
-				float* position = channel + row + x;
-				blocks[channelName].emplace_back(
-					position + lineOffsets[0],
-					position + lineOffsets[1],
-					position + lineOffsets[2],
-					position + lineOffsets[3],
-					position + lineOffsets[4],
-					position + lineOffsets[5],
-					position + lineOffsets[6],
-					position + lineOffsets[7]
-				);
+				for (size_t mcuRow = 0; mcuRow < mcuRowSize; mcuRow += blockRowSize)
+				{
+					for (size_t mcuCol = 0; mcuCol < mcuWidth; mcuCol += blockWidth)
+					{
+						float* position = channel + (mcuYpos + mcuXpos + mcuRow + mcuCol);
+						blocks[channelName].emplace_back(
+							position + lineOffsets[0],
+							position + lineOffsets[1],
+							position + lineOffsets[2],
+							position + lineOffsets[3],
+							position + lineOffsets[4],
+							position + lineOffsets[5],
+							position + lineOffsets[6],
+							position + lineOffsets[7]
+						);
+					}
+				}
 			}
 		}
 	}
@@ -399,19 +415,10 @@ void Encoder::serialize(BitBuffer &bitBuffer)
 	//size_t cbBlockSize = (channelSizes[YCbCrColorName::Cb].height*channelSizes[YCbCrColorName::Cb].width) / 64;
 	//size_t crBlockSize = (channelSizes[YCbCrColorName::Cr].height*channelSizes[YCbCrColorName::Cr].width) / 64;
 	
-	size_t yfactor = samplingScheme.yReductionOptions.heightFactor * samplingScheme.yReductionOptions.widthFactor;
-	size_t cbfactor = samplingScheme.cbReductionOptions.heightFactor * samplingScheme.cbReductionOptions.widthFactor;
-	size_t crfactor = samplingScheme.crReductionOptions.heightFactor * samplingScheme.crReductionOptions.widthFactor;
+	size_t yfactor = samplingScheme.inverseFactor[Y].height * samplingScheme.inverseFactor[Y].width;
+	size_t cbfactor = samplingScheme.inverseFactor[Cb].height * samplingScheme.inverseFactor[Cb].width;
+	size_t crfactor = samplingScheme.inverseFactor[Cr].height * samplingScheme.inverseFactor[Cr].width;
 
-	size_t maxValue = std::max(yfactor, std::max(cbfactor, crfactor));
-	
-	assert(maxValue % yfactor == 0);
-	assert(maxValue % cbfactor == 0);
-	assert(maxValue % crfactor == 0);
-
-	yfactor = maxValue / yfactor;
-	cbfactor = maxValue / cbfactor;
-	crfactor = maxValue / crfactor;
 	for (int i = 0; i < yBlockSize/yfactor; i++)
 	{
 		for (int count = 0; count < yfactor; count++)
