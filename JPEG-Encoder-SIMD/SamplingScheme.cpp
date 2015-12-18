@@ -45,6 +45,11 @@ const SamplingScheme SamplingScheme::Scheme311(
 	ChannelReductionOptions{ 3, Subsampling, 1, Subsampling },		// cb
 	ChannelReductionOptions{ 3, Subsampling, 1, Subsampling });		// br
 
+const SamplingScheme SamplingScheme::Scheme321(
+	ChannelReductionOptions{ 1, Subsampling, 1, Subsampling },		// y
+	ChannelReductionOptions{ 3, Subsampling, 2, Subsampling },		// cb
+	ChannelReductionOptions{ 3, Subsampling, 2, Subsampling });		// br
+
 static int gcd(int a, int b)
 {
 	if (a == 0) return b;

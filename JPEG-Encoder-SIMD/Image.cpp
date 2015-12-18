@@ -38,17 +38,31 @@ const Dimension2D& Image::getSimulatedSize() const
 	return simulatedSize;
 }
 
+/// Transforms a Pixel stream (RGB RGB RGB ...) 
+/// into blocks of 8 pixels (RRRRRRRR GGGGGGGG ...)
+inline void Image::transposeFloat(float *pSrc, float *pDstR, float *pDstG, float *pDstB, size_t imageSize)
+{
+	static const size_t FLOATS_PER_PIXEL = sizeof(PixelData32) / sizeof(float); // 3
+
+	for (size_t dstIdx = 0, srcIdx = 0; dstIdx < imageSize; srcIdx += FLOATS_PER_PIXEL, dstIdx++)
+	{
+		pDstR[dstIdx] = pSrc[srcIdx];
+		pDstG[dstIdx] = pSrc[srcIdx + 1];
+		pDstB[dstIdx] = pSrc[srcIdx + 2];
+	}
+}
+
 void Image::setRawPixelDataDirect(float* rgbaData)
 {
 	size_t pixelCount = imageSize.width * imageSize.height;
-	transposeFloatAVX(rgbaData, channels->red(), channels->green(), channels->blue(), pixelCount);
+	transposeFloat(rgbaData, channels->red(), channels->green(), channels->blue(), pixelCount);
 }
 
 void Image::setRawPixelData(float* rgbaData)
 {
 	// frequently used values
 	static const size_t FLOAT_SIZE = sizeof(float); // 4
-	static const size_t FLOATS_PER_PIXEL = sizeof(PixelData32) / FLOAT_SIZE; // 4
+	static const size_t FLOATS_PER_PIXEL = sizeof(PixelData32) / FLOAT_SIZE; // 3
 	static const size_t PIXEL_PER_BLOCK = sizeof(ColorBlock) / FLOAT_SIZE; // 8
 
 	// if the step is 1 we dont have to do any extra stuff
@@ -80,7 +94,7 @@ void Image::setRawPixelData(float* rgbaData)
 		// adjust pixels to process so that they align with the block size (8)
 		pixelsToProcess -= lineRem;
 		// process the pixels directly from 'rgbaData'
-		transposeFloatAVX(rgbaData + rgbaDataOffsetFloat, channels->red(dataPixelOffset), channels->green(dataPixelOffset), channels->blue(dataPixelOffset), pixelsToProcess);
+		transposeFloat(rgbaData + rgbaDataOffsetFloat, channels->red(dataPixelOffset), channels->green(dataPixelOffset), channels->blue(dataPixelOffset), pixelsToProcess);
 		// update offsets
 		rgbaDataOffsetFloat += pixelsToProcess * FLOATS_PER_PIXEL;
 		dataPixelOffset += pixelsToProcess;
@@ -114,7 +128,7 @@ void Image::setRawPixelData(float* rgbaData)
 			rgbaDataOffsetFloat -= imageSize.width * FLOATS_PER_PIXEL;
 
 		// transpose the data of the the manually filled buffer
-		transposeFloatAVX(buffer, channels->red(dataPixelOffset), channels->green(dataPixelOffset), channels->blue(dataPixelOffset), pixelsForBuffer);
+		transposeFloat(buffer, channels->red(dataPixelOffset), channels->green(dataPixelOffset), channels->blue(dataPixelOffset), pixelsForBuffer);
 		// update offset
 		dataPixelOffset += pixelsForBuffer;
 	}

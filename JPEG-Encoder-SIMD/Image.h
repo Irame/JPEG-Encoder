@@ -77,13 +77,14 @@ protected:
 
 	const SamplingScheme samplingScheme;
 
+	static void transposeFloat(float* pSrc, float* pDstR, float* pDstG, float* pDstB, size_t imageSize);
+
 public:
 	Image(size_t width, size_t height, SamplingScheme scheme);
 	Image(const Image& origImage);
 
 	const Dimension2D& getImageSize() const;
 	const Dimension2D& getSimulatedSize() const;
-
 	void setRawPixelData(float* rgbaData);
 
 	std::vector<float> getRawPixelDataSimulated();

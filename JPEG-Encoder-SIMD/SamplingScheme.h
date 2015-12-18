@@ -23,7 +23,7 @@ public:
 	static const SamplingScheme Scheme444, Scheme422, Scheme411, Scheme420;
 
 	// For Testing
-	static const SamplingScheme Scheme422Average, Scheme422Height, Scheme422HeightAverage, Scheme311;
+	static const SamplingScheme Scheme422Average, Scheme422Height, Scheme422HeightAverage, Scheme311, Scheme321;
 
 
 	const ChannelReductionOptions reductionOptions[3];
