@@ -3,10 +3,10 @@
 #include "Image.h"
 
 Image::Image(size_t width, size_t height, SamplingScheme scheme, std::array<QTable, 3> qtables)
-	: imageSize(width, height), stepSize(scheme.calcWidthStepSize(), scheme.calcHeightStepSize()),
+	: imageSize(width, height),
 	simulatedSize(
-		width + (width % stepSize.width == 0 ? 0 : stepSize.width - width % stepSize.width),
-		height + (height % stepSize.height == 0 ? 0 : stepSize.height - height % stepSize.height)),
+		width + (width % scheme.stepSize.width == 0 ? 0 : scheme.stepSize.width - width % scheme.stepSize.width),
+		height + (height % scheme.stepSize.height == 0 ? 0 : scheme.stepSize.height - height % scheme.stepSize.height)),
 	channelSizes { Dimension2D(simulatedSize) , Dimension2D(simulatedSize) , Dimension2D(simulatedSize) },
 	samplingScheme(scheme),
 	qTables(qtables)
@@ -16,8 +16,7 @@ Image::Image(size_t width, size_t height, SamplingScheme scheme, std::array<QTab
 }
 
 Image::Image(const Image& origImage)
-	: imageSize(origImage.imageSize), 
-	stepSize(origImage.stepSize), 
+	: imageSize(origImage.imageSize),
 	simulatedSize(origImage.simulatedSize), 
 	channelSizes{ origImage.channelSizes[0], origImage.channelSizes[1], origImage.channelSizes[2] }, 
 	samplingScheme(origImage.samplingScheme), 
@@ -55,7 +54,7 @@ void Image::setRawPixelData(float* rgbaData)
 	static const size_t PIXEL_PER_BLOCK = sizeof(ColorBlock) / FLOAT_SIZE; // 8
 
 	// if the step is 1 we dont have to do any extra stuff
-	if (stepSize.width == 1 && stepSize.height == 1) {
+	if (samplingScheme.stepSize.width == 1 && samplingScheme.stepSize.height == 1) {
 		setRawPixelDataDirect(rgbaData);
 		return;
 	}
@@ -152,7 +151,7 @@ std::vector<float> Image::getRawPixelDataSimulated()
 
 std::vector<float> Image::getRawPixelData()
 {
-	if (stepSize.width == 1 && stepSize.height == 1)
+	if (samplingScheme.stepSize.width == 1 && samplingScheme.stepSize.height == 1)
 	{
 		return getRawPixelDataSimulated();
 	}

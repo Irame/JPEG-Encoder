@@ -64,23 +64,13 @@ static int lcm(int a, int b)
 }
 
 SamplingScheme::SamplingScheme(ChannelReductionOptions yReductionOptions, ChannelReductionOptions cbReductionOptions, ChannelReductionOptions crReductionOptions)
-	: reductionOptions{ yReductionOptions, cbReductionOptions, crReductionOptions }
-{
-	int widthLCM = lcm(lcm(yReductionOptions.widthFactor, cbReductionOptions.widthFactor), crReductionOptions.widthFactor);
-	int heightLCM = lcm(lcm(yReductionOptions.heightFactor, cbReductionOptions.heightFactor), crReductionOptions.heightFactor);
-	inverseFactor[Y] = Dimension2D(widthLCM / yReductionOptions.widthFactor, heightLCM / yReductionOptions.heightFactor);
-	inverseFactor[Cb] = Dimension2D(widthLCM / cbReductionOptions.widthFactor, heightLCM / cbReductionOptions.heightFactor);
-	inverseFactor[Cr] = Dimension2D(widthLCM / crReductionOptions.widthFactor, heightLCM / crReductionOptions.heightFactor);
-}
-
-int SamplingScheme::calcWidthStepSize()
-{
-	return std::max(reductionOptions[Y].widthFactor,
-		std::max(reductionOptions[Cb].widthFactor, reductionOptions[Cr].widthFactor)) * 8;
-}
-
-int SamplingScheme::calcHeightStepSize()
-{
-	return std::max(reductionOptions[Y].heightFactor,
-		std::max(reductionOptions[Cb].heightFactor, reductionOptions[Cr].heightFactor)) * 8;
-}
+	: reductionOptions{ yReductionOptions, cbReductionOptions, crReductionOptions },
+	stepSize(
+		lcm(lcm(yReductionOptions.widthFactor, cbReductionOptions.widthFactor), crReductionOptions.widthFactor),
+		lcm(lcm(yReductionOptions.heightFactor, cbReductionOptions.heightFactor), crReductionOptions.heightFactor)),
+	inverseFactor{
+		Dimension2D(stepSize.width / yReductionOptions.widthFactor, stepSize.height / yReductionOptions.heightFactor),
+		Dimension2D(stepSize.width / cbReductionOptions.widthFactor, stepSize.height / cbReductionOptions.heightFactor),
+		Dimension2D(stepSize.width / crReductionOptions.widthFactor, stepSize.height / crReductionOptions.heightFactor),
+	}
+{}

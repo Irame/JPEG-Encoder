@@ -45,8 +45,6 @@ public:
 
 	void reduceResolutionBySchema();
 
-	//std::vector<BEushort> getBitPattern(CoefficientType type, ColorChannelName channelName) { return bitPattern[channelName][type]; }
-	//std::vector<byte> getCategories(CoefficientType type, ColorChannelName channelName) { return categories[channelName][type]; }
 	HuffmanTablePtr<byte> getHuffmanTable(CoefficientType type, ColorChannelName channelName);
 	void serialize(BitBuffer &bitBuffer);
 

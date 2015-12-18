@@ -70,7 +70,6 @@ protected:
 	std::unique_ptr<ImageData> channels;
 
 	const Dimension2D imageSize;
-	const Dimension2D stepSize;
 	const Dimension2D simulatedSize;
 
 	size_t blocksPerChannel[3];

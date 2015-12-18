@@ -27,11 +27,7 @@ public:
 
 
 	const ChannelReductionOptions reductionOptions[3];
-	Dimension2D inverseFactor[3];
-
-	int calcWidthStepSize();
-	int calcHeightStepSize();
-
-
+	const Dimension2D stepSize;
+	const Dimension2D inverseFactor[3];
 };
 
