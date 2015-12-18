@@ -266,15 +266,6 @@ inline byte BitBuffer::joinTwoBytes(byte leftByte, byte rightByte, size_t leftCo
 
 void BitBuffer::writeToFile(std::string filePath)
 {
-	for (size_t i = 0; i < data.size(); i++)
-	{
-		if (data[i] == 0xFF && data[i + 1] != 0x00)
-		{
-			printf("\n%d\n", i);
-		}
-	}
-
-
 	std::ofstream fileStream;
 
 	fileStream.open(filePath, std::ios::out | std::ios::trunc | std::ios::binary);
