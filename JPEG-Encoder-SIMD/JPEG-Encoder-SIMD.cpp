@@ -58,7 +58,7 @@ void bitBufferTest(string filePath)
 
 	JPEGSegments::StartOfImage startOfImage;
 	JPEGSegments::APP0 app0;
-	JPEGSegments::StartOfFrame0 startOfFrame0(1680,900, SamplingScheme::Scheme422);
+	JPEGSegments::StartOfFrame0 startOfFrame0(1680,900, Sampling::Scheme422);
 
 	vector<byte> allSymbols{ 0, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
 	cout << "All symbols: " << allSymbols << endl;
@@ -287,7 +287,7 @@ void testDCT()
 
 void EncodeJPEG(string srcFile, string dstFile)
 {
-	SamplingScheme scheme = SamplingScheme::Scheme420;
+	SamplingDefinition scheme = Sampling::Scheme420;
 
 	cout << "Load image file: " << srcFile << endl;
 	ImagePtr image = nullptr;

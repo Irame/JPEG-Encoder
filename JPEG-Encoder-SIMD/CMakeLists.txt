@@ -6,7 +6,6 @@ set(CPP_FILES
 	ImageLoader.cpp
 	JPEG-Encoder-SIMD.cpp
 	lodepng.cpp
-	SamplingScheme.cpp
 	stdafx.cpp
 ) # CPP_FILES
 	

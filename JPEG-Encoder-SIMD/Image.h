@@ -75,12 +75,12 @@ protected:
 	size_t blocksPerChannel[3];
 	Dimension2D channelSizes[3];
 
-	const SamplingScheme samplingScheme;
+	const SamplingDefinition samplingScheme;
 
 	static void transposeFloat(float* pSrc, float* pDstR, float* pDstG, float* pDstB, size_t imageSize);
 
 public:
-	Image(size_t width, size_t height, SamplingScheme scheme);
+	Image(size_t width, size_t height, SamplingDefinition scheme);
 	Image(const Image& origImage);
 
 	const Dimension2D& getImageSize() const;
@@ -95,5 +95,5 @@ public:
 
 	void applySepia();
 
-	const SamplingScheme& getSamplingScheme() const  { return samplingScheme; }
+	const SamplingDefinition& getSamplingScheme() const  { return samplingScheme; }
 };

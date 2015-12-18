@@ -23,7 +23,7 @@ ImageLoader::~ImageLoader()
 {
 }
 
-ImagePtr ImageLoader::Load(const std::string& filename, SamplingScheme scheme)
+ImagePtr ImageLoader::Load(const std::string& filename, SamplingDefinition scheme)
 {
 	std::string ext = fileExtension(filename);
 
@@ -63,7 +63,7 @@ inline std::string ImageLoader::fileExtension(const std::string& filename)
 }
 
 
-ImagePtr ImageLoader::LoadPPM(std::string path, SamplingScheme scheme)
+ImagePtr ImageLoader::LoadPPM(std::string path, SamplingDefinition scheme)
 {
 	enum State {
 		None, Size, Pixels
@@ -168,7 +168,7 @@ void ImageLoader::SavePPM(std::string path, ImagePtr image)
 	}
 }
 
-ImagePtr ImageLoader::LoadPNG(std::string path, SamplingScheme samplingScheme)
+ImagePtr ImageLoader::LoadPNG(std::string path, SamplingDefinition samplingScheme)
 {
 	std::vector<unsigned char> imgData;
 	unsigned imgWidth, imgHeight;
@@ -207,7 +207,7 @@ void ImageLoader::SavePNG(std::string path, ImagePtr image)
 }
 void ImageLoader::SaveJPG(std::string path, EncoderPtr image) {
 	const Dimension2D& imageSize = image->getImageSize();
-	const SamplingScheme& scheme = image->getSamplingScheme();
+	const SamplingDefinition& scheme = image->getSamplingScheme();
 	const HuffmanTablePtr<byte> huffmannDCY = image->getHuffmanTable(Encoder::CoefficientType::DC, YCbCrColorName::Y);
 	const HuffmanTablePtr<byte> huffmannDCCb = image->getHuffmanTable(Encoder::CoefficientType::DC, YCbCrColorName::Cb);
 	const HuffmanTablePtr<byte> huffmannACY = image->getHuffmanTable(Encoder::CoefficientType::AC, YCbCrColorName::Y);

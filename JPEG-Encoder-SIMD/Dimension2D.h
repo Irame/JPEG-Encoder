@@ -7,6 +7,7 @@ struct Dimension2D
 
 	Dimension2D() : width(0), height(0) {}
 
+	constexpr
 	Dimension2D(size_t width, size_t height)
 		: width(width), height(height)
 	{}

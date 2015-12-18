@@ -2,7 +2,7 @@
 #include "SIMD.h"
 #include "Image.h"
 
-Image::Image(size_t width, size_t height, SamplingScheme scheme)
+Image::Image(size_t width, size_t height, SamplingDefinition scheme)
 	: imageSize(width, height),
 	simulatedSize(
 		width + (width % scheme.stepSize.width == 0 ? 0 : scheme.stepSize.width - width % scheme.stepSize.width),

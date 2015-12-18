@@ -86,7 +86,7 @@ namespace JPEGSegments
 		byte Cr[3]{ 0x03 };
 
 		StartOfFrame0() : marker(SegmentType::StartOfFrame0) {}
-		StartOfFrame0(BEushort xResolution, BEushort yResolution, const SamplingScheme& scheme) : 
+		StartOfFrame0(BEushort xResolution, BEushort yResolution, const SamplingDefinition& scheme) : 
 			marker(SegmentType::StartOfFrame0), 
 			yResolution(yResolution), 
 			xResolution(xResolution) {
