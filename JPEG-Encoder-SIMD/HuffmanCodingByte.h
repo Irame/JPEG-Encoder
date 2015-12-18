@@ -4,13 +4,26 @@
 #include <array>
 
 #include "HuffmanCoding.h"
+#include "BitBuffer.h"
 
 template<>
 class HuffmanTable<byte>
 {
+public:
+	struct SymbolCodePair
+	{
+		byte symbol;
+		BitBufferPtr code;
+
+		SymbolCodePair() {}
+		SymbolCodePair(byte sym, BitBufferPtr code)
+			: symbol(sym), code(code)
+		{}
+	};
+
 private:
 	typedef uint64_t InternalCodeType;
-	typedef std::array<std::pair<byte, BitBufferPtr>, 256> InnerCodeMap;
+	typedef std::array<SymbolCodePair, 256> InnerCodeMap;
 
 public:
 	// Special iterator to skip zero symbol entires in innerCodeMap
@@ -26,7 +39,7 @@ public:
 		const_iterator(IteratorType innerIterator, IteratorType endIterator) 
 			: innerIterator(innerIterator), endIterator(endIterator)
 		{
-			while(this->innerIterator != this->endIterator && this->innerIterator->second == nullptr)
+			while(this->innerIterator != this->endIterator && this->innerIterator->code == nullptr)
 			{
 				++(this->innerIterator);
 			}
@@ -36,7 +49,7 @@ public:
 		bool operator==(const const_iterator& other) const { return innerIterator == other.innerIterator; }
 		bool operator!=(const const_iterator& other) const { return innerIterator != other.innerIterator; }
 		const_iterator& operator++() { 
-			while ((++innerIterator) != endIterator && (*innerIterator).second == nullptr);
+			while ((++innerIterator) != endIterator && (*innerIterator).code == nullptr);
 			return *this; 
 		}
 	};
@@ -64,7 +77,7 @@ public:
 	{
 		for (const auto& pair : huffmanTable)
 		{
-			std::cout << pair.first << ": " << *(pair.second) << std::endl;
+			std::cout << pair.symbol << ": " << *(pair.code) << std::endl;
 		}
 
 		return strm;
@@ -203,7 +216,7 @@ inline BitBufferPtr HuffmanTable<byte>::encode(const std::vector<byte>& srcData)
 
 	for (byte b : srcData)
 	{
-		result->pushBits(*(codeMap[b].second));
+		result->pushBits(*(codeMap[b].code));
 	}
 
 	return result;
@@ -211,7 +224,7 @@ inline BitBufferPtr HuffmanTable<byte>::encode(const std::vector<byte>& srcData)
 
 inline ConstBitBufferPtr HuffmanTable<byte>::encode(const byte& srcData) const
 {
-	return codeMap[srcData].second;
+	return codeMap[srcData].code;
 }
 
 inline std::vector<byte> HuffmanTable<byte>::decode(BitBufferPtr inputStream)
@@ -224,9 +237,9 @@ inline std::vector<byte> HuffmanTable<byte>::decode(BitBufferPtr inputStream)
 		currentBitstream.pushBit(inputStream->getBit(i));
 		for (const auto& pair : *this)
 		{
-			if (*(pair.second) == currentBitstream)
+			if (*(pair.code) == currentBitstream)
 			{
-				resultVector.push_back(pair.first);
+				resultVector.push_back(pair.symbol);
 				currentBitstream.clear();
 			}
 		}

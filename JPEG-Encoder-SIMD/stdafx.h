@@ -17,6 +17,8 @@
 #include <iostream>
 #include <vector>
 
+#include "Benchmark.h"
+
 #define NUM_BYTE_VALUES 256
 
 #define M_PIf ((float)M_PI)

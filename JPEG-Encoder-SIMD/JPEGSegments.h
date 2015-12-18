@@ -114,28 +114,28 @@ namespace JPEGSegments
 		{
 			memset(symbolCount, 0, 16);
 
-			std::vector<std::pair<byte, BitBufferPtr>> sortableMapEntries;
+			std::vector<HuffmanTable<byte>::SymbolCodePair> sortableMapEntries;
 
 			for (const auto& symbolCodePair : huffmanTable)
 			{
 				sortableMapEntries.push_back(symbolCodePair);
 			}
 
-			std::sort(sortableMapEntries.begin(), sortableMapEntries.end(), [](std::pair<byte, BitBufferPtr> a, std::pair<byte, BitBufferPtr> b)
+			std::sort(sortableMapEntries.begin(), sortableMapEntries.end(), [](const HuffmanTable<byte>::SymbolCodePair a, const HuffmanTable<byte>::SymbolCodePair b)
 			{
-				if (a.second->getSize() == b.second->getSize())
-					return *a.second < *b.second;
-				return a.second->getSize() < b.second->getSize();
+				if (a.code->getSize() == b.code->getSize())
+					return *a.code < *b.code;
+				return a.code->getSize() < b.code->getSize();
 			});
 
 			assert(huffmanTable.getSymbolCount() > 0);
 			assert(huffmanTable.getSymbolCount() == sortableMapEntries.size());
 
 			int i = 0;
-			for (const auto& symbolCodePair : sortableMapEntries)
+			for (const auto symbolCodePair : sortableMapEntries)
 			{
-				symbolCount[symbolCodePair.second->getSize() - 1] += 1;
-				table[i++] = symbolCodePair.first;
+				symbolCount[symbolCodePair.code->getSize() - 1] += 1;
+				table[i++] = symbolCodePair.symbol;
 			}
 		}
 
