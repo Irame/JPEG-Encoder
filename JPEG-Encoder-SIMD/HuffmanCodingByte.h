@@ -57,9 +57,8 @@ public:
 	static HuffmanTablePtr<byte> create(size_t codeWordLength, const std::vector<byte>& srcData);
 
 	BitBufferPtr encode(const std::vector<byte>& srcData);
-	BitBufferPtr encode(const byte& srcData);
+	ConstBitBufferPtr encode(const byte& srcData) const;
 	std::vector<byte> decode(BitBufferPtr inputStream);
-
 
 	friend std::ostream& operator<<(std::ostream& strm, const HuffmanTable<byte>& huffmanTable)
 	{
@@ -210,13 +209,9 @@ inline BitBufferPtr HuffmanTable<byte>::encode(const std::vector<byte>& srcData)
 	return result;
 }
 
-inline BitBufferPtr HuffmanTable<byte>::encode(const byte& srcData)
+inline ConstBitBufferPtr HuffmanTable<byte>::encode(const byte& srcData) const
 {
-	BitBufferPtr result = std::make_shared<BitBuffer>();
-
-	result->pushBits(*(codeMap[srcData].second));
-	
-	return result;
+	return codeMap[srcData].second;
 }
 
 inline std::vector<byte> HuffmanTable<byte>::decode(BitBufferPtr inputStream)

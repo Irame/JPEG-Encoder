@@ -90,3 +90,4 @@ inline void BitBuffer::push(bool& value, size_t offset)
 }
 
 typedef std::shared_ptr<BitBuffer> BitBufferPtr;
+typedef std::shared_ptr<const BitBuffer> ConstBitBufferPtr;
