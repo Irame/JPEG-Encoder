@@ -1,5 +1,7 @@
 @echo off
 
+call ShiaLaBeouf.bat
+
 REM search msbuild.exe
 REM http://stackoverflow.com/questions/328017/path-to-msbuild
 set bb.build.msbuild.exe=
