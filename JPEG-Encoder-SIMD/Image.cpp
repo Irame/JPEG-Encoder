@@ -2,14 +2,13 @@
 #include "SIMD.h"
 #include "Image.h"
 
-Image::Image(size_t width, size_t height, SamplingScheme scheme, std::array<QTable, 3> qtables)
+Image::Image(size_t width, size_t height, SamplingScheme scheme)
 	: imageSize(width, height),
 	simulatedSize(
 		width + (width % scheme.stepSize.width == 0 ? 0 : scheme.stepSize.width - width % scheme.stepSize.width),
 		height + (height % scheme.stepSize.height == 0 ? 0 : scheme.stepSize.height - height % scheme.stepSize.height)),
 	channelSizes { Dimension2D(simulatedSize) , Dimension2D(simulatedSize) , Dimension2D(simulatedSize) },
-	samplingScheme(scheme),
-	qTables(qtables)
+	samplingScheme(scheme)
 {
 	channels = std::make_unique<ImageData>(simulatedSize);
 	blocksPerChannel[0] = blocksPerChannel[1] = blocksPerChannel[2] = simulatedSize.width * simulatedSize.height / 8;
@@ -19,8 +18,7 @@ Image::Image(const Image& origImage)
 	: imageSize(origImage.imageSize),
 	simulatedSize(origImage.simulatedSize), 
 	channelSizes{ origImage.channelSizes[0], origImage.channelSizes[1], origImage.channelSizes[2] }, 
-	samplingScheme(origImage.samplingScheme), 
-	qTables(origImage.qTables)
+	samplingScheme(origImage.samplingScheme)
 {
 	channels = std::make_unique<ImageData>(simulatedSize);
 	memcpy(blocksPerChannel, origImage.blocksPerChannel, sizeof(blocksPerChannel));

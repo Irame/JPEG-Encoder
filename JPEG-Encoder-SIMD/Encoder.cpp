@@ -2,7 +2,8 @@
 #include "Encoder.h"
 #include "SIMD.h"
 
-Encoder::Encoder(const Image& image) : Image(image)
+Encoder::Encoder(const Image& image, const std::array<QTable, 3>& qtables)
+	: Image(image), qTables(qtables)
 {}
 
 void Encoder::convertToYCbCr()

@@ -21,6 +21,8 @@ private:
 	HuffmanTablePtr<byte> huffmanTables[2][2];
 	std::vector<PointerMatrix> blocks[3];
 
+	const std::array<QTable, 3> qTables;
+
 	void ensurePointerMatrix(const ColorChannelName channelName);
 	void calculateACValues(const OffsetArray& zigZag, const ColorChannelName channelName);
 	void calculateDCValues(const OffsetArray& zigZag, const ColorChannelName channelName);
@@ -36,7 +38,7 @@ private:
 	void reduceHeightResolutionColorChannel(ColorChannelName channelIdx, int factor, ReductionMethod method);
 
 public:
-	Encoder(const Image& image);
+	Encoder(const Image& image, const std::array<QTable, 3>& qtables);
 
 	void convertToYCbCr();
 	void convertToRGB();
@@ -49,6 +51,8 @@ public:
 	void serialize(BitBuffer &bitBuffer);
 
 	void applyDCT(ColorChannelName colorChannelName);	
+
+	const QTable& getQTable(ColorChannelName colorChannelName) const { return qTables[colorChannelName]; }
 };
 
 typedef std::shared_ptr<Encoder> EncoderPtr;

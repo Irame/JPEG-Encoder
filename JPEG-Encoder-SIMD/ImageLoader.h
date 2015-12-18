@@ -9,11 +9,11 @@ public:
 	ImageLoader();
 	~ImageLoader();
 
-	static ImagePtr Load(const std::string& filename, SamplingScheme scheme, std::array<QTable, 3> qTables);
+	static ImagePtr Load(const std::string& filename, SamplingScheme scheme);
 	static void     Save(const std::string& filename, ImagePtr image);
 
-	static ImagePtr LoadPPM(std::string path, SamplingScheme scheme, std::array<QTable, 3> qTables);
-	static ImagePtr LoadPNG(std::string path, SamplingScheme scheme, std::array<QTable, 3> qTables);
+	static ImagePtr LoadPPM(std::string path, SamplingScheme scheme);
+	static ImagePtr LoadPNG(std::string path, SamplingScheme scheme);
 
 	static void SavePPM(std::string path, ImagePtr image);
 	static void SavePNG(std::string path, ImagePtr image);

@@ -76,10 +76,9 @@ protected:
 	Dimension2D channelSizes[3];
 
 	const SamplingScheme samplingScheme;
-	std::array<QTable, 3> qTables;
 
 public:
-	Image(size_t width, size_t height, SamplingScheme scheme, std::array<QTable,3> qtables);
+	Image(size_t width, size_t height, SamplingScheme scheme);
 	Image(const Image& origImage);
 
 	const Dimension2D& getImageSize() const;
@@ -96,5 +95,4 @@ public:
 	void applySepia();
 
 	const SamplingScheme& getSamplingScheme() const  { return samplingScheme; }
-	const QTable& getQTable(ColorChannelName colorChannelName) const { return qTables[colorChannelName]; }
 };
