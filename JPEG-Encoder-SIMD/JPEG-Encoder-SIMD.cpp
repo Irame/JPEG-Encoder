@@ -294,10 +294,11 @@ void EncodeJPEG(string srcFile, string dstFile)
 
 	benchmark("ImageLoader::Load()", 1, [&]()
 	{
-		image = ImageLoader::Load(srcFile, scheme, std::array<QTable, 3> { JPEGQuantization::luminance, JPEGQuantization::chrominance, JPEGQuantization::chrominance });
+		image = ImageLoader::Load(srcFile, scheme);
 	});
 
-	EncoderPtr encoder = std::make_shared<Encoder>(*image);
+	auto qtables = std::array<QTable, 3> { JPEGQuantization::luminance, JPEGQuantization::chrominance, JPEGQuantization::chrominance };
+	EncoderPtr encoder = std::make_shared<Encoder>(*image, qtables);
 
 	std::cout << "Convert image to YCbCr AVX." << std::endl;
 	benchmark("convertToYCbCr",1, [&]() {
