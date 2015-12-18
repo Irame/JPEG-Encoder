@@ -15,6 +15,19 @@
 
 using namespace std;
 
+#if MSVC
+#define COMPILER_PREFACE std::cout << "Built with msvc " << _MSC_VER << std::endl
+#endif
+#if GCC
+#define COMPILER_PREFACE std::cout << "Built with g++ " << __VERSION__ << std::endl
+#endif
+#if CLANG
+#define COMPILER_PREFACE std::cout << "Built with clang++ " << __clang_version__ << std::endl
+#endif
+#if INTEL
+#define COMPILER_PREFACE std::cout << "Built with the intel compiler " << __ICL << std::endl
+#endif
+
 byte testValues[10000000];
 
 void bitBufferTest(string filePath)
@@ -287,44 +300,41 @@ void testDCT()
 
 void EncodeJPEG(string srcFile, string dstFile)
 {
+	StopWatch sw;
+
 	SamplingDefinition scheme = Sampling::Scheme420;
 
-	cout << "Load image file: " << srcFile << endl;
 	ImagePtr image = nullptr;
 
-	benchmark("ImageLoader::Load()", 1, [&]()
-	{
+	cout << "Load image file from: " << srcFile << endl;
 		image = ImageLoader::Load(srcFile, scheme);
-	});
+	sw("Load file");
 
-	auto qtables = std::array<QTable, 3> { JPEGQuantization::luminance, JPEGQuantization::chrominance, JPEGQuantization::chrominance };
-	EncoderPtr encoder = std::make_shared<Encoder>(*image, qtables);
+	std::cout << "Create encoder object ";
+		auto qtables = std::array<QTable, 3> { JPEGQuantization::luminance, JPEGQuantization::chrominance, JPEGQuantization::chrominance };
+		EncoderPtr encoder = std::make_shared<Encoder>(*image, qtables);
+	sw();
 
-	std::cout << "Convert image to YCbCr AVX." << std::endl;
-	benchmark("convertToYCbCr",1, [&]() {
+	std::cout << "Convert image to YCbCr AVX ";
 		encoder->convertToYCbCr();
-	});
+	sw();
 
-
-	cout << "Reduce channel resolution for scheme." << endl;
-	benchmark("reduceResolutionBySchema", 1, [&]() {
+	std::cout << "Reduce channel resolution for scheme ";
 		encoder->reduceResolutionBySchema();
-	});
+	sw();
 
-	std::cout << "Apply DCT." << std::endl;
-	benchmark("applyDCT", 1, [&]()
-	{
+	std::cout << "Apply DCT ";
 		encoder->applyDCT(YCbCrColorName::Y);
 		encoder->applyDCT(YCbCrColorName::Cb);
 		encoder->applyDCT(YCbCrColorName::Cr);
-	});
+	sw();
 
-	cout << "Save image file: " << dstFile << endl;
-	benchmark("ImageLoader::Save()", 1, [&]()
-	{
+	std::cout << "Save image file to: " << dstFile << std::endl;
 		ImageLoader::Save(dstFile, encoder);
-	});
+	sw("Save file");
 
+
+	sw.stop();
 }
 
 void testHuffmanEncoding()
@@ -348,18 +358,7 @@ void testHuffmanEncoding()
 
 int main(int argc, char* argv[])
 {
-#if MSVC
-	std::cout << "Built with msvc " << _MSC_VER << std::endl;
-#endif
-#if GCC
-	std::cout << "Built with g++ " << __VERSION__ << std::endl;
-#endif
-#if CLANG
-	std::cout << "Built with clang++ " << __clang_version__ << std::endl;
-#endif
-#if INTEL
-	std::cout << "Built with the intel compiler " << __ICL << std::endl;
-#endif
+	COMPILER_PREFACE;
 
 	//for (int i = 0; i < 10000000; i++)
 	//{
@@ -376,19 +375,16 @@ int main(int argc, char* argv[])
 	//return  0;
 
 	if (argc < 3) {
-		cerr << "Usage: " << argv[0] << " <Source File> <Destination File>" << endl;
+		std::cerr << "Usage: " << argv[0] << " <Source File> <Destination File>" << std::endl;
 		return 1;
 	}
-
-	string srcFile(argv[1]);
-	string dstFile(argv[2]);
+	
+	std::string srcFile(argv[1]);
+	std::string dstFile(argv[2]);
 
 	std::cout << "Test EncodeJPEG" << endl;
-	benchmark("Test EncodeJPEG", 1, [&]()
-	{
-		EncodeJPEG(srcFile, dstFile);
-	});	
-	
+	EncodeJPEG(srcFile, dstFile);
+		
 	//std::cout << "Test DCT" << endl;
 	//benchmark("Test DCT", 1, [&]()
 	//{
