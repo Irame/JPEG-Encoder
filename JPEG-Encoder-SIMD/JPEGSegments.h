@@ -90,11 +90,11 @@ namespace JPEGSegments
 			marker(SegmentType::StartOfFrame0), 
 			yResolution(yResolution), 
 			xResolution(xResolution) {
-			Y[1] = scheme.inverseFactor[YCbCrColorName::Y].width << 4 | 0b1111 & scheme.inverseFactor[YCbCrColorName::Y].height;
+			Y[1] = static_cast<byte>((scheme.inverseFactor[YCbCrColorName::Y].width << 4) | (0b1111 & scheme.inverseFactor[YCbCrColorName::Y].height));
 			Y[2] = static_cast<byte>(YCbCrColorName::Y);
-			Cb[1] = scheme.inverseFactor[YCbCrColorName::Cb].width << 4 | 0b1111 & scheme.inverseFactor[YCbCrColorName::Cb].height;
+			Cb[1] = static_cast<byte>((scheme.inverseFactor[YCbCrColorName::Cb].width << 4) | (0b1111 & scheme.inverseFactor[YCbCrColorName::Cb].height));
 			Cb[2] = static_cast<byte>(YCbCrColorName::Cb);
-			Cr[1] = scheme.inverseFactor[YCbCrColorName::Cr].width << 4 | 0b1111 & scheme.inverseFactor[YCbCrColorName::Cr].height;
+			Cr[1] = static_cast<byte>((scheme.inverseFactor[YCbCrColorName::Cr].width << 4) | (0b1111 & scheme.inverseFactor[YCbCrColorName::Cr].height));
 			Cr[2] = static_cast<byte>(YCbCrColorName::Cr);
 		}
 	};
