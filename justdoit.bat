@@ -12,11 +12,12 @@ if not exist "%msbuild.exe%" echo error: %msbuild.exe%: not found & goto :eof
 
 set projectdir=JPEG-Encoder-SIMD
 set projectfile=%projectdir%\JPEG-Encoder-SIMD.vcxproj
+set msbuildCMD=/p:Configuration=Release /t:rebuild
 
 echo.
 echo --=== Building with MSVC ===--
 
-%msbuild.exe% build\vs\%projectfile% /p:Configuration=Release
+%msbuild.exe% build\vs\%projectfile% %msbuildCMD%
 set msvc=%errorlevel%
 
 echo --=== End building with MSVC ===--
@@ -26,7 +27,7 @@ echo.
 echo.
 echo --=== Begin building with Clang ===--
 
-%msbuild.exe% build\clang\%projectfile% /p:Configuration=Release
+%msbuild.exe% build\clang\%projectfile% %msbuildCMD%
 set clang=%errorlevel%
 
 echo --=== End building with Clang ===--
@@ -35,7 +36,7 @@ echo.
 :intel
 echo.
 echo --=== Begin building with Intel Compiler ===--
-%msbuild.exe% build\intel\%projectfile% /p:Configuration=Release
+%msbuild.exe% build\intel\%projectfile% %msbuildCMD%
 set intel=%errorlevel%
 
 
@@ -46,7 +47,7 @@ echo.
 echo.
 echo --=== Begin building with GCC ===--
 
-mingw32-make -C build\gcc\
+mingw32-make --directory=build\gcc\ --always-make 
 set gcc=%errorlevel%
 
 echo --=== End building with GCC ===--
