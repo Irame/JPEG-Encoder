@@ -8,6 +8,24 @@ union QTable {
 	__m256 avx[8];
 };
 
+struct QTableSet {
+	const QTable* tables[3];
+
+	QTableSet(const QTable& luminance, const QTable& chrominance)
+		: tables{ &luminance, &chrominance, &chrominance }
+	{}
+
+	QTableSet(const QTable& luminance, const QTable& chrominance, const QTable& chrominance2)
+		: tables{ &luminance, &chrominance, &chrominance2 }
+	{}
+
+	const QTable& operator[](size_t index) const
+	{
+		assert(index <= 3);
+		return *tables[index];
+	}
+};
+
 namespace JPEGQuantization 
 {
 	// Two examples of quantization tables are given in Tables K.1 and K.2. These are based on psychovisual thresholding and

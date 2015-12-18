@@ -303,7 +303,7 @@ void EncodeJPEG(string srcFile, string dstFile)
 	StopWatch sw;
 
 	SamplingDefinition scheme = Sampling::Scheme420;
-	auto qtables = std::array<QTable, 3> { JPEGQuantization::luminance, JPEGQuantization::chrominance, JPEGQuantization::chrominance };
+	QTableSet qtables(JPEGQuantization::luminance, JPEGQuantization::chrominance);
 
 	ImagePtr image = nullptr;
 	EncoderPtr encoder = nullptr;

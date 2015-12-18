@@ -3,18 +3,18 @@
 #include "SIMD.h"
 #include "JPEGSegments.h"
 
-Encoder::Encoder(const Image& image, const std::array<QTable, 3>& qtables)
+Encoder::Encoder(const Image& image, const QTableSet& qtables)
 	: image(std::make_shared<Image>(image)), qTables(qtables)
 {}
 
-Encoder::Encoder(ImagePtr imagePtr, const std::array<QTable, 3>& qtables)
+Encoder::Encoder(ImagePtr imagePtr, const QTableSet& qtables)
 	: image(imagePtr), qTables(qtables)
 {}
 
 void Encoder::convertToYCbCr()
 {
 	//#pragma omp parallel for
-	assert(blocksPerChannel[0] == blocksPerChannel[1] && blocksPerChannel[0] == blocksPerChannel[2]);
+	assert(image->blocksPerChannel[0] == image->blocksPerChannel[1] && image->blocksPerChannel[0] == image->blocksPerChannel[2]);
 	for (size_t i = 0; i < image->blocksPerChannel[0] * 8; i += 8)
 	{
 		convertRGBToYCbCrAVXImpl(image->channels->red(i), image->channels->green(i), image->channels->blue(i));
@@ -24,7 +24,7 @@ void Encoder::convertToYCbCr()
 void Encoder::convertToRGB()
 {
 	//#pragma omp parallel for
-	assert(blocksPerChannel[0] == blocksPerChannel[1] && blocksPerChannel[0] == blocksPerChannel[2]);
+	assert(image->blocksPerChannel[0] == image->blocksPerChannel[1] && image->blocksPerChannel[0] == image->blocksPerChannel[2]);
 	for (size_t i = 0; i < image->blocksPerChannel[0] * 8; i += 8)
 	{
 		convertYCbCrToRGBAVXImpl(image->channels->red(i), image->channels->green(i), image->channels->blue(i));
@@ -38,7 +38,7 @@ void Encoder::multiplyColorChannelBy(ColorChannelName channelName, float val)
 
 void Encoder::reduceWidthResolutionColorChannel(ColorChannelName channelName, int factor, ReductionMethod method)
 {
-	assert(channelSizes[channelName].width % factor == 0);
+	assert(image->channelSizes[channelName].width % factor == 0);
 
 	// factor 1 => no reduction necessary
 	if (factor == 1) return;
@@ -97,7 +97,7 @@ void Encoder::reduceWidthResolutionColorChannel(ColorChannelName channelName, in
 
 void Encoder::reduceHeightResolutionColorChannel(ColorChannelName channelName, int factor, ReductionMethod method)
 {
-	assert(channelSizes[channelName].height % factor == 0);
+	assert(image->channelSizes[channelName].height % factor == 0);
 
 	// factor 1 => no reduction necessary
 	if (factor == 1) return;
