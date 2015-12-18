@@ -62,11 +62,12 @@ public:
 
 class Image
 {
+	friend class Encoder; // allow Encoder to access private stuff
+
 	void setRawPixelDataDirect(float* rgbaData);
 
 	size_t getPixelPos(ColorChannelName channelIdx, size_t x, size_t y) const;
-
-protected:
+private:
 	std::unique_ptr<ImageData> channels;
 
 	const Dimension2D imageSize;

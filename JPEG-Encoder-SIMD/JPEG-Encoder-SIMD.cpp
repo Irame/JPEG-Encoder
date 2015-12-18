@@ -303,16 +303,17 @@ void EncodeJPEG(string srcFile, string dstFile)
 	StopWatch sw;
 
 	SamplingDefinition scheme = Sampling::Scheme420;
+	auto qtables = std::array<QTable, 3> { JPEGQuantization::luminance, JPEGQuantization::chrominance, JPEGQuantization::chrominance };
 
 	ImagePtr image = nullptr;
+	EncoderPtr encoder = nullptr;
 
 	cout << "Load image file from: " << srcFile << endl;
 		image = ImageLoader::Load(srcFile, scheme);
 	sw("Load file");
 
 	std::cout << "Create encoder object ";
-		auto qtables = std::array<QTable, 3> { JPEGQuantization::luminance, JPEGQuantization::chrominance, JPEGQuantization::chrominance };
-		EncoderPtr encoder = std::make_shared<Encoder>(*image, qtables);
+		encoder = std::make_shared<Encoder>(image, qtables);
 	sw();
 
 	std::cout << "Convert image to YCbCr AVX ";

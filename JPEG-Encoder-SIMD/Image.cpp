@@ -1,6 +1,7 @@
 #include "stdafx.h"
-#include "SIMD.h"
 #include "Image.h"
+
+#include "SIMD.h"
 
 Image::Image(size_t width, size_t height, SamplingDefinition scheme)
 	: imageSize(width, height),

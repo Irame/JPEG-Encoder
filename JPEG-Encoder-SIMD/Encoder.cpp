@@ -1,18 +1,23 @@
 #include "stdafx.h"
 #include "Encoder.h"
 #include "SIMD.h"
+#include "JPEGSegments.h"
 
 Encoder::Encoder(const Image& image, const std::array<QTable, 3>& qtables)
-	: Image(image), qTables(qtables)
+	: image(std::make_shared<Image>(image)), qTables(qtables)
+{}
+
+Encoder::Encoder(ImagePtr imagePtr, const std::array<QTable, 3>& qtables)
+	: image(imagePtr), qTables(qtables)
 {}
 
 void Encoder::convertToYCbCr()
 {
 	//#pragma omp parallel for
 	assert(blocksPerChannel[0] == blocksPerChannel[1] && blocksPerChannel[0] == blocksPerChannel[2]);
-	for (size_t i = 0; i < blocksPerChannel[0] * 8; i += 8)
+	for (size_t i = 0; i < image->blocksPerChannel[0] * 8; i += 8)
 	{
-		convertRGBToYCbCrAVXImpl(channels->red(i), channels->green(i), channels->blue(i));
+		convertRGBToYCbCrAVXImpl(image->channels->red(i), image->channels->green(i), image->channels->blue(i));
 	}
 }
 
@@ -20,15 +25,15 @@ void Encoder::convertToRGB()
 {
 	//#pragma omp parallel for
 	assert(blocksPerChannel[0] == blocksPerChannel[1] && blocksPerChannel[0] == blocksPerChannel[2]);
-	for (size_t i = 0; i < blocksPerChannel[0] * 8; i += 8)
+	for (size_t i = 0; i < image->blocksPerChannel[0] * 8; i += 8)
 	{
-		convertYCbCrToRGBAVXImpl(channels->red(i), channels->green(i), channels->blue(i));
+		convertYCbCrToRGBAVXImpl(image->channels->red(i), image->channels->green(i), image->channels->blue(i));
 	}
 }
 
 void Encoder::multiplyColorChannelBy(ColorChannelName channelName, float val)
 {
-	multiplyAVX(channels->getChannel(channelName), val, blocksPerChannel[channelName] * 8);
+	multiplyAVX(image->channels->getChannel(channelName), val, image->blocksPerChannel[channelName] * 8);
 }
 
 void Encoder::reduceWidthResolutionColorChannel(ColorChannelName channelName, int factor, ReductionMethod method)
@@ -39,12 +44,12 @@ void Encoder::reduceWidthResolutionColorChannel(ColorChannelName channelName, in
 	if (factor == 1) return;
 
 	// get channelName data and information
-	float* channel = channels->getChannel(channelName);
-	size_t channelDataSize = blocksPerChannel[channelName] * 8;
+	float* channel = image->channels->getChannel(channelName);
+	size_t channelDataSize = image->blocksPerChannel[channelName] * 8;
 
 	// adjust the channelName information
-	blocksPerChannel[channelName] /= factor;
-	channelSizes[channelName].width /= factor;
+	image->blocksPerChannel[channelName] /= factor;
+	image->channelSizes[channelName].width /= factor;
 
 	//TODO: implement AVX code paths
 
@@ -98,17 +103,17 @@ void Encoder::reduceHeightResolutionColorChannel(ColorChannelName channelName, i
 	if (factor == 1) return;
 
 	// get channelName data and information
-	float* channel = channels->getChannel(channelName);
-	size_t channelDataSize = blocksPerChannel[channelName] * 8;
+	float* channel = image->channels->getChannel(channelName);
+	size_t channelDataSize = image->blocksPerChannel[channelName] * 8;
 
 	// save old channelName info
-	Dimension2D oldchannelSize = channelSizes[channelName];
+	Dimension2D oldchannelSize = image->channelSizes[channelName];
 
 	// calc new channelName info
 	//size_t newChannelDataSize = channelDataSize / factor;
 	size_t newChannelHeight = oldchannelSize.height / factor;
-	blocksPerChannel[channelName] /= factor;
-	channelSizes[channelName].height = newChannelHeight;
+	image->blocksPerChannel[channelName] /= factor;
+	image->channelSizes[channelName].height = newChannelHeight;
 
 	//TODO: implement AVX code paths
 
@@ -156,25 +161,25 @@ void Encoder::reduceHeightResolutionColorChannel(ColorChannelName channelName, i
 
 void Encoder::reduceResolutionBySchema()
 {
-	reduceWidthResolutionColorChannel(Y, samplingScheme.reductionOptions[Y].widthFactor, samplingScheme.reductionOptions[Y].widthMethod);
-	reduceWidthResolutionColorChannel(Cb, samplingScheme.reductionOptions[Cb].widthFactor, samplingScheme.reductionOptions[Cb].widthMethod);
-	reduceWidthResolutionColorChannel(Cr, samplingScheme.reductionOptions[Cr].widthFactor, samplingScheme.reductionOptions[Cr].widthMethod);
+	reduceWidthResolutionColorChannel(Y,  image->samplingScheme.reductionOptions[Y].widthFactor,  image->samplingScheme.reductionOptions[Y].widthMethod);
+	reduceWidthResolutionColorChannel(Cb, image->samplingScheme.reductionOptions[Cb].widthFactor, image->samplingScheme.reductionOptions[Cb].widthMethod);
+	reduceWidthResolutionColorChannel(Cr, image->samplingScheme.reductionOptions[Cr].widthFactor, image->samplingScheme.reductionOptions[Cr].widthMethod);
 
-	reduceHeightResolutionColorChannel(Y, samplingScheme.reductionOptions[Y].heightFactor, samplingScheme.reductionOptions[Y].heightMethod);
-	reduceHeightResolutionColorChannel(Cb, samplingScheme.reductionOptions[Cb].heightFactor, samplingScheme.reductionOptions[Cb].heightMethod);
-	reduceHeightResolutionColorChannel(Cr, samplingScheme.reductionOptions[Cr].heightFactor, samplingScheme.reductionOptions[Cr].heightMethod);
+	reduceHeightResolutionColorChannel(Y,  image->samplingScheme.reductionOptions[Y].heightFactor,  image->samplingScheme.reductionOptions[Y].heightMethod);
+	reduceHeightResolutionColorChannel(Cb, image->samplingScheme.reductionOptions[Cb].heightFactor, image->samplingScheme.reductionOptions[Cb].heightMethod);
+	reduceHeightResolutionColorChannel(Cr, image->samplingScheme.reductionOptions[Cr].heightFactor, image->samplingScheme.reductionOptions[Cr].heightMethod);
 }
 
 void Encoder::ensurePointerMatrix(const ColorChannelName channelName)
 {
 	if (blocks[channelName].size() == 0)
 	{
-		float* const channel = channels->getChannel(channelName);
-		const size_t height = channelSizes[channelName].height;
-		const size_t width = channelSizes[channelName].width;
+		float* const channel = image->channels->getChannel(channelName);
+		const size_t height = image->channelSizes[channelName].height;
+		const size_t width = image->channelSizes[channelName].width;
 		const size_t size = height * width;
 
-		const Dimension2D& factors = samplingScheme.inverseFactor[channelName];
+		const Dimension2D& factors = image->samplingScheme.inverseFactor[channelName];
 
 		blocks[channelName].reserve(size / 64);
 
@@ -232,7 +237,7 @@ void Encoder::applyDCT(ColorChannelName channelName)
 		twoDimensionalDCTandQuantisationAVX(matrix, qTables[channelName], matrix);
 	}
 
-	auto zigZag = createZigZagOffsetArray(channelSizes[channelName].width);
+	auto zigZag = createZigZagOffsetArray(image->channelSizes[channelName].width);
 	calculateDCValues(zigZag, channelName);
 	calculateACValues(zigZag, channelName);
 }
@@ -412,15 +417,66 @@ HuffmanTablePtr<byte> Encoder::getHuffmanTable(CoefficientType type, ColorChanne
 
 void Encoder::serialize(BitBuffer &bitBuffer)
 {
-	size_t yBlockSize = (channelSizes[YCbCrColorName::Y].height*channelSizes[YCbCrColorName::Y].width) / 64;
+	using namespace JPEGSegments;
+
+	const Dimension2D& imageSize = image->getImageSize();
+	const SamplingDefinition& scheme = image->getSamplingScheme();
+	const HuffmanTablePtr<byte> huffmannDCY = getHuffmanTable(CoefficientType::DC, YCbCrColorName::Y);
+	const HuffmanTablePtr<byte> huffmannDCCb = getHuffmanTable(CoefficientType::DC, YCbCrColorName::Cb);
+	const HuffmanTablePtr<byte> huffmannACY = getHuffmanTable(CoefficientType::AC, YCbCrColorName::Y);
+	const HuffmanTablePtr<byte> huffmannACCb = getHuffmanTable(CoefficientType::AC, YCbCrColorName::Cb);
+	auto acHT = std::array<byte, 3>();
+	auto dcHT = std::array<byte, 3>();
+
+	StartOfImage startOfImage;
+	APP0 app0;
+	StartOfFrame0 startOfFrame0(static_cast<short>(imageSize.width), static_cast<short>(imageSize.height), scheme);
+	DefineHuffmannTable defineHuffmannTableDCY(Y, HuffmanTableType::DC, *huffmannDCY);
+	DefineHuffmannTable defineHuffmannTableDCCb(Cb, HuffmanTableType::DC, *huffmannDCCb);
+	DefineHuffmannTable defineHuffmannTableACY(Y, HuffmanTableType::AC, *huffmannACY);
+	DefineHuffmannTable defineHuffmannTableACCb(Cb, HuffmanTableType::AC, *huffmannACCb);
+	DefineQuantizationTable defineQuantizationTableLuminance(Y, qTables[Y]);
+	DefineQuantizationTable defineQuantizationTableChrominance(Cb, qTables[Cb]);
+	DefineQuantizationTable defineQuantizationTableChrominance2(Cr, qTables[Cr]);
+
+	acHT[YCbCrColorName::Y] = YCbCrColorName::Y;
+	acHT[YCbCrColorName::Cb] = YCbCrColorName::Cb;
+	acHT[YCbCrColorName::Cr] = YCbCrColorName::Cb;
+	dcHT[YCbCrColorName::Y] = YCbCrColorName::Y;
+	dcHT[YCbCrColorName::Cb] = YCbCrColorName::Cb;
+	dcHT[YCbCrColorName::Cr] = YCbCrColorName::Cb;
+
+	StartOfScan startOfScan(acHT, dcHT);
+	EndOfImage endOfImage;
+
+	Serialize(startOfImage, bitBuffer);
+	Serialize(app0, bitBuffer);
+	Serialize(startOfFrame0, bitBuffer);
+	Serialize(defineHuffmannTableDCY, bitBuffer);
+	Serialize(defineHuffmannTableDCCb, bitBuffer);
+	Serialize(defineHuffmannTableACY, bitBuffer);
+	Serialize(defineHuffmannTableACCb, bitBuffer);
+	Serialize(defineQuantizationTableLuminance, bitBuffer);
+	Serialize(defineQuantizationTableChrominance, bitBuffer);
+	Serialize(defineQuantizationTableChrominance2, bitBuffer);
+	Serialize(startOfScan, bitBuffer);
+
+	serializeScanData(bitBuffer);
+
+	Serialize(endOfImage, bitBuffer);
+}
+
+void Encoder::serializeScanData(BitBuffer & bitBuffer)
+{
+	size_t yBlockSize = (image->channelSizes[YCbCrColorName::Y].height*image->channelSizes[YCbCrColorName::Y].width) / 64;
 	//size_t cbBlockSize = (channelSizes[YCbCrColorName::Cb].height*channelSizes[YCbCrColorName::Cb].width) / 64;
 	//size_t crBlockSize = (channelSizes[YCbCrColorName::Cr].height*channelSizes[YCbCrColorName::Cr].width) / 64;
-	
-	size_t yfactor = samplingScheme.inverseFactor[Y].height * samplingScheme.inverseFactor[Y].width;
-	size_t cbfactor = samplingScheme.inverseFactor[Cb].height * samplingScheme.inverseFactor[Cb].width;
-	size_t crfactor = samplingScheme.inverseFactor[Cr].height * samplingScheme.inverseFactor[Cr].width;
 
-	for (int i = 0; i < yBlockSize/yfactor; i++)
+	size_t yfactor = image->samplingScheme.inverseFactor[Y].height  * image->samplingScheme.inverseFactor[Y].width;
+	size_t cbfactor = image->samplingScheme.inverseFactor[Cb].height * image->samplingScheme.inverseFactor[Cb].width;
+	size_t crfactor = image->samplingScheme.inverseFactor[Cr].height * image->samplingScheme.inverseFactor[Cr].width;
+
+	for (int i = 0; i < yBlockSize / yfactor; i++)
 	{
 		for (int count = 0; count < yfactor; count++)
 		{

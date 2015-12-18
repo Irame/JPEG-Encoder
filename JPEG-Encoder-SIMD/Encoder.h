@@ -3,7 +3,7 @@
 #include "ZigZag.h"
 #include "HuffmanCodingByte.h"
 
-class Encoder : public Image
+class Encoder
 {
 public:
 	enum CoefficientType
@@ -12,8 +12,9 @@ public:
 	};
 
 private:
-
-	//first index is ColorChannelName second index is CoefficientType
+	ImagePtr image;
+	
+	// first index is ColorChannelName second index is CoefficientType
 	std::vector<BEushort> bitPatternDC[3];
 	std::vector<byte> categoriesDC[3];
 	std::vector<std::vector<BEushort>> bitPatternAC[3];
@@ -39,6 +40,7 @@ private:
 
 public:
 	Encoder(const Image& image, const std::array<QTable, 3>& qtables);
+	Encoder(ImagePtr imagePtr, const std::array<QTable, 3>& qtables);
 
 	void convertToYCbCr();
 	void convertToRGB();
@@ -49,6 +51,7 @@ public:
 
 	HuffmanTablePtr<byte> getHuffmanTable(CoefficientType type, ColorChannelName channelName);
 	void serialize(BitBuffer &bitBuffer);
+	void serializeScanData(BitBuffer& bitBuffer);
 
 	void applyDCT(ColorChannelName colorChannelName);	
 
