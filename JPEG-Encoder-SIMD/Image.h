@@ -13,12 +13,12 @@ typedef unsigned int uint;
 typedef std::shared_ptr<Image> ImagePtr;
 
 struct PixelData32 {
-	float R, G, B, A;
+	float R, G, B/*, A*/;
 
-	PixelData32() : R(0.0f), G(0.0f), B(0.0f), A(1.0f) {}
+	PixelData32() : R(0.0f), G(0.0f), B(0.0f)/*, A(1.0f)*/ {}
 
-	PixelData32(float r, float g, float b, float a = 1.0f)
-		: R(r), G(g), B(b), A(a)
+	PixelData32(float r, float g, float b/*, float a = 1.0f*/)
+		: R(r), G(g), B(b)/*, A(a)*/
 	{}
 };
 

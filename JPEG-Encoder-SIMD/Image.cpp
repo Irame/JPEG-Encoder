@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "SIMD.h"
 #include "Image.h"
-#include "HuffmanCodingByte.h"
 
 Image::Image(size_t width, size_t height, SamplingScheme scheme, std::array<QTable, 3> qtables)
 	: imageSize(width, height), stepSize(scheme.calcWidthStepSize(), scheme.calcHeightStepSize()),
@@ -193,7 +192,7 @@ void Image::getPixel(PixelData32& ref, size_t x, size_t y) const
 	ref.R = *channels->red(getPixelPos(R, x, y));
 	ref.G = *channels->green(getPixelPos(G, x, y));
 	ref.B = *channels->blue(getPixelPos(B, x, y));
-	ref.A = 1.0f;
+	//ref.A = 1.0f;
 }
 
 

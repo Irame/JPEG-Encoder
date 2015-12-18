@@ -136,7 +136,7 @@ ImagePtr ImageLoader::LoadPPM(std::string path, SamplingScheme scheme, std::arra
 
 
 	ImagePtr resultImage = make_shared<Image>(width, height, scheme, qTables);
-	resultImage->setRawPixelData((float*)&data[0]);
+	resultImage->setRawPixelData(reinterpret_cast<float*>(data.data()));
 	return resultImage;
 }
 
@@ -173,7 +173,7 @@ ImagePtr ImageLoader::LoadPNG(std::string path, SamplingScheme samplingScheme, s
 	std::vector<unsigned char> imgData;
 	unsigned imgWidth, imgHeight;
 
-	unsigned error = lodepng::decode(imgData, imgWidth, imgHeight, path);
+	unsigned error = lodepng::decode(imgData, imgWidth, imgHeight, path, LCT_RGB);
 	if (error) {
 		std::cout << "Failed to decode png " << path << " with error: " << error << ": " << lodepng_error_text(error) << std::endl;
 		return nullptr;
@@ -185,7 +185,7 @@ ImagePtr ImageLoader::LoadPNG(std::string path, SamplingScheme samplingScheme, s
 	}
 
 	ImagePtr resultImage = make_shared<Image>(imgWidth, imgHeight, samplingScheme, qTables);
-	resultImage->setRawPixelData((float*)&imgDataFloat[0]);
+	resultImage->setRawPixelData(imgDataFloat.data());
 	return resultImage;
 }
 

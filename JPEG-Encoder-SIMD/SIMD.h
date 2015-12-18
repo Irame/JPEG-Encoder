@@ -34,42 +34,43 @@ AVXCALL transposeFloatSSE(float *pSrc, float *pDst, unsigned int imageSize)
 	}
 }
 
-/// Transforms a Pixel stream (RGBA RGBA RGBA ...) 
+/// Transforms a Pixel stream (RGB RGB RGB ...) 
 /// into blocks of 8 pixels (RRRRRRRR GGGGGGGG ...)
 AVXCALL transposeFloatAVX(float *pSrc, float *pDstR, float *pDstG, float *pDstB, size_t imageSize)
 {
-	size_t size = imageSize * 4; // per Pixel: RGBA
+	size_t size = imageSize * 3; // per Pixel: RGBA
 	size_t i = 0;
 
-	__m256 ld0, ld1, ld2, ld3;
-	__m256 pm0, pm1, pm2, pm3;
-	__m256 up0, up1, up2, up3;
+	// cant use simd here anymore because we dont have the alpha valuew anymore
+	//__m256 ld0, ld1, ld2, ld3;
+	//__m256 pm0, pm1, pm2, pm3;
+	//__m256 up0, up1, up2, up3;
 
 	// (size & ~0x1F) sorgt dafür, dass size durch 32 teilbar ist, indem die "Rest-Bits" verworfen werden
-	for (; i < (size & ~0x1F); i += 32)
-	{
-		ld0 = _mm256_loadu_ps(pSrc + i);
-		ld1 = _mm256_loadu_ps(pSrc + i + 8);
-		ld2 = _mm256_loadu_ps(pSrc + i + 16);
-		ld3 = _mm256_loadu_ps(pSrc + i + 24);
-		pm0 = _mm256_permute2f128_ps(ld0, ld2, 0x20); // R0G0B0A0 R4G4B4A4
-		pm1 = _mm256_permute2f128_ps(ld1, ld3, 0x20); // R2G2B2A2 R6G6B6A6
-		pm2 = _mm256_permute2f128_ps(ld0, ld2, 0x31); // R1G1B1A1 R5G5B5A5
-		pm3 = _mm256_permute2f128_ps(ld1, ld3, 0x31); // R3G3B3A3 R7G7B7A7
-		up0 = _mm256_unpacklo_ps(pm0, pm1); // R0R2G0G2 R4R6G4G6
-		up1 = _mm256_unpackhi_ps(pm0, pm1); // B0B2A0A2 B4B6A4A6
-		up2 = _mm256_unpacklo_ps(pm2, pm3); // R1R3G1G3 R5R7G5G7
-		up3 = _mm256_unpackhi_ps(pm2, pm3); // B1B3A1A3 B5B7A5A7
-		_mm256_store_ps(pDstR + (i / 4), _mm256_unpacklo_ps(up0, up2)); // R0R1R2R3 R4R5R6R7
-		_mm256_store_ps(pDstG + (i / 4), _mm256_unpackhi_ps(up0, up2)); // G0G1G2G3 G4G5G6G7 
-		_mm256_store_ps(pDstB + (i / 4), _mm256_unpacklo_ps(up1, up3)); // B0B1B2B3 B4B5B6B7
-	}
+	//for (; i < (size & ~0x1F); i += 32)
+	//{
+	//	ld0 = _mm256_loadu_ps(pSrc + i);
+	//	ld1 = _mm256_loadu_ps(pSrc + i + 8);
+	//	ld2 = _mm256_loadu_ps(pSrc + i + 16);
+	//	ld3 = _mm256_loadu_ps(pSrc + i + 24);
+	//	pm0 = _mm256_permute2f128_ps(ld0, ld2, 0x20); // R0G0B0A0 R4G4B4A4
+	//	pm1 = _mm256_permute2f128_ps(ld1, ld3, 0x20); // R2G2B2A2 R6G6B6A6
+	//	pm2 = _mm256_permute2f128_ps(ld0, ld2, 0x31); // R1G1B1A1 R5G5B5A5
+	//	pm3 = _mm256_permute2f128_ps(ld1, ld3, 0x31); // R3G3B3A3 R7G7B7A7
+	//	up0 = _mm256_unpacklo_ps(pm0, pm1); // R0R2G0G2 R4R6G4G6
+	//	up1 = _mm256_unpackhi_ps(pm0, pm1); // B0B2A0A2 B4B6A4A6
+	//	up2 = _mm256_unpacklo_ps(pm2, pm3); // R1R3G1G3 R5R7G5G7
+	//	up3 = _mm256_unpackhi_ps(pm2, pm3); // B1B3A1A3 B5B7A5A7
+	//	_mm256_store_ps(pDstR + (i / 4), _mm256_unpacklo_ps(up0, up2)); // R0R1R2R3 R4R5R6R7
+	//	_mm256_store_ps(pDstG + (i / 4), _mm256_unpackhi_ps(up0, up2)); // G0G1G2G3 G4G5G6G7 
+	//	_mm256_store_ps(pDstB + (i / 4), _mm256_unpacklo_ps(up1, up3)); // B0B1B2B3 B4B5B6B7
+	//}
 
-	for (; i < size; i += 4)
+	for (; i < size; i += 3)
 	{
-		pDstR[i] = pSrc[i];
-		pDstG[i] = pSrc[i + 1];
-		pDstB[i] = pSrc[i + 2];
+		pDstR[i/3] = pSrc[i];
+		pDstG[i/3] = pSrc[i + 1];
+		pDstB[i/3] = pSrc[i + 2];
 	}
 }
 
