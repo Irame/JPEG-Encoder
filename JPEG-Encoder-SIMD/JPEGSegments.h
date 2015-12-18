@@ -90,21 +90,11 @@ namespace JPEGSegments
 			marker(SegmentType::StartOfFrame0), 
 			yResolution(yResolution), 
 			xResolution(xResolution) {
-			int maxFactor1 = std::max(scheme.reductionOptions[YCbCrColorName::Y].heightFactor, scheme.reductionOptions[YCbCrColorName::Y].widthFactor);
-			int maxFactor2 = std::max(scheme.reductionOptions[YCbCrColorName::Cb].heightFactor, scheme.reductionOptions[YCbCrColorName::Cb].widthFactor);
-			int maxFactor3 = std::max(scheme.reductionOptions[YCbCrColorName::Cr].heightFactor, scheme.reductionOptions[YCbCrColorName::Cr].widthFactor);
-			int maxFactor = std::max(std::max(maxFactor1, maxFactor2), maxFactor3);
-			byte yheight = (maxFactor / scheme.reductionOptions[YCbCrColorName::Y].heightFactor) << 4;
-			byte ywidth = maxFactor / scheme.reductionOptions[YCbCrColorName::Y].widthFactor;
-			byte cbheight = (maxFactor / scheme.reductionOptions[YCbCrColorName::Cb].heightFactor) << 4;
-			byte cbwidth = maxFactor / scheme.reductionOptions[YCbCrColorName::Cb].widthFactor;
-			byte crheight = (maxFactor / scheme.reductionOptions[YCbCrColorName::Cr].heightFactor) << 4;
-			byte crwidth = maxFactor / scheme.reductionOptions[YCbCrColorName::Cr].widthFactor;
-			Y[1] = yheight | ywidth;
+			Y[1] = scheme.inverseFactor[YCbCrColorName::Y].width << 4 | 0b1111 & scheme.inverseFactor[YCbCrColorName::Y].height;
 			Y[2] = static_cast<byte>(YCbCrColorName::Y);
-			Cb[1] = cbheight | cbwidth;
+			Cb[1] = scheme.inverseFactor[YCbCrColorName::Cb].width << 4 | 0b1111 & scheme.inverseFactor[YCbCrColorName::Cb].height;
 			Cb[2] = static_cast<byte>(YCbCrColorName::Cb);
-			Cr[1] = crheight | crwidth;
+			Cr[1] = scheme.inverseFactor[YCbCrColorName::Cr].width << 4 | 0b1111 & scheme.inverseFactor[YCbCrColorName::Cr].height;
 			Cr[2] = static_cast<byte>(YCbCrColorName::Cr);
 		}
 	};
