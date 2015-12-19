@@ -184,7 +184,7 @@ void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid, bool escap
 			data[byteOffset++] = joinTwoBytes(srcBuffer[srcByteOffset], srcBuffer[srcByteOffset + 1], leftCount);
 			srcByteOffset++;
 
-			if (escape && data[byteOffset - 1] == 0xff)
+			if (escape && (numOfBits - srcOffset >= 8)  && data[byteOffset - 1] == 0xff)
 			{
 				ensureFreeSpace(numOfBits - srcOffset + 8);
 				data[byteOffset++] = 0x00;
