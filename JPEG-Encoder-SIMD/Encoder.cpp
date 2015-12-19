@@ -170,85 +170,87 @@ void Encoder::reduceResolutionBySchema()
 	reduceHeightResolutionColorChannel(Cr, image->samplingScheme.reductionOptions[Cr].heightFactor, image->samplingScheme.reductionOptions[Cr].heightMethod);
 }
 
-void Encoder::ensurePointerMatrix(const ColorChannelName channelName)
+std::vector<PointerMatrix> Encoder::createBlocks(const ColorChannelName channelName)
 {
-	if (blocks[channelName].size() == 0)
+	std::vector<PointerMatrix> result;
+
+	float* const channel = image->channels->getChannel(channelName);
+	const size_t height = image->channelSizes[channelName].height;
+	const size_t width = image->channelSizes[channelName].width;
+	const size_t size = height * width;
+
+	const Dimension2D& factors = image->samplingScheme.inverseFactor[channelName];
+
+	result.reserve(size / 64);
+
+	const size_t lineOffsets[8]{
+		0,
+		width,
+		width * 2,
+		width * 3,
+		width * 4,
+		width * 5,
+		width * 6,
+		width * 7
+	};
+
+	const size_t blockWidth = 8;
+	const size_t blockHeight = 8;
+
+	const size_t mcuHeight = blockHeight * factors.height;
+	const size_t mcuWidth = blockWidth * factors.width;
+
+	const size_t mcuRowSize = width * mcuHeight;
+	const size_t blockRowSize = width * blockHeight;
+
+	for (size_t mcuYpos = 0; mcuYpos < size; mcuYpos += mcuRowSize)
 	{
-		float* const channel = image->channels->getChannel(channelName);
-		const size_t height = image->channelSizes[channelName].height;
-		const size_t width = image->channelSizes[channelName].width;
-		const size_t size = height * width;
-
-		const Dimension2D& factors = image->samplingScheme.inverseFactor[channelName];
-
-		blocks[channelName].reserve(size / 64);
-
-		const size_t lineOffsets[8]{
-			0,
-			width,
-			width * 2,
-			width * 3,
-			width * 4,
-			width * 5,
-			width * 6,
-			width * 7
-		};
-
-		const size_t blockWidth = 8;
-		const size_t blockHeight = 8;
-
-		const size_t mcuHeight = blockHeight * factors.height;
-		const size_t mcuWidth = blockWidth * factors.width;
-
-		const size_t mcuRowSize = width * mcuHeight;
-		const size_t blockRowSize = width * blockHeight;
-
-		for (size_t mcuYpos = 0; mcuYpos < size; mcuYpos += mcuRowSize)
+		for (size_t mcuXpos = 0; mcuXpos < width; mcuXpos += mcuWidth)
 		{
-			for (size_t mcuXpos = 0; mcuXpos < width; mcuXpos += mcuWidth)
+			for (size_t mcuRow = 0; mcuRow < mcuRowSize; mcuRow += blockRowSize)
 			{
-				for (size_t mcuRow = 0; mcuRow < mcuRowSize; mcuRow += blockRowSize)
+				for (size_t mcuCol = 0; mcuCol < mcuWidth; mcuCol += blockWidth)
 				{
-					for (size_t mcuCol = 0; mcuCol < mcuWidth; mcuCol += blockWidth)
-					{
-						float* position = channel + (mcuYpos + mcuXpos + mcuRow + mcuCol);
-						blocks[channelName].emplace_back(
-							position + lineOffsets[0],
-							position + lineOffsets[1],
-							position + lineOffsets[2],
-							position + lineOffsets[3],
-							position + lineOffsets[4],
-							position + lineOffsets[5],
-							position + lineOffsets[6],
-							position + lineOffsets[7]
-						);
-					}
+					float* position = channel + (mcuYpos + mcuXpos + mcuRow + mcuCol);
+					result.emplace_back(
+						position + lineOffsets[0],
+						position + lineOffsets[1],
+						position + lineOffsets[2],
+						position + lineOffsets[3],
+						position + lineOffsets[4],
+						position + lineOffsets[5],
+						position + lineOffsets[6],
+						position + lineOffsets[7]
+					);
 				}
 			}
 		}
 	}
+
+	return result;
 }
 
 void Encoder::applyDCT(ColorChannelName channelName)
 {
-	ensurePointerMatrix(channelName);
-	for (PointerMatrix& matrix : blocks[channelName])
+	std::vector<PointerMatrix> blocks = createBlocks(channelName);
+
+	for (PointerMatrix& matrix : blocks)
 	{
 		twoDimensionalDCTandQuantisationAVX(matrix, qTables[channelName], matrix);
 	}
 
 	auto zigZag = createZigZagOffsetArray(image->channelSizes[channelName].width);
-	calculateDCValues(zigZag, channelName);
-	calculateACValues(zigZag, channelName);
+	calculateDCValues(blocks, zigZag, channelName);
+	calculateACValues(blocks, zigZag, channelName);
 }
 
-void Encoder::calculateDCValues(const OffsetArray& zigZag, const ColorChannelName channelName)
+void Encoder::calculateDCValues(const std::vector<PointerMatrix>& blocks, const OffsetArray& zigZag, const ColorChannelName channelName)
 {
-	bitPatternDC[channelName].reserve(blocks[channelName].size());
-	categoriesDC[channelName].reserve(blocks[channelName].size());
+	bitPatternDC[channelName].reserve(blocks.size());
+	categoriesDC[channelName].reserve(blocks.size());
 
 	short lastDC = 0;
-	for (const PointerMatrix& matrix : blocks[channelName])
+	for (const PointerMatrix& matrix : blocks)
 	{
 		float* dcValuePointer = matrix[0] + zigZag[0];
 		short dcValue = static_cast<short>(*dcValuePointer);
@@ -273,13 +275,13 @@ void Encoder::calculateDCValues(const OffsetArray& zigZag, const ColorChannelNam
 	}
 }
 
-void Encoder::calculateACValues(const OffsetArray& zigZag, const ColorChannelName channelName)
+void Encoder::calculateACValues(const std::vector<PointerMatrix>& blocks, const OffsetArray& zigZag, const ColorChannelName channelName)
 {
-	bitPatternAC[channelName].reserve(blocks[channelName].size());
-	categoriesAC[channelName].reserve(blocks[channelName].size());
+	bitPatternAC[channelName].reserve(blocks.size());
+	categoriesAC[channelName].reserve(blocks.size());
 
 
-	for (const PointerMatrix& matrix : blocks[channelName])
+	for (const PointerMatrix& matrix : blocks)
 	{
 		std::vector<BEushort> bitPattern;
 		std::vector<byte> categories;
@@ -363,15 +365,23 @@ HuffmanTablePtr<byte> Encoder::createHuffmanTable(const CoefficientType type, co
 	if (type == CoefficientType::AC)
 	{
 		// AC
-		cat.reserve(categoriesAC[channelName].size() * 63);
-		for (std::vector<byte>& v : categoriesAC[channelName])
+		if (channelName == YCbCrColorName::Y)
 		{
-			cat.insert(cat.end(), v.begin(), v.end());
+			cat.reserve(categoriesAC[YCbCrColorName::Y].size() * 63);
+			for (std::vector<byte>& v : categoriesAC[YCbCrColorName::Y])
+			{
+				cat.insert(cat.end(), v.begin(), v.end());
+			}
 		}
-
-		if (channelName == YCbCrColorName::Cb)
+		else
 		{
+			cat.reserve(categoriesAC[YCbCrColorName::Cr].size() * 63);
 			for (std::vector<byte>& v : categoriesAC[YCbCrColorName::Cr])
+			{
+				cat.insert(cat.end(), v.begin(), v.end());
+			}
+
+			for (std::vector<byte>& v : categoriesAC[YCbCrColorName::Cb])
 			{
 				cat.insert(cat.end(), v.begin(), v.end());
 			}
@@ -380,14 +390,14 @@ HuffmanTablePtr<byte> Encoder::createHuffmanTable(const CoefficientType type, co
 	else
 	{
 		// DC
-		if (channelName == YCbCrColorName::Cb)
+		if (channelName == YCbCrColorName::Y)
 		{
-			cat.insert(cat.end(), categoriesDC[channelName].begin(), categoriesDC[channelName].end());
-			cat.insert(cat.end(), categoriesDC[YCbCrColorName::Cr].begin(), categoriesDC[YCbCrColorName::Cr].end());
+			cat = categoriesDC[YCbCrColorName::Y];
 		}
 		else
 		{
-			cat = categoriesDC[channelName];
+			cat.insert(cat.end(), categoriesDC[YCbCrColorName::Cb].begin(), categoriesDC[YCbCrColorName::Cb].end());
+			cat.insert(cat.end(), categoriesDC[YCbCrColorName::Cr].begin(), categoriesDC[YCbCrColorName::Cr].end());
 		}
 	}
 

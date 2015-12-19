@@ -20,13 +20,12 @@ private:
 	std::vector<std::vector<BEushort>> bitPatternAC[3];
 	std::vector<std::vector<byte>> categoriesAC[3];
 	HuffmanTablePtr<byte> huffmanTables[2][2];
-	std::vector<PointerMatrix> blocks[3];
 
 	const QTableSet qTables;
 
-	void ensurePointerMatrix(const ColorChannelName channelName);
-	void calculateACValues(const OffsetArray& zigZag, const ColorChannelName channelName);
-	void calculateDCValues(const OffsetArray& zigZag, const ColorChannelName channelName);
+	std::vector<PointerMatrix> createBlocks(const ColorChannelName channelName);
+	void calculateACValues(const std::vector<PointerMatrix>& blocks, const OffsetArray& zigZag, const ColorChannelName channelName);
+	void calculateDCValues(const std::vector<PointerMatrix>& blocks, const OffsetArray& zigZag, const ColorChannelName channelName);
 
 	// Optimized bit category lookup of an AC/DC value
 	byte lookupBitCategory(short value) const;
