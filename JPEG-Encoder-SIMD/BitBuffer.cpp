@@ -184,6 +184,8 @@ void BitBuffer::pushBits(size_t numOfBits, const void* srcBufferVoid, bool escap
 			data[byteOffset++] = joinTwoBytes(srcBuffer[srcByteOffset], srcBuffer[srcByteOffset + 1], leftCount);
 			srcByteOffset++;
 
+			// in case that joinTwoBytes() generates an 0xFF in the last iteration of the while loop
+			// and we're not at byte boundry we musn't escape because the 0xFF won't be in the output
 			if (escape && (numOfBits - srcOffset >= 8)  && data[byteOffset - 1] == 0xff)
 			{
 				ensureFreeSpace(numOfBits - srcOffset + 8);
@@ -269,6 +271,11 @@ void BitBuffer::writeToFile(std::string filePath)
 	std::ofstream fileStream;
 
 	fileStream.open(filePath, std::ios::out | std::ios::trunc | std::ios::binary);
+
+	if (!fileStream.is_open()) {
+		std::cout << "Failed to open bitbuffer output file '" << filePath << "'" << std::endl;
+	}
+
 	fileStream.write(reinterpret_cast<char*>(data.data()), (dataBitOffset + 7) / 8);
 	fileStream.flush();
 	fileStream.close();
