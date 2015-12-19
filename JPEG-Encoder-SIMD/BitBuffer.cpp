@@ -269,6 +269,11 @@ void BitBuffer::writeToFile(std::string filePath)
 	std::ofstream fileStream;
 
 	fileStream.open(filePath, std::ios::out | std::ios::trunc | std::ios::binary);
+
+	if (!fileStream.is_open()) {
+		std::cout << "Failed to open bitbuffer output file '" << filePath << "'" << std::endl;
+	}
+
 	fileStream.write(reinterpret_cast<char*>(data.data()), (dataBitOffset + 7) / 8);
 	fileStream.flush();
 	fileStream.close();
