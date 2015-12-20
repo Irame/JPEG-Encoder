@@ -155,7 +155,8 @@ void test2DCT()
 
 	benchmark("Benchmark Direct DCT", 231, [&testImageBlocks, &testImageResultBlocks]()
 	{
-		for (size_t i = 0; i < testImageBlocks.size(); i++)
+#pragma omp parallel for
+		for (int i = 0; i < testImageBlocks.size(); i++)
 		{
 			DCT::directDCT(testImageBlocks[i], testImageResultBlocks[i]);
 		}
@@ -163,7 +164,8 @@ void test2DCT()
 
 	benchmark("Benchmark Seperate DCT", 5903, [&testImageBlocks, &testImageResultBlocks]()
 	{
-		for (size_t i = 0; i < testImageBlocks.size(); i++)
+#pragma omp parallel for
+		for (int i = 0; i < testImageBlocks.size(); i++)
 		{
 			DCT::seperateDCT(testImageBlocks[i], testImageResultBlocks[i]);
 		}
@@ -171,7 +173,8 @@ void test2DCT()
 
 	benchmark("Benchmark Arai DCT", 47393, [&testImageBlocks, &testImageResultBlocks]()
 	{
-		for (size_t i = 0; i < testImageBlocks.size(); i++)
+#pragma omp parallel for
+		for (int i = 0; i < testImageBlocks.size(); i++)
 		{
 			DCT::araiDCT(testImageBlocks[i], testImageResultBlocks[i]);
 		}
@@ -179,7 +182,8 @@ void test2DCT()
 
 	benchmark("Benchmark Arai DCT (AVX)", 147059, [&testImageBlocks, &testImageResultBlocks]()
 	{
-		for (size_t i = 0; i < testImageBlocks.size(); i++)
+#pragma omp parallel for
+		for (int i = 0; i < testImageBlocks.size(); i++)
 		{
 			DCT::araiDCTAVX(testImageBlocks[i], testImageResultBlocks[i]);
 		}

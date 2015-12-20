@@ -60,6 +60,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	setCXXFlag_Release("/Oi") 	   # Generate Intrinsic Functions	
 	setCXXFlag_Release("/GL") 	   # whole program optimization
 	setCXXFlag_Release("/MT")	   # use the multithread, static version of the run-time library
+	setCXXFlag_Release("/openmp")  # enables OpenMP (set to '/openmp-' to disable it)
 	
 	setLinkerFlag_Release("/LTCG") # link time code generation
 endif()
@@ -74,6 +75,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 	setCXXFlag_Debug("/MTd")	   # use the multithread, static version of the run-time library in debug
 	
 	setCXXFlag_Release("/MT")	   # use the multithread, static version of the run-time library
+	setCXXFlag_Release("/openmp")  # enables OpenMP (set to '/openmp-' to disable it)
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
@@ -92,6 +94,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
 	setCXXFlag_Debug("/MTd")	   # use the multithread, static version of the run-time library in debug
 	
 	setCXXFlag_Release("/MT")	   # use the multithread, static version of the run-time library
+	setCXXFlag_Release("/openmp")  # enables OpenMP (set to '/openmp-' to disable it)
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") # GCC
@@ -99,6 +102,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") # GCC
 
 	setCXXFlag("-mavx")		 # Use AVX instructions
 	setCXXFlag("-std=c++1y") # Use latest C++ standard
+	
+	setCXXFlag_Release("/openmp")  # enables OpenMP (set to '/openmp-' to disable it)
 endif()
 
 
