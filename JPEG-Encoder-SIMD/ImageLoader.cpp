@@ -179,7 +179,7 @@ void ImageLoader::SavePPM(std::string path, ImagePtr image)
 ImagePtr ImageLoader::LoadPNG(std::string path, SamplingDefinition samplingScheme)
 {
 	std::vector<unsigned char> imgData;
-	unsigned imgWidth, imgHeight;
+	size_t imgWidth, imgHeight;
 
 	unsigned error = lodepng::decode(imgData, imgWidth, imgHeight, path, LCT_RGB);
 	if (error) {
