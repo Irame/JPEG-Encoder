@@ -74,10 +74,10 @@ void bitBufferTest(string filePath)
 	JPEGSegments::StartOfFrame0 startOfFrame0(1680,900, Sampling::Scheme422);
 
 	vector<byte> allSymbols{ 0, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
-	cout << "All symbols: " << allSymbols << endl;
+	std::cout << "All symbols: " << allSymbols << endl;
 
 	auto huffmanTable = HuffmanTable<byte>::create(16, allSymbols);
-	cout << "Huffman Table:" << endl << *huffmanTable;
+	std::cout << "Huffman Table:" << endl << *huffmanTable;
 
 	JPEGSegments::DefineHuffmannTable defineHuffmanTable(3, JPEGSegments::HuffmanTableType::AC, *huffmanTable);
 
@@ -115,77 +115,116 @@ void test2DCT()
 	size_t size = width * height;
 
 	vector<float> testImage(size);
-	vector<float> testDCTResult(size, 0);
 
 	for (size_t i = 0; i < size; i++)
 	{
 		testImage[i] = static_cast<float>(i%256);
 	}
-	
-	vector<PointerMatrix> testImageBlocks;
-	vector<PointerMatrix> testImageResultBlocks;
 
-	for (size_t x = 0; x < width; x += 8)
+	benchmark("Benchmark Direct DCT", 231, [&testImage, &width, &size]()
 	{
-		for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
+#pragma omp parallel for
+		for (int x = 0; x < width; x += 8)
 		{
-			testImageBlocks.emplace_back(
-				&testImage[curOffset],
-				&testImage[curOffset + width * 1],
-				&testImage[curOffset + width * 2],
-				&testImage[curOffset + width * 3],
-				&testImage[curOffset + width * 4],
-				&testImage[curOffset + width * 5],
-				&testImage[curOffset + width * 6],
-				&testImage[curOffset + width * 7]
+			for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
+			{
+				PointerMatrix curBlock(
+					&testImage[curOffset],
+					&testImage[curOffset + width * 1],
+					&testImage[curOffset + width * 2],
+					&testImage[curOffset + width * 3],
+					&testImage[curOffset + width * 4],
+					&testImage[curOffset + width * 5],
+					&testImage[curOffset + width * 6],
+					&testImage[curOffset + width * 7]
 				);
 
-			testImageResultBlocks.emplace_back(
-				&testDCTResult[curOffset],
-				&testDCTResult[curOffset + width * 1],
-				&testDCTResult[curOffset + width * 2],
-				&testDCTResult[curOffset + width * 3],
-				&testDCTResult[curOffset + width * 4],
-				&testDCTResult[curOffset + width * 5],
-				&testDCTResult[curOffset + width * 6],
-				&testDCTResult[curOffset + width * 7]
-				);
+				DCT::directDCT(curBlock, curBlock);
+			}
 		}
+	});
+
+	for (size_t i = 0; i < size; i++)
+	{
+		testImage[i] = static_cast<float>(i % 256);
 	}
 
-	benchmark("Benchmark Direct DCT", 231, [&testImageBlocks, &testImageResultBlocks]()
+	benchmark("Benchmark Seperate DCT", 5903, [&testImage, &width, &size]()
 	{
 #pragma omp parallel for
-		for (int i = 0; i < testImageBlocks.size(); i++)
+		for (int x = 0; x < width; x += 8)
 		{
-			DCT::directDCT(testImageBlocks[i], testImageResultBlocks[i]);
+			for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
+			{
+				PointerMatrix curBlock(
+					&testImage[curOffset],
+					&testImage[curOffset + width * 1],
+					&testImage[curOffset + width * 2],
+					&testImage[curOffset + width * 3],
+					&testImage[curOffset + width * 4],
+					&testImage[curOffset + width * 5],
+					&testImage[curOffset + width * 6],
+					&testImage[curOffset + width * 7]
+					);
+
+				DCT::seperateDCT(curBlock, curBlock);
+			}
 		}
 	});
 
-	benchmark("Benchmark Seperate DCT", 5903, [&testImageBlocks, &testImageResultBlocks]()
+	for (size_t i = 0; i < size; i++)
+	{
+		testImage[i] = static_cast<float>(i % 256);
+	}
+
+	benchmark("Benchmark Arai DCT", 47393, [&testImage, &width, &size]()
 	{
 #pragma omp parallel for
-		for (int i = 0; i < testImageBlocks.size(); i++)
+		for (int x = 0; x < width; x += 8)
 		{
-			DCT::seperateDCT(testImageBlocks[i], testImageResultBlocks[i]);
+			for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
+			{
+				PointerMatrix curBlock(
+					&testImage[curOffset],
+					&testImage[curOffset + width * 1],
+					&testImage[curOffset + width * 2],
+					&testImage[curOffset + width * 3],
+					&testImage[curOffset + width * 4],
+					&testImage[curOffset + width * 5],
+					&testImage[curOffset + width * 6],
+					&testImage[curOffset + width * 7]
+					);
+
+				DCT::araiDCT(curBlock, curBlock);
+			}
 		}
 	});
 
-	benchmark("Benchmark Arai DCT", 47393, [&testImageBlocks, &testImageResultBlocks]()
+	for (size_t i = 0; i < size; i++)
 	{
-#pragma omp parallel for
-		for (int i = 0; i < testImageBlocks.size(); i++)
-		{
-			DCT::araiDCT(testImageBlocks[i], testImageResultBlocks[i]);
-		}
-	});
+		testImage[i] = static_cast<float>(i % 256);
+	}
 
-	benchmark("Benchmark Arai DCT (AVX)", 147059, [&testImageBlocks, &testImageResultBlocks]()
+	benchmark("Benchmark Arai DCT (AVX)", 147059, [&testImage, &width, &size]()
 	{
 #pragma omp parallel for
-		for (int i = 0; i < testImageBlocks.size(); i++)
+		for (int x = 0; x < width; x += 8)
 		{
-			DCT::araiDCTAVX(testImageBlocks[i], testImageResultBlocks[i]);
+			for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
+			{
+				PointerMatrix curBlock(
+					&testImage[curOffset],
+					&testImage[curOffset + width * 1],
+					&testImage[curOffset + width * 2],
+					&testImage[curOffset + width * 3],
+					&testImage[curOffset + width * 4],
+					&testImage[curOffset + width * 5],
+					&testImage[curOffset + width * 6],
+					&testImage[curOffset + width * 7]
+					);
+
+				DCT::araiDCTAVX(curBlock, curBlock);
+			}
 		}
 	});
 }
@@ -216,90 +255,90 @@ void testDCT()
 	PointerMatrix testMatrix = PointerMatrix(rowOne, rowTwo, rowThree, rowFour, rowFive, rowSix, rowSeven, rowEight);
 	auto kokMatrix = mat8x8(rowOne, rowTwo, rowThree, rowFour, rowFive, rowSix, rowSeven, rowEight);
 
-	cout << "Input Block:" << endl;
+	std::cout << "Input Block:" << endl;
 	for (size_t i = 0; i < 8; i++)
 	{
 		for (size_t j = 0; j < 8; j++)
 		{
-			//cout << round(result[i][j]) << " | ";
+			//std::cout << round(result[i][j]) << " | ";
 			printf("%8.2f | ", roundf(testMatrix[i][j]));
 		}
-		cout << endl;
+		std::cout << endl;
 	}
-	cout << "================" << endl;
+	std::cout << "================" << endl;
 
-	cout << "Start direct DCT" << endl;
+	std::cout << "Start direct DCT" << endl;
 	DCT::directDCT(testMatrix, result);
-	cout << endl;
+	std::cout << endl;
 	for (size_t i = 0; i < 8; i++)
 	{
 		for (size_t j = 0; j < 8; j++)
 		{
 			printf("%8.2f | ", result[i][j]);
 		}
-		cout << endl;
+		std::cout << endl;
 	}
-	cout << "End direct DCT" << endl;
+	std::cout << "End direct DCT" << endl;
 
-	cout << "================" << endl;
+	std::cout << "================" << endl;
 
-	cout << "Start seperate DCT" << endl;
+	std::cout << "Start seperate DCT" << endl;
 	DCT::seperateDCT(testMatrix, result);
-	cout << endl;
+	std::cout << endl;
 	for (size_t i = 0; i < 8; i++)
 	{
 		for (size_t j = 0; j < 8; j++)
 		{
 			printf("%8.2f | ", result[i][j]);
 		}
-		cout << endl;
+		std::cout << endl;
 	}
-	cout << "End seperate DCT" << endl;
+	std::cout << "End seperate DCT" << endl;
 
-	cout << "================" << endl;
+	std::cout << "================" << endl;
 
-	cout << "Start arai DCT" << endl;
+	std::cout << "Start arai DCT" << endl;
 	DCT::araiDCT(testMatrix, result);
-	cout << endl;
+	std::cout << endl;
 	for (size_t i = 0; i < 8; i++)
 	{
 		for (size_t j = 0; j < 8; j++)
 		{
 			printf("%8.2f | ", result[i][j]);
 		}
-		cout << endl;
+		std::cout << endl;
 	}
-	cout << "End arai DCT" << endl;
+	std::cout << "End arai DCT" << endl;
 
-	cout << "================" << endl;
+	std::cout << "================" << endl;
 
-	cout << "Start arai DCT (AVX)" << endl;
+	std::cout << "Start arai DCT (AVX)" << endl;
 	DCT::araiDCTAVX(testMatrix, result);
-	cout << endl;
+	std::cout << endl;
 	for (size_t i = 0; i < 8; i++)
 	{
 		for (size_t j = 0; j < 8; j++)
 		{
 			printf("%8.2f | ", result[i][j]);
 		}
-		cout << endl;
+		std::cout << endl;
 	}
-	cout << "End arai DCT (AVX)" << endl;
+	std::cout << "End arai DCT (AVX)" << endl;
 
-	cout << "================" << endl;
+	std::cout << "================" << endl;
 
-	cout << "Start direct IDCT" << endl;
+	std::cout << "Start direct IDCT" << endl;
 	DCT::directIDCT(result, testMatrix);
-	cout << endl;
+	std::cout << endl;
 	for (size_t i = 0; i < 8; i++)
 	{
 		for (size_t j = 0; j < 8; j++)
 		{
 			printf("%8.2f | ", testMatrix[i][j]);
 		}
-		cout << endl;
+		std::cout << endl;
 	}
-	cout << "End direct IDCT" << endl;
+	std::cout << "End direct IDCT" << endl;
 }
 
 void EncodeJPEG(string srcFile, string dstFile)
@@ -312,7 +351,7 @@ void EncodeJPEG(string srcFile, string dstFile)
 	ImagePtr image = nullptr;
 	EncoderPtr encoder = nullptr;
 
-	cout << "Load image file from: " << srcFile << endl;
+	std::cout << "Load image file from: " << srcFile << endl;
 		image = ImageLoader::Load(srcFile, scheme);
 	sw("Load file");
 
@@ -345,20 +384,20 @@ void EncodeJPEG(string srcFile, string dstFile)
 void testHuffmanEncoding()
 {
 	vector<byte> allSymbols{ 0, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
-	cout << "All symbols: " << allSymbols << endl;
+	std::cout << "All symbols: " << allSymbols << endl;
 	
 	auto huffmanTable = HuffmanTable<byte>::create(16, allSymbols);
-	cout << "Huffman Table:" << endl << *huffmanTable;
+	std::cout << "Huffman Table:" << endl << *huffmanTable;
 
 	vector<byte> encodeDecodeTestSymbols{ 3, 0, 4 };
-	cout << "Test symbols: " << encodeDecodeTestSymbols << endl;
+	std::cout << "Test symbols: " << encodeDecodeTestSymbols << endl;
 
 	auto encodedSymbols = huffmanTable->encode(encodeDecodeTestSymbols);
-	cout << "Encoded symbols: " << *encodedSymbols << endl;
+	std::cout << "Encoded symbols: " << *encodedSymbols << endl;
 
 	vector<byte> decodedSymbols = huffmanTable->decode(encodedSymbols);
 
-	cout << "Decoded symbols: " << decodedSymbols << endl;
+	std::cout << "Decoded symbols: " << decodedSymbols << endl;
 }
 
 int main(int argc, char* argv[])
