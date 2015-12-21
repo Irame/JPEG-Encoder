@@ -280,10 +280,10 @@ void Encoder::calculateACValues(const std::vector<PointerMatrix>& blocks, const 
 #pragma omp parallel for
 	for (int64_t blockIdx = 0; blockIdx < static_cast<int64_t>(blocks.size()); blockIdx++)
 	{
-		std::vector<BEushort> bitPattern;
-		std::vector<byte> categories;
-		bitPattern.reserve(63);
-		categories.reserve(63);
+		std::vector<BEushort>& bitPattern = bitPatternAC[channelName][blockIdx];
+		std::vector<byte>& categories = categoriesAC[channelName][blockIdx];
+		bitPattern.reserve(64);
+		categories.reserve(64);
 
 		int zeros = 0;
 		for (int i = 1; i < 64; i++)
@@ -331,9 +331,6 @@ void Encoder::calculateACValues(const std::vector<PointerMatrix>& blocks, const 
 			categories.push_back(0);
 			zeros = 0;
 		}
-
-		bitPatternAC[channelName][blockIdx] = bitPattern;
-		categoriesAC[channelName][blockIdx] = categories;
 	}
 }
 
