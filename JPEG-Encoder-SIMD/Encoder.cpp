@@ -13,7 +13,6 @@ Encoder::Encoder(ImagePtr imagePtr, const QTableSet& qtables)
 
 void Encoder::convertToYCbCr()
 {
-	//#pragma omp parallel for
 	assert(image->blocksPerChannel[0] == image->blocksPerChannel[1] && image->blocksPerChannel[0] == image->blocksPerChannel[2]);
 #pragma omp parallel for
 	for (int64_t i = 0; i < static_cast<int64_t>(image->blocksPerChannel[0]) * 8; i += 8)
@@ -24,7 +23,6 @@ void Encoder::convertToYCbCr()
 
 void Encoder::convertToRGB()
 {
-	//#pragma omp parallel for
 	assert(image->blocksPerChannel[0] == image->blocksPerChannel[1] && image->blocksPerChannel[0] == image->blocksPerChannel[2]);
 #pragma omp parallel for
 	for (int64_t i = 0; i < static_cast<int64_t>(image->blocksPerChannel[0]) * 8; i += 8)
@@ -58,7 +56,6 @@ void Encoder::reduceWidthResolutionColorChannel(ColorChannelName channelName, in
 	// use special AVX codepath for higher perfomance if the factor is 2
 	if (method == Average && factor == 2)
 	{
-#pragma omp parallel for
 		for (int64_t srcOffset = 0; srcOffset < channelDataSize; srcOffset += 16)
 		{
 			halfWidthResolutionAverageAVX(&channel[srcOffset], &channel[srcOffset + 8], &channel[srcOffset / 2]);
@@ -66,7 +63,6 @@ void Encoder::reduceWidthResolutionColorChannel(ColorChannelName channelName, in
 	}
 	else if (method == Subsampling && factor == 2)
 	{
-#pragma omp parallel for
 		for (int64_t srcOffset = 0; srcOffset < channelDataSize; srcOffset += 16)
 		{
 			halfWidthResolutionSubsamplingAVX(&channel[srcOffset], &channel[srcOffset + 8], &channel[srcOffset / 2]);
@@ -75,7 +71,6 @@ void Encoder::reduceWidthResolutionColorChannel(ColorChannelName channelName, in
 	// otherwise use a general implementation
 	else if (method == Subsampling)
 	{
-#pragma omp parallel for
 		for (int64_t srcOffset = 0; srcOffset < channelDataSize; srcOffset += factor)
 		{
 			channel[srcOffset/factor] = channel[srcOffset];
@@ -122,7 +117,6 @@ void Encoder::reduceHeightResolutionColorChannel(ColorChannelName channelName, i
 	if (method == Average && factor == 2)
 	{
 		// Processes the image in columns of width 8 from top to bottom
-#pragma omp parallel for
 		for (int64_t x = 0; x < static_cast<int64_t>(oldchannelSize.width); x += 8) {
 			for (int64_t srcOffset = x, destOffset = x; srcOffset < channelDataSize; srcOffset += oldchannelSize.width * 2, destOffset += oldchannelSize.width) {
 				halfHeightResolutionAverageAVX(&channel[srcOffset], &channel[srcOffset + oldchannelSize.width], &channel[destOffset]);
@@ -132,7 +126,6 @@ void Encoder::reduceHeightResolutionColorChannel(ColorChannelName channelName, i
 	// otherwise use a general implementation
 	else if (method == Subsampling)
 	{
-#pragma omp parallel for
 		for(int64_t srcOffset = 0; 
 			srcOffset < channelDataSize; 
 			srcOffset += oldchannelSize.width * factor)
@@ -204,7 +197,7 @@ std::vector<PointerMatrix> Encoder::createBlocks(const ColorChannelName channelN
 	const size_t mcuRowSize = width * mcuHeight;
 	const size_t blockRowSize = width * blockHeight;
 
-#pragma omp parallel for
+//#pragma omp parallel for
 	for (int64_t mcuYpos = 0; mcuYpos < size; mcuYpos += mcuRowSize)
 	{
 		for (size_t mcuXpos = 0; mcuXpos < width; mcuXpos += mcuWidth)
@@ -249,12 +242,11 @@ void Encoder::applyDCT(ColorChannelName channelName)
 
 void Encoder::calculateDCValues(const std::vector<PointerMatrix>& blocks, const OffsetArray& zigZag, const ColorChannelName channelName)
 {
-	bitPatternDC[channelName].resize(blocks.size());
-	categoriesDC[channelName].resize(blocks.size());
+	bitPatternDC[channelName].reserve(blocks.size());
+	categoriesDC[channelName].reserve(blocks.size());
 
 	short lastDC = 0;
-#pragma omp parallel for
-	for (int64_t i = 0; i < static_cast<int64_t>(blocks.size()); i++)
+	for (size_t i = 0; i < blocks.size(); i++)
 	{
 		float* dcValuePointer = blocks[i][0] + zigZag[0];
 		short dcValue = static_cast<short>(*dcValuePointer);
@@ -273,8 +265,8 @@ void Encoder::calculateDCValues(const std::vector<PointerMatrix>& blocks, const 
 		// align pattern first bit to the most left bit
 		pattern = pattern << (16 - category);
 
-		bitPatternDC[channelName][i] = BEushort(pattern);
-		categoriesDC[channelName][i] = category;
+		bitPatternDC[channelName].push_back(BEushort(pattern));
+		categoriesDC[channelName].push_back(category);
 		lastDC = dcValue;
 	}
 }
