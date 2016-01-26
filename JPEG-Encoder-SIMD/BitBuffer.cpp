@@ -11,6 +11,7 @@ BitBuffer::BitBuffer(size_t initialBufferSizeInBit)
 
 void BitBuffer::fillToByteBorder()
 {
+	// TODO: add fill value eg. 1; jpeg requires 1bits here
 	dataBitOffset = ((dataBitOffset + 7) / 8) * 8;
 }
 
