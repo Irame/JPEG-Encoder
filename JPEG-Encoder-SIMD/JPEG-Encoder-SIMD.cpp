@@ -355,6 +355,12 @@ void EncodeJPEG(string srcFile, string dstFile)
 		image = ImageLoader::Load(srcFile, scheme);
 	sw("Load file");
 
+	if (!image)
+	{
+		std::cout << "Failed to load source image " << srcFile << endl;
+		abort();
+	}
+
 	std::cout << "Create encoder object ";
 		encoder = std::make_shared<Encoder>(image, qtables);
 	sw();
