@@ -15,12 +15,21 @@ set projectfile=%projectdir%\JPEG-Encoder-SIMD.vcxproj
 set msbuildCMD=/p:Configuration=Release /t:rebuild
 
 echo.
-echo --=== Building with MSVC ===--
+echo --=== Building with MSVC 14.0 ===--
 
-%msbuild.exe% build\vs\%projectfile% %msbuildCMD%
-set msvc=%errorlevel%
+%msbuild.exe% build\vs14\%projectfile% %msbuildCMD%
+set msvc14=%errorlevel%
 
-echo --=== End building with MSVC ===--
+echo --=== End building with MSVC 14.0 ===--
+echo.
+
+echo.
+echo --=== Building with MSVC 15.0 ===--
+
+%msbuild.exe% build\vs15\%projectfile% %msbuildCMD%
+set msvc15=%errorlevel%
+
+echo --=== End building with MSVC 15.0 ===--
 echo.
 
 :clang
@@ -53,11 +62,17 @@ set gcc=%errorlevel%
 echo --=== End building with GCC ===--
 echo.
 
-if %msvc% == 0 (
-	echo Running MSVC
-	build\vs\%projectdir%\Release\JPEG-Encoder-SIMD.exe %*
+if %msvc14% == 0 (
+	echo Running MSVC 14.0
+	build\vs14\%projectdir%\Release\JPEG-Encoder-SIMD.exe %*
 ) else (
-	echo Skipping MSVC
+	echo Skipping MSVC 14.0
+)
+if %msvc15% == 0 (
+	echo Running MSVC 15.0
+	build\vs15\%projectdir%\Release\JPEG-Encoder-SIMD.exe %*
+) else (
+	echo Skipping MSVC 15.0
 )
 if %clang% == 0 (
 	echo Running Clang

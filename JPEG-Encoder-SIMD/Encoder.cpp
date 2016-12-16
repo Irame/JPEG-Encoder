@@ -2,6 +2,7 @@
 #include "Encoder.h"
 #include "SIMD.h"
 #include "JPEGSegments.h"
+#include "intrin.h"
 
 Encoder::Encoder(const Image& image, const QTableSet& qtables)
 	: image(std::make_shared<Image>(image)), qTables(qtables)
@@ -228,12 +229,28 @@ std::vector<PointerMatrix> Encoder::createBlocks(const ColorChannelName channelN
 void Encoder::applyDCT(ColorChannelName channelName)
 {
 	std::vector<PointerMatrix> blocks = createBlocks(channelName);
-	
+
+#ifdef AVX512
+    int64_t i = 0;
 #pragma omp parallel for
-	for (int64_t i = 0; i < static_cast<int64_t>(blocks.size()); i++)
+	for (; i < static_cast<int64_t>(blocks.size()-1); i += 2)
 	{
-		twoDimensionalDCTandQuantisationAVX(blocks[i], qTables[channelName], blocks[i]);
+		twoDimensionalDCTandQuantisationAVX(blocks[i], blocks[i+1], qTables[channelName], blocks[i], blocks[i+1]);
 	}
+
+    if (i == blocks.size() - 1)
+    {
+        float dumpData[64];
+        PointerMatrix dump(&dumpData[0], &dumpData[8], &dumpData[16], &dumpData[24], &dumpData[32], &dumpData[40], &dumpData[48], &dumpData[56]);
+        twoDimensionalDCTandQuantisationAVX(blocks[i], dump, qTables[channelName], blocks[i], dump);
+    }
+#else
+#pragma omp parallel for
+    for (int64_t i = 0; i < static_cast<int64_t>(blocks.size()); i++)
+    {
+        twoDimensionalDCTandQuantisationAVX(blocks[i], qTables[channelName], blocks[i]);
+    }
+#endif
 
 	auto zigZag = createZigZagOffsetArray(image->channelSizes[channelName].width);
 	calculateDCValues(blocks, zigZag, channelName);
