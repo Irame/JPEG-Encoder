@@ -38,7 +38,6 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(Boost COMPONENTS filesystem system thread date_time chrono locale program_options)
 
-
 # Common VS Project Properties for MSVC, Clang, Intel
 if ("${CMAKE_GENERATOR}" MATCHES "Visual Studio*")
 	set(warnings "/W3 /EHsc")
@@ -80,6 +79,7 @@ endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
 	add_definitions(-D INTEL) # define INTEL
+#	add_definitions(-D AVX512) # enable AVX512 implementation
 	
 # Workaround for missing macros with VS2015 Update 1
 # https://software.intel.com/en-us/articles/limits1120-error-identifier-builtin-nanf-is-undefined
@@ -106,12 +106,12 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") # GCC
 	setCXXFlag_Release("-fopenmp")  # enables OpenMP (set to '/openmp-' to disable it)
 endif()
 
-
-
-
-
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/JPEG-Encoder-SIMD)
 add_subdirectory(JPEG-Encoder-SIMD)
 
+if ("${CMAKE_GENERATOR}" MATCHES "Visual Studio*")
+    get_filename_component(smartCmdArgJsonFile "JPEG-Encoder-SIMD.args.json" ABSOLUTE)
+    MESSAGE(STATUS "Path to json file: " ${smartCmdArgJsonFile})
 
+    set_property(TARGET JPEG-Encoder-SIMD PROPERTY VS_GLOBAL_SmartCmdArgJsonFile ${smartCmdArgJsonFile})
+endif()
