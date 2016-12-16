@@ -207,25 +207,58 @@ void test2DCT()
 
 	benchmark("Benchmark Arai DCT (AVX)", 147059, [&testImage, &width, &size]()
 	{
+#ifdef AVX512
 #pragma omp parallel for
-		for (int x = 0; x < width; x += 8)
-		{
-			for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
-			{
-				PointerMatrix curBlock(
-					&testImage[curOffset],
-					&testImage[curOffset + width * 1],
-					&testImage[curOffset + width * 2],
-					&testImage[curOffset + width * 3],
-					&testImage[curOffset + width * 4],
-					&testImage[curOffset + width * 5],
-					&testImage[curOffset + width * 6],
-					&testImage[curOffset + width * 7]
-					);
+        for (int x = 0; x < width; x += 16)
+        {
+            for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
+            {
+                PointerMatrix curBlock1(
+                    &testImage[curOffset],
+                    &testImage[curOffset + width * 1],
+                    &testImage[curOffset + width * 2],
+                    &testImage[curOffset + width * 3],
+                    &testImage[curOffset + width * 4],
+                    &testImage[curOffset + width * 5],
+                    &testImage[curOffset + width * 6],
+                    &testImage[curOffset + width * 7]
+                );
 
-				DCT::araiDCTAVX(curBlock, curBlock);
-			}
-		}
+                PointerMatrix curBlock2(
+                    &testImage[curOffset],
+                    &testImage[curOffset + 8 + width * 1],
+                    &testImage[curOffset + 8 + width * 2],
+                    &testImage[curOffset + 8 + width * 3],
+                    &testImage[curOffset + 8 + width * 4],
+                    &testImage[curOffset + 8 + width * 5],
+                    &testImage[curOffset + 8 + width * 6],
+                    &testImage[curOffset + 8 + width * 7]
+                );
+
+                DCT::araiDCTAVX(curBlock1, curBlock2, curBlock1, curBlock2);
+            }
+        }
+#else
+#pragma omp parallel for
+        for (int x = 0; x < width; x += 8)
+        {
+            for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
+            {
+                PointerMatrix curBlock(
+                    &testImage[curOffset],
+                    &testImage[curOffset + width * 1],
+                    &testImage[curOffset + width * 2],
+                    &testImage[curOffset + width * 3],
+                    &testImage[curOffset + width * 4],
+                    &testImage[curOffset + width * 5],
+                    &testImage[curOffset + width * 6],
+                    &testImage[curOffset + width * 7]
+                );
+
+                DCT::araiDCTAVX(curBlock, curBlock);
+            }
+        }
+#endif 
 	});
 }
 
@@ -249,6 +282,8 @@ void testDCT()
 
 	float resultBytes[64];
 	PointerMatrix result(resultBytes);
+    float resultBytes2[64];
+    PointerMatrix result2(resultBytes2);
 	mat8x8 matResult;
 
 	//PointerMatrix testMatrix = PointerMatrix(arr);
@@ -313,6 +348,23 @@ void testDCT()
 	std::cout << "================" << endl;
 
 	std::cout << "Start arai DCT (AVX)" << endl;
+#ifdef AVX512
+    DCT::araiDCTAVX(testMatrix, testMatrix, result, result2);
+    std::cout << endl;
+    for (size_t i = 0; i < 8; i++)
+    {
+        for (size_t j = 0; j < 8; j++)
+        {
+            printf("%8.2f | ", result[i][j]);
+        }
+        printf("| ");
+        for (size_t j = 0; j < 8; j++)
+        {
+            printf("%8.2f | ", result2[i][j]);
+        }
+        std::cout << endl;
+    }
+#else
 	DCT::araiDCTAVX(testMatrix, result);
 	std::cout << endl;
 	for (size_t i = 0; i < 8; i++)
@@ -323,6 +375,7 @@ void testDCT()
 		}
 		std::cout << endl;
 	}
+#endif
 	std::cout << "End arai DCT (AVX)" << endl;
 
 	std::cout << "================" << endl;
@@ -424,22 +477,22 @@ int main(int argc, char* argv[])
 	//});
 	//return  0;
 
-	if (argc < 3) {
-		std::cerr << "Usage: " << argv[0] << " <Source File> <Destination File>" << std::endl;
-		return 1;
-	}
-	
-	std::string srcFile(argv[1]);
-	std::string dstFile(argv[2]);
+	//if (argc < 3) {
+	//	std::cerr << "Usage: " << argv[0] << " <Source File> <Destination File>" << std::endl;
+	//	return 1;
+	//}
+	//
+	//std::string srcFile(argv[1]);
+	//std::string dstFile(argv[2]);
 
-	std::cout << "Test EncodeJPEG" << endl;
-	EncodeJPEG(srcFile, dstFile);
+	//std::cout << "Test EncodeJPEG" << endl;
+	//EncodeJPEG(srcFile, dstFile);
 		
-	//std::cout << "Test DCT" << endl;
-	//benchmark("Test DCT", 1, [&]()
-	//{
-	//	test2DCT();
-	//});
+	std::cout << ">>> Test DCT" << endl;
+	testDCT();
+    
+    std::cout << endl << ">>> Benchmark DCT" << endl;
+    test2DCT();
 
 	return 0;
 }

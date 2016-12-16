@@ -364,12 +364,26 @@ void DCT::araiDCT(const PointerMatrix& in, PointerMatrix& out)
 	out[0][0] -= 1024;
 }
 
+#ifdef AVX512
+void DCT::araiDCTAVX(const PointerMatrix& in1, const PointerMatrix& in2, PointerMatrix& out1, PointerMatrix& out2)
+{
+	twoDimensionalDCTAVX(in1, in2, out1, out2);
+}
+#else
 void DCT::araiDCTAVX(const PointerMatrix& in, PointerMatrix& out)
 {
-	twoDimensionalDCTAVX(in, out);
+    twoDimensionalDCTAVX(in, out);
 }
+#endif
 
+#ifdef AVX512
+void DCT::araiDCTandQuantisationAVX(const PointerMatrix& in1, const PointerMatrix& in2, const QTable& qTable, PointerMatrix& out1, PointerMatrix& out2)
+{
+	twoDimensionalDCTandQuantisationAVX(in1, in2, qTable, out1, out2);
+}
+#else
 void DCT::araiDCTandQuantisationAVX(const PointerMatrix& in, const QTable& qTable, PointerMatrix& out)
 {
-	twoDimensionalDCTandQuantisationAVX(in, qTable, out);
+    twoDimensionalDCTandQuantisationAVX(in, qTable, out);
 }
+#endif

@@ -28,6 +28,8 @@ set(H_FILES
 	QuantizationTables.h
 	SamplingScheme.h
 	SIMD.h
+	SIMD256.h
+	SIMD512.h
 	SortedLinkedList.h
 	stdafx.h
 	targetver.h

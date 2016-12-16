@@ -12,6 +12,11 @@ namespace DCT
 	mat8x8 kokSimple(const mat8x8& x);
 
 	void araiDCT(const PointerMatrix& in, PointerMatrix& out);
-	void araiDCTAVX(const PointerMatrix& in, PointerMatrix& out);
-	void araiDCTandQuantisationAVX(const PointerMatrix& in, const QTable& qTable, PointerMatrix& out);
+#ifdef AVX512
+	void araiDCTAVX(const PointerMatrix& in1, const PointerMatrix& in2, PointerMatrix& out1, PointerMatrix& out2);
+    void araiDCTandQuantisationAVX(const PointerMatrix& in1, const PointerMatrix& in2, const QTable& qTable, PointerMatrix& out1, PointerMatrix& out2);
+#else
+    void araiDCTAVX(const PointerMatrix& in, PointerMatrix& out);
+    void araiDCTandQuantisationAVX(const PointerMatrix& in, const QTable& qTable, PointerMatrix& out);
+#endif
 };
