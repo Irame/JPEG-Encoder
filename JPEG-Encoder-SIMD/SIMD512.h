@@ -328,10 +328,10 @@ AVXCALL transpose8_ps(__m512 &row0, __m512 &row1, __m512 &row2, __m512 &row3, __
 	row1 = _mm512_permutex2var_ps(__tt1, permute1, __tt5);
 	row2 = _mm512_permutex2var_ps(__tt2, permute1, __tt6);
 	row3 = _mm512_permutex2var_ps(__tt3, permute1, __tt7);
-	row4 = _mm512_permutex2var_ps(__tt0, permute1, __tt4);
-	row5 = _mm512_permutex2var_ps(__tt1, permute1, __tt5);
-	row6 = _mm512_permutex2var_ps(__tt2, permute1, __tt6);
-	row7 = _mm512_permutex2var_ps(__tt3, permute1, __tt7);
+	row4 = _mm512_permutex2var_ps(__tt0, permute2, __tt4);
+	row5 = _mm512_permutex2var_ps(__tt1, permute2, __tt5);
+	row6 = _mm512_permutex2var_ps(__tt2, permute2, __tt6);
+	row7 = _mm512_permutex2var_ps(__tt3, permute2, __tt7);
 }
 
 constexpr float C_(size_t k) { return k == 0 ? 1.0f : (float)c_cos(k * M_PIf / 16); }
