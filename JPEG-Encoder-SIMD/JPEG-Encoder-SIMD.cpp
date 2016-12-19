@@ -13,6 +13,10 @@
 #include "DCT.h"
 #include "QuantizationTables.h"
 
+#define CL_HPP_TARGET_OPENCL_VERSION 120
+
+#include "CLDCT.h"
+
 using namespace std;
 
 #if MSVC
@@ -116,96 +120,109 @@ void test2DCT()
 
 	vector<float> testImage(size);
 
-	for (size_t i = 0; i < size; i++)
-	{
-		testImage[i] = static_cast<float>(i%256);
-	}
+//	for (size_t i = 0; i < size; i++)
+//	{
+//		testImage[i] = static_cast<float>(i%256);
+//	}
+//
+//	benchmark("Benchmark Direct DCT", 231, [&testImage, &width, &size]()
+//	{
+//#pragma omp parallel for
+//		for (int x = 0; x < width; x += 8)
+//		{
+//			for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
+//			{
+//				PointerMatrix curBlock(
+//					&testImage[curOffset],
+//					&testImage[curOffset + width * 1],
+//					&testImage[curOffset + width * 2],
+//					&testImage[curOffset + width * 3],
+//					&testImage[curOffset + width * 4],
+//					&testImage[curOffset + width * 5],
+//					&testImage[curOffset + width * 6],
+//					&testImage[curOffset + width * 7]
+//				);
+//
+//				DCT::directDCT(curBlock, curBlock);
+//			}
+//		}
+//	});
 
-	benchmark("Benchmark Direct DCT", 231, [&testImage, &width, &size]()
-	{
-#pragma omp parallel for
-		for (int x = 0; x < width; x += 8)
-		{
-			for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
-			{
-				PointerMatrix curBlock(
-					&testImage[curOffset],
-					&testImage[curOffset + width * 1],
-					&testImage[curOffset + width * 2],
-					&testImage[curOffset + width * 3],
-					&testImage[curOffset + width * 4],
-					&testImage[curOffset + width * 5],
-					&testImage[curOffset + width * 6],
-					&testImage[curOffset + width * 7]
-				);
+//	for (size_t i = 0; i < size; i++)
+//	{
+//		testImage[i] = static_cast<float>(i % 256);
+//	}
+//
+//	benchmark("Benchmark Seperate DCT", 5903, [&testImage, &width, &size]()
+//	{
+//#pragma omp parallel for
+//		for (int x = 0; x < width; x += 8)
+//		{
+//			for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
+//			{
+//				PointerMatrix curBlock(
+//					&testImage[curOffset],
+//					&testImage[curOffset + width * 1],
+//					&testImage[curOffset + width * 2],
+//					&testImage[curOffset + width * 3],
+//					&testImage[curOffset + width * 4],
+//					&testImage[curOffset + width * 5],
+//					&testImage[curOffset + width * 6],
+//					&testImage[curOffset + width * 7]
+//					);
+//
+//				DCT::seperateDCT(curBlock, curBlock);
+//			}
+//		}
+//	});
 
-				DCT::directDCT(curBlock, curBlock);
-			}
-		}
-	});
+//	for (size_t i = 0; i < size; i++)
+//	{
+//		testImage[i] = static_cast<float>(i % 256);
+//	}
+//
+//	benchmark("Benchmark Arai DCT", 47393, [&testImage, &width, &size]()
+//	{
+//#pragma omp parallel for
+//		for (int x = 0; x < width; x += 8)
+//		{
+//			for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
+//			{
+//				PointerMatrix curBlock(
+//					&testImage[curOffset],
+//					&testImage[curOffset + width * 1],
+//					&testImage[curOffset + width * 2],
+//					&testImage[curOffset + width * 3],
+//					&testImage[curOffset + width * 4],
+//					&testImage[curOffset + width * 5],
+//					&testImage[curOffset + width * 6],
+//					&testImage[curOffset + width * 7]
+//					);
+//
+//				DCT::araiDCT(curBlock, curBlock);
+//			}
+//		}
+//	});
 
 	for (size_t i = 0; i < size; i++)
 	{
 		testImage[i] = static_cast<float>(i % 256);
 	}
 
-	benchmark("Benchmark Seperate DCT", 5903, [&testImage, &width, &size]()
+	CLDCT clDct(width, height);
+	clDct.writeBuffer(testImage.data());
+	benchmark("Benchmark Arai2 DCT", 100000, [&testImage, &width, &size, &clDct]()
 	{
-#pragma omp parallel for
-		for (int x = 0; x < width; x += 8)
-		{
-			for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
-			{
-				PointerMatrix curBlock(
-					&testImage[curOffset],
-					&testImage[curOffset + width * 1],
-					&testImage[curOffset + width * 2],
-					&testImage[curOffset + width * 3],
-					&testImage[curOffset + width * 4],
-					&testImage[curOffset + width * 5],
-					&testImage[curOffset + width * 6],
-					&testImage[curOffset + width * 7]
-					);
-
-				DCT::seperateDCT(curBlock, curBlock);
-			}
-		}
+		clDct.execute();
 	});
+	clDct.readBuffer(testImage.data());
 
 	for (size_t i = 0; i < size; i++)
 	{
 		testImage[i] = static_cast<float>(i % 256);
 	}
 
-	benchmark("Benchmark Arai DCT", 47393, [&testImage, &width, &size]()
-	{
-#pragma omp parallel for
-		for (int x = 0; x < width; x += 8)
-		{
-			for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
-			{
-				PointerMatrix curBlock(
-					&testImage[curOffset],
-					&testImage[curOffset + width * 1],
-					&testImage[curOffset + width * 2],
-					&testImage[curOffset + width * 3],
-					&testImage[curOffset + width * 4],
-					&testImage[curOffset + width * 5],
-					&testImage[curOffset + width * 6],
-					&testImage[curOffset + width * 7]
-					);
-
-				DCT::araiDCT(curBlock, curBlock);
-			}
-		}
-	});
-
-	for (size_t i = 0; i < size; i++)
-	{
-		testImage[i] = static_cast<float>(i % 256);
-	}
-
-	benchmark("Benchmark Arai DCT (AVX)", 147059, [&testImage, &width, &size]()
+	benchmark("Benchmark Arai DCT (AVX)", 150000, [&testImage, &width, &size]()
 	{
 #ifdef AVX512
 #pragma omp parallel for
@@ -272,6 +289,15 @@ void testDCT()
 	float rowSix[]		=	{ 147, 167, 140, 155, 155, 140, 136, 162 };
 	float rowSeven[]	=	{ 136, 156, 123, 167, 162, 144, 140, 147 };
 	float rowEight[]	=	{ 148, 155, 136, 155, 152, 147, 147, 136 };
+
+	float testMatrixBytes[] = { 140, 144, 147, 140, 140, 155, 179, 175,
+	 144, 152, 140, 147, 140, 148, 167, 179,
+	 152, 155, 136, 167, 163, 162, 152, 172,
+	 168, 145, 156, 160, 152, 155, 136, 160,
+	 162, 148, 156, 148, 140, 136, 147, 162,
+	 147, 167, 140, 155, 155, 140, 136, 162,
+	 136, 156, 123, 167, 162, 144, 140, 147,
+	 148, 155, 136, 155, 152, 147, 147, 136 };
 
 	float arr[64];
 
@@ -344,6 +370,24 @@ void testDCT()
 		std::cout << endl;
 	}
 	std::cout << "End arai DCT" << endl;
+
+	std::cout << "================" << endl;
+
+	std::cout << "Start arai2 DCT" << endl;
+	CLDCT clDct(8, 8);
+	clDct.writeBuffer(testMatrixBytes);
+	clDct.execute();
+	clDct.readBuffer(testMatrixBytes);
+	std::cout << endl;
+	for (size_t i = 0; i < 8; i++)
+	{
+		for (size_t j = 0; j < 8; j++)
+		{
+			printf("%8.2f | ", testMatrixBytes[i*8+j]);
+		}
+		std::cout << endl;
+	}
+	std::cout << "End arai2 DCT" << endl;
 
 	std::cout << "================" << endl;
 
@@ -462,6 +506,9 @@ void testHuffmanEncoding()
 int main(int argc, char* argv[])
 {
 	COMPILER_PREFACE;
+
+	//clTest();
+	//return 0;
 
 	//for (int i = 0; i < 10000000; i++)
 	//{

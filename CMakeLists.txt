@@ -31,13 +31,18 @@ set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON) 
 set(Boost_USE_STATIC_RUNTIME OFF)
 
-include_directories(${Boost_INCLUDE_DIRS})
 find_package(Boost COMPONENTS filesystem system thread date_time chrono locale program_options)
+include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
 
 # Intel OpenCL SDK for Applications
 include_directories($ENV{INTELOCLSDKROOT}/include)
 link_directories($ENV{INTELOCLSDKROOT}lib/x64)
 setLinkerFlag("OpenCL.lib")
+
+# extension to embed recources
+include_directories(embed-resource)
+add_subdirectory(embed-resource)
 
 # Common VS Project Properties for MSVC, Clang, Intel
 if ("${CMAKE_GENERATOR}" MATCHES "Visual Studio*")
