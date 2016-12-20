@@ -93,6 +93,7 @@ CLDCT::CLDCT(int width, int height)
 	twoDimDct = cl::Kernel(program, "twoDimDct");
 	twoDimDct.setArg(0, bufferImage);
 	twoDimDct.setArg(1, width);
+	twoDimDct.setArg(2, localBuffer);
 }
 
 void CLDCT::writeBuffer(float* image)
