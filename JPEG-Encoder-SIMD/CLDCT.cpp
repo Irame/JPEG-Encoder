@@ -33,7 +33,7 @@ CLDCT::CLDCT(int width, int height)
 		std::cout << " No platforms found. Check OpenCL installation!\n";
 		exit(1);
 	}
-	cl::Platform default_platform = all_platforms[0];
+	cl::Platform default_platform = all_platforms[1];
 	std::cout << "Using platform: " << default_platform.getInfo<CL_PLATFORM_NAME>() << "\n";
 
 	//get default device of the default platform
@@ -51,8 +51,8 @@ CLDCT::CLDCT(int width, int height)
 
 	cl::Program::Sources sources;
 
-	//Resource TwoDimDctCLFile = LOAD_RESOURCE(TwoDimDct_cl);
-	//sources.push_back({ TwoDimDctCLFile.data(), TwoDimDctCLFile.size() });
+	Resource TwoDimDctCLFile = LOAD_RESOURCE(TwoDimDct_cl);
+	sources.push_back({ TwoDimDctCLFile.data(), TwoDimDctCLFile.size() });
 
 	Resource Transpose8CLFile = LOAD_RESOURCE(Transpose8_cl);
 	sources.push_back({ Transpose8CLFile.data(), Transpose8CLFile.size() });
@@ -88,6 +88,11 @@ CLDCT::CLDCT(int width, int height)
     dctNormalize = cl::Kernel(program, "dctNormalize");
     dctNormalize.setArg(0, bufferImage);
     dctNormalize.setArg(1, width);
+
+
+	twoDimDct = cl::Kernel(program, "twoDimDct");
+	twoDimDct.setArg(0, bufferImage);
+	twoDimDct.setArg(1, width);
 }
 
 void CLDCT::writeBuffer(float* image)
@@ -108,16 +113,13 @@ void CLDCT::execute()
 	cl_int error;
 	cl::Event ev;
 
-	//cl::Kernel twoDimDct = cl::Kernel(program, "twoDimDct");
-	//error = twoDimDct.setArg(0, bufferImage);
-	//error = twoDimDct.setArg(1, width);
-	//error = queue.enqueueNDRangeKernel(twoDimDct, cl::NullRange, cl::NDRange(width / 8, height / 8), cl::NullRange, nullptr, &ev);
+	error = queue.enqueueNDRangeKernel(twoDimDct, cl::NullRange, cl::NDRange(width, height / 8), cl::NDRange(8, 1), nullptr, &ev);
 
-    error = queue.enqueueNDRangeKernel(transpose8, cl::NullRange, cl::NDRange(width, height / 8), cl::NDRange(8, 1), nullptr, &ev);
-    error = queue.enqueueNDRangeKernel(oneDimDct, cl::NullRange, cl::NDRange(width / 8, height), cl::NullRange, nullptr, &ev);
-    error = queue.enqueueNDRangeKernel(transpose8, cl::NullRange, cl::NDRange(width, height / 8), cl::NDRange(8, 1), nullptr, &ev);
-    error = queue.enqueueNDRangeKernel(oneDimDct, cl::NullRange, cl::NDRange(width / 8, height), cl::NullRange, nullptr, &ev);
-    error = queue.enqueueNDRangeKernel(dctNormalize, cl::NullRange, cl::NDRange(width / 8, height/8), cl::NullRange, nullptr, &ev);
+    //error = queue.enqueueNDRangeKernel(transpose8, cl::NullRange, cl::NDRange(width, height / 8), cl::NDRange(8, 1), nullptr, &ev);
+    //error = queue.enqueueNDRangeKernel(oneDimDct, cl::NullRange, cl::NDRange(width / 8, height), cl::NullRange, nullptr, &ev);
+    //error = queue.enqueueNDRangeKernel(transpose8, cl::NullRange, cl::NDRange(width, height / 8), cl::NDRange(8, 1), nullptr, &ev);
+    //error = queue.enqueueNDRangeKernel(oneDimDct, cl::NullRange, cl::NDRange(width / 8, height), cl::NullRange, nullptr, &ev);
+    //error = queue.enqueueNDRangeKernel(dctNormalize, cl::NullRange, cl::NDRange(width / 8, height/8), cl::NullRange, nullptr, &ev);
 
 	error = queue.finish();
 

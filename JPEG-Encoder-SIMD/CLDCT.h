@@ -17,6 +17,8 @@ private:
     cl::Kernel transpose8;
     cl::Kernel oneDimDct;
     cl::Kernel dctNormalize;
+
+	cl::Kernel twoDimDct;
 public:
 
 	CLDCT(int width, int height);

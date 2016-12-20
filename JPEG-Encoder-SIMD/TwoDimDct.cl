@@ -1,137 +1,128 @@
 void kernel twoDimDct(global float* image, int w)
 {
-	#define s0 0.353553385;
-	#define s1 0.254897773;
-	#define s2 0.270598054;
-	#define s3 0.300672442;
-	#define s4 0.353553385;
-	#define s5 0.449988097;
-	#define s6 0.653281510;
-	#define s7 1.28145778;
+	#define s0 (0.353553385f)
+	#define s1 (0.254897773f)
+	#define s2 (0.270598054f)
+	#define s3 (0.300672442f)
+	#define s4 (0.353553385f)
+	#define s5 (0.449988097f)
+	#define s6 (0.653281510f)
+	#define s7 (1.28145778f)
 
-	#define a1 0.707106769;
-	#define a2 0.541196108;
-	#define a3 a1;
-	#define a4 1.30656302;
-	#define a5 0.382683426;
+	#define a1 (0.707106769f)
+	#define a2 (0.541196108f)
+	#define a3 a1
+	#define a4 (1.30656302f)
+	#define a5 (0.382683426f)
+	
+	#define BLOCK_SIZE (8)
 
-	int x = get_global_id(0)*8;
-	int y = get_global_id(1)*8;
+    int x_block = get_group_id(0);
+    int y_block = get_group_id(1);
 
-	for (size_t row = y*w; row < y + 8 * w; row += w) {
-		float temp1[8];
-		temp1[0] = image[row + x + 0] + image[row + x + 7];
-		temp1[1] = image[row + x + 1] + image[row + x + 6];
-		temp1[2] = image[row + x + 2] + image[row + x + 5];
-		temp1[3] = image[row + x + 3] + image[row + x + 4];
-		temp1[4] = image[row + x + 3] - image[row + x + 4];
-		temp1[5] = image[row + x + 2] - image[row + x + 5];
-		temp1[6] = image[row + x + 1] - image[row + x + 6];
-		temp1[7] = image[row + x + 0] - image[row + x + 7];
+	int local_idx = get_local_id(0);
 
-		float temp2[8];
-		temp2[0] = temp1[0] + temp1[3];
-		temp2[1] = temp1[1] + temp1[2];
-		temp2[2] = temp1[1] - temp1[2];
-		temp2[3] = temp1[0] - temp1[3];
-		temp2[4] = -temp1[4] - temp1[5];
-		temp2[5] = temp1[5] + temp1[6];
-		temp2[6] = temp1[6] + temp1[7];
-		temp2[7] = temp1[7];
+	int block_start = mad24(x_block, BLOCK_SIZE, y_block * w * BLOCK_SIZE);
 
-		float temp3[8];
-		temp3[0] = temp2[0] + temp2[1];
-		temp3[1] = temp2[0] - temp2[1];
-		temp3[2] = temp2[2] + temp2[3];
-		temp3[3] = temp2[3];
-		temp3[4] = temp2[4];
-		temp3[5] = temp2[5];
-		temp3[6] = temp2[6];
-		temp3[7] = temp2[7];
+	int row_start = mad24(local_idx, w, block_start);
+	int col_start = local_idx + block_start;
 
+	float block[8];
+	
+	block[0] = image[row_start + 0] + image[row_start + 7];
+	block[1] = image[row_start + 1] + image[row_start + 6];
+	block[2] = image[row_start + 2] + image[row_start + 5];
+	block[3] = image[row_start + 3] + image[row_start + 4];
+	block[4] = image[row_start + 3] - image[row_start + 4];
+	block[5] = image[row_start + 2] - image[row_start + 5];
+	block[6] = image[row_start + 1] - image[row_start + 6];
+	block[7] = image[row_start + 0] - image[row_start + 7];
 
-		float temp6plus4 = temp3[4] + temp3[6];
-		temp3[2] *= a1;
-		temp3[4] = -temp3[4] * a2 - temp6plus4 * a5;
-		temp3[5] *= a3;
-		temp3[6] = temp3[6] * a4 - temp6plus4 * a5;
+	float temp0 = block[0];
+	float temp1 = block[1];
+	block[0] =  block[0] + block[3];
+	block[1] =  block[1] + block[2];
+	block[2] =  temp1    - block[2];
+	block[3] =  temp0    - block[3];
+	block[4] = -block[4] - block[5];
+	block[5] =  block[5] + block[6];
+	block[6] =  block[6] + block[7];
+	
+	temp0 = block[0];
+	block[0] = block[0] + block[1];
+	block[1] = temp0          - block[1];
+	block[2] = block[2] + block[3];
 
-		float temp = temp3[2];
-		temp3[2] += temp3[3];
-		temp3[3] -= temp;
-		temp = temp3[5];
-		temp3[5] += temp3[7];
-		temp3[7] -= temp;
+	float tempMinus6plus4 = -(block[4] + block[6]);
+	block[2] *= a1;
+	block[4] = mad(-block[4], a2, tempMinus6plus4 * a5);
+	block[5] *= a3;
+	block[6] = mad(block[6], a4, tempMinus6plus4 * a5);
 
-		image[row + x + 0] = temp3[0] * s0;
-		image[row + x + 4] = temp3[1] * s4;
-		image[row + x + 2] = temp3[2] * s2;
-		image[row + x + 6] = temp3[3] * s6;
-		image[row + x + 5] = (temp3[4] + temp3[7]) * s5;
-		image[row + x + 1] = (temp3[5] + temp3[6]) * s1;
-		image[row + x + 7] = (temp3[5] - temp3[6]) * s7;
-		image[row + x + 3] = (temp3[7] - temp3[4]) * s3;
-	}
+	float temp2 = block[2];
+	block[2] += block[3];
+	block[3] -= temp2;
+	temp2 = block[5];
+	block[5] += block[7];
+	block[7] -= temp2;
 
+	image[row_start + 0] = block[0] * s0;
+	image[row_start + 4] = block[1] * s4;
+	image[row_start + 2] = block[2] * s2;
+	image[row_start + 6] = block[3] * s6;
+	image[row_start + 5] = (block[4] + block[7]) * s5;
+	image[row_start + 1] = (block[5] + block[6]) * s1;
+	image[row_start + 7] = (block[5] - block[6]) * s7;
+	image[row_start + 3] = (block[7] - block[4]) * s3;
 
-	for (size_t col = y; col < x + 8; col++) {
-		float temp1[8];
-		temp1[0] = image[col + 0 * w] + image[col + 7 * w];
-		temp1[1] = image[col + 1 * w] + image[col + 6 * w];
-		temp1[2] = image[col + 2 * w] + image[col + 5 * w];
-		temp1[3] = image[col + 3 * w] + image[col + 4 * w];
-		temp1[4] = image[col + 3 * w] - image[col + 4 * w];
-		temp1[5] = image[col + 2 * w] - image[col + 5 * w];
-		temp1[6] = image[col + 1 * w] - image[col + 6 * w];
-		temp1[7] = image[col + 0 * w] - image[col + 7 * w];
+	barrier(CLK_LOCAL_MEM_FENCE);
 
-		float temp2[8];
-		temp2[0] = temp1[0] + temp1[3];
-		temp2[1] = temp1[1] + temp1[2];
-		temp2[2] = temp1[1] - temp1[2];
-		temp2[3] = temp1[0] - temp1[3];
-		temp2[4] = -temp1[4] - temp1[5];
-		temp2[5] = temp1[5] + temp1[6];
-		temp2[6] = temp1[6] + temp1[7];
-		temp2[7] = temp1[7];
+	block[0] = image[            col_start ] + image[mad24(7, w, col_start)];
+	block[1] = image[mad24(1, w, col_start)] + image[mad24(6, w, col_start)];
+	block[2] = image[mad24(2, w, col_start)] + image[mad24(5, w, col_start)];
+	block[3] = image[mad24(3, w, col_start)] + image[mad24(4, w, col_start)];
+	block[4] = image[mad24(3, w, col_start)] - image[mad24(4, w, col_start)];
+	block[5] = image[mad24(2, w, col_start)] - image[mad24(5, w, col_start)];
+	block[6] = image[mad24(1, w, col_start)] - image[mad24(6, w, col_start)];
+	block[7] = image[            col_start ] - image[mad24(7, w, col_start)];
 
-		float temp3[8];
-		temp3[0] = temp2[0] + temp2[1];
-		temp3[1] = temp2[0] - temp2[1];
-		temp3[2] = temp2[2] + temp2[3];
-		temp3[3] = temp2[3];
-		temp3[4] = temp2[4];
-		temp3[5] = temp2[5];
-		temp3[6] = temp2[6];
-		temp3[7] = temp2[7];
+	temp0 = block[0];
+	temp1 = block[1];
+	block[0] =  block[0] + block[3];
+	block[1] =  block[1] + block[2];
+	block[2] =  temp1    - block[2];
+	block[3] =  temp0    - block[3];
+	block[4] = -block[4] - block[5];
+	block[5] =  block[5] + block[6];
+	block[6] =  block[6] + block[7];
+	
+	temp0 = block[0];
+	block[0] = block[0] + block[1];
+	block[1] = temp0          - block[1];
+	block[2] = block[2] + block[3];
 
+	tempMinus6plus4 = -(block[4] + block[6]);
+	block[2] *= a1;
+	block[4] = mad(-block[4], a2, tempMinus6plus4 * a5);
+	block[5] *= a3;
+	block[6] = mad(block[6], a4, tempMinus6plus4 * a5);
 
-		float temp6plus4 = temp3[4] + temp3[6];
-		temp3[2] *= a1;
-		temp3[4] = -temp3[4] * a2 - temp6plus4 * a5;
-		temp3[5] *= a3;
-		temp3[6] = temp3[6] * a4 - temp6plus4 * a5;
+	temp2 = block[2];
+	block[2] += block[3];
+	block[3] -= temp2;
+	temp2 = block[5];
+	block[5] += block[7];
+	block[7] -= temp2;
 
-		float temp = temp3[2];
-		temp3[2] += temp3[3];
-		temp3[3] -= temp;
-		temp = temp3[5];
-		temp3[5] += temp3[7];
-		temp3[7] -= temp;
+	image[            col_start ] = block[0] * s0;
+	image[mad24(4, w, col_start)] = block[1] * s4;
+	image[mad24(2, w, col_start)] = block[2] * s2;
+	image[mad24(6, w, col_start)] = block[3] * s6;
+	image[mad24(5, w, col_start)] = (block[4] + block[7]) * s5;
+	image[mad24(1, w, col_start)] = (block[5] + block[6]) * s1;
+	image[mad24(7, w, col_start)] = (block[5] - block[6]) * s7;
+	image[mad24(3, w, col_start)] = (block[7] - block[4]) * s3;
 
-		image[col + 0 * w] = temp3[0] * s0;
-		image[col + 4 * w] = temp3[1] * s4;
-		image[col + 2 * w] = temp3[2] * s2;
-		image[col + 6 * w] = temp3[3] * s6;
-		image[col + 5 * w] = (temp3[4] + temp3[7]) * s5;
-		image[col + 1 * w] = (temp3[5] + temp3[6]) * s1;
-		image[col + 7 * w] = (temp3[5] - temp3[6]) * s7;
-		image[col + 3 * w] = (temp3[7] - temp3[4]) * s3;
-	}
-
-
-	// https://en.wikipedia.org/wiki/JPEG#Discrete_cosine_transform
-	// subtract 1024 from the DC coefficient, which is mathematically equivalent
-	// to center the provided data around zero.
-	image[x + y*w] -= 1024;
+	if (local_idx == 0)
+		image[block_start] -= 1024;
 }
