@@ -75,7 +75,7 @@ void kernel twoDimDct(global float* image, int w)
 	image[row_start + 7] = (block[5] - block[6]) * s7;
 	image[row_start + 3] = (block[7] - block[4]) * s3;
 
-	barrier(CLK_LOCAL_MEM_FENCE);
+	barrier(CLK_GLOBAL_MEM_FENCE);
 
 	block[0] = image[            col_start ] + image[mad24(7, w, col_start)];
 	block[1] = image[mad24(1, w, col_start)] + image[mad24(6, w, col_start)];
