@@ -1,19 +1,19 @@
 void kernel oneDimDct(global float* image, int w)
 {
-	#define s0 0.353553385;
-	#define s1 0.254897773;
-	#define s2 0.270598054;
-	#define s3 0.300672442;
-	#define s4 0.353553385;
-	#define s5 0.449988097;
-	#define s6 0.653281510;
-	#define s7 1.28145778;
+	#define s0 (0.353553385f)
+	#define s1 (0.254897773f)
+	#define s2 (0.270598054f)
+	#define s3 (0.300672442f)
+	#define s4 (0.353553385f)
+	#define s5 (0.449988097f)
+	#define s6 (0.653281510f)
+	#define s7 (1.28145778f)
 
-	#define a1 0.707106769;
-	#define a2 0.541196108;
-	#define a3 a1;
-	#define a4 1.30656302;
-	#define a5 0.382683426;
+	#define a1 (0.707106769f)
+	#define a2 (0.541196108f)
+	#define a3 a1
+	#define a4 (1.30656302f)
+	#define a5 (0.382683426f)
 
 	#define ROW_LENGTH (8)
 
