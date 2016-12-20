@@ -39,6 +39,9 @@ set(H_FILES
 ) # H_FILES
 
 set(CL_FILES
+	DctNormalize.cl
+	OneDimDct.cl
+	Transpose8.cl
 	TwoDimDct.cl
 ) # CL_FILES
 
