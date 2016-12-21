@@ -2,7 +2,7 @@
 
 #include "CL/cl.hpp"
 
-class CLDCT
+class OpenCL
 {
 private:
 	cl::Context context;
@@ -21,7 +21,7 @@ private:
 	cl::Kernel twoDimDct;
 public:
 
-	CLDCT(int width, int height);
+    OpenCL(int width, int height);
 
 	void writeBuffer(float* image);
 	void readBuffer(float* image);

@@ -1,19 +1,18 @@
 set(CPP_FILES 
 	BitBuffer.cpp
-	CLDCT.cpp
 	DCT.cpp
 	Encoder.cpp
 	Image.cpp
 	ImageLoader.cpp
 	JPEG-Encoder-SIMD.cpp
 	lodepng.cpp
+	OpenCL.cpp
 	stdafx.cpp
 ) # CPP_FILES
 	
 set(H_FILES	
 	Benchmark.h
 	BitBuffer.h
-	CLDCT.h
 	ColorNames.h
 	const_math.h
 	DCT.h
@@ -26,6 +25,7 @@ set(H_FILES
 	JPEGSegments.h
 	LinkedList.h
 	lodepng.h
+	OpenCL.h
 	PointerMatrix.h
 	QuantizationTables.h
 	SamplingScheme.h

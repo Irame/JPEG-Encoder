@@ -1,4 +1,4 @@
-#include "CLDCT.h"
+#include "OpenCL.h"
 
 #include <iostream>
 #include "CL/cl.hpp"
@@ -19,7 +19,7 @@ std::string read_source(const char *filename)
 };
 
 
-CLDCT::CLDCT(int width, int height)
+OpenCL::OpenCL(int width, int height)
 {
 	this->width = width;
 	this->height = height;
@@ -96,20 +96,20 @@ CLDCT::CLDCT(int width, int height)
 	twoDimDct.setArg(2, localBuffer);
 }
 
-void CLDCT::writeBuffer(float* image)
+void OpenCL::writeBuffer(float* image)
 {
 	//write arrays A and B to the device
 	cl_int error = queue.enqueueWriteBuffer(bufferImage, CL_TRUE, 0, sizeof(float) * width * height, image);
 
 }
 
-void CLDCT::readBuffer(float* image)
+void OpenCL::readBuffer(float* image)
 {
 	memset(image, 42, sizeof(float)*width*height);
 	cl_int error = queue.enqueueReadBuffer(bufferImage, CL_TRUE, 0, sizeof(float) * width * height, image);
 }
 
-void CLDCT::execute()
+void OpenCL::execute()
 {
 	cl_int error;
 	cl::Event ev;

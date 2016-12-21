@@ -15,7 +15,7 @@
 
 #define CL_HPP_TARGET_OPENCL_VERSION 120
 
-#include "CLDCT.h"
+#include "OpenCL.h"
 
 using namespace std;
 
@@ -209,7 +209,7 @@ void test2DCT()
 		testImage[i] = static_cast<float>(i % 256);
 	}
 
-	CLDCT clDct(width, height);
+	OpenCL clDct(width, height);
 	clDct.writeBuffer(testImage.data());
 	benchmark("Benchmark Arai2 DCT", 100000, [&testImage, &width, &size, &clDct]()
 	{
@@ -374,7 +374,7 @@ void testDCT()
 	std::cout << "================" << endl;
 
 	std::cout << "Start arai2 DCT" << endl;
-	CLDCT clDct(8, 8);
+    OpenCL clDct(8, 8);
 	clDct.writeBuffer(testMatrixBytes);
 	clDct.execute();
 	clDct.readBuffer(testMatrixBytes);
