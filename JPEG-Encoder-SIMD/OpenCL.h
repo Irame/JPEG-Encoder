@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CL/cl.hpp"
+#include "QuantizationTables.h"
 
 class OpenCL
 {
@@ -9,8 +10,9 @@ private:
 	cl::CommandQueue queue;
 	cl::Program program;
 
-	cl::Buffer bufferImage;
+	cl::Buffer imageBuffer;
     cl::LocalSpaceArg localBuffer;
+    cl::Buffer qTableBuffer;
 
 	int width, height;
 
@@ -19,11 +21,18 @@ private:
     cl::Kernel dctNormalize;
 
 	cl::Kernel twoDimDct;
+
+    cl::Kernel quantize;
 public:
 
     OpenCL(int width, int height);
 
-	void writeBuffer(float* image);
-	void readBuffer(float* image);
-	void execute();
+	void enqueueWriteImage(float* image) const;
+	void enqueueReadImage(float* image) const;
+    void enqueueWriteQTable(const QTable& qTable) const;
+
+	void enqueueExecuteDCT() const;
+    void executeQuantization() const;
+
+    void finishQueue() const;
 };

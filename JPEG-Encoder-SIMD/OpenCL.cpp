@@ -70,59 +70,71 @@ OpenCL::OpenCL(int width, int height)
 	}
 
 	// create buffers on the device
-	bufferImage = cl::Buffer(context, CL_MEM_READ_WRITE, sizeof(float) * width * height);
+	imageBuffer = cl::Buffer(context, CL_MEM_READ_WRITE, sizeof(float) * width * height);
     localBuffer = cl::LocalSpaceArg{sizeof(float) * 8 * 8};
+    qTableBuffer = cl::Buffer(context, CL_MEM_READ_ONLY, sizeof(float) * 64);
 
 	//create queue to which we will push commands for the device.
 	queue = cl::CommandQueue(context, default_device);
 
     transpose8 = cl::Kernel(program, "transpose8");
-    transpose8.setArg(0, bufferImage);
+    transpose8.setArg(0, imageBuffer);
     transpose8.setArg(1, width);
     transpose8.setArg(2, localBuffer);
 
     oneDimDct = cl::Kernel(program, "oneDimDct");
-    oneDimDct.setArg(0, bufferImage);
+    oneDimDct.setArg(0, imageBuffer);
     oneDimDct.setArg(1, width);
 
     dctNormalize = cl::Kernel(program, "dctNormalize");
-    dctNormalize.setArg(0, bufferImage);
+    dctNormalize.setArg(0, imageBuffer);
     dctNormalize.setArg(1, width);
 
 
 	twoDimDct = cl::Kernel(program, "twoDimDct");
-	twoDimDct.setArg(0, bufferImage);
+	twoDimDct.setArg(0, imageBuffer);
 	twoDimDct.setArg(1, width);
 	twoDimDct.setArg(2, localBuffer);
+
+
+    quantize = cl::Kernel(program, "quantize");
+    quantize.setArg(0, imageBuffer);
+    quantize.setArg(1, width);
+    quantize.setArg(2, qTableBuffer);
 }
 
-void OpenCL::writeBuffer(float* image)
+void OpenCL::enqueueWriteImage(float* image) const
 {
-	//write arrays A and B to the device
-	cl_int error = queue.enqueueWriteBuffer(bufferImage, CL_TRUE, 0, sizeof(float) * width * height, image);
-
+	cl_int error = queue.enqueueWriteBuffer(imageBuffer, CL_TRUE, 0, sizeof(float) * width * height, image);
 }
 
-void OpenCL::readBuffer(float* image)
+void OpenCL::enqueueReadImage(float* image) const
 {
-	memset(image, 42, sizeof(float)*width*height);
-	cl_int error = queue.enqueueReadBuffer(bufferImage, CL_TRUE, 0, sizeof(float) * width * height, image);
+	cl_int error = queue.enqueueReadBuffer(imageBuffer, CL_TRUE, 0, sizeof(float) * width * height, image);
 }
 
-void OpenCL::execute()
+void OpenCL::enqueueWriteQTable(const QTable& qTable) const
 {
-	cl_int error;
-	cl::Event ev;
+    cl_int error = queue.enqueueWriteBuffer(imageBuffer, CL_TRUE, 0, sizeof(float) * width * height, qTable.floats);
+}
 
-	error = queue.enqueueNDRangeKernel(twoDimDct, cl::NullRange, cl::NDRange(width, height / 8), cl::NDRange(8, 1), nullptr, &ev);
+void OpenCL::enqueueExecuteDCT() const
+{
+	queue.enqueueNDRangeKernel(twoDimDct, cl::NullRange, cl::NDRange(width, height / 8), cl::NDRange(8, 1), nullptr);
 
-    //error = queue.enqueueNDRangeKernel(transpose8, cl::NullRange, cl::NDRange(width, height / 8), cl::NDRange(8, 1), nullptr, &ev);
-    //error = queue.enqueueNDRangeKernel(oneDimDct, cl::NullRange, cl::NDRange(width / 8, height), cl::NullRange, nullptr, &ev);
-    //error = queue.enqueueNDRangeKernel(transpose8, cl::NullRange, cl::NDRange(width, height / 8), cl::NDRange(8, 1), nullptr, &ev);
-    //error = queue.enqueueNDRangeKernel(oneDimDct, cl::NullRange, cl::NDRange(width / 8, height), cl::NullRange, nullptr, &ev);
-    //error = queue.enqueueNDRangeKernel(dctNormalize, cl::NullRange, cl::NDRange(width / 8, height/8), cl::NullRange, nullptr, &ev);
+    //queue.enqueueNDRangeKernel(transpose8, cl::NullRange, cl::NDRange(width, height / 8), cl::NDRange(8, 1), nullptr);
+    //queue.enqueueNDRangeKernel(oneDimDct, cl::NullRange, cl::NDRange(width / 8, height), cl::NullRange, nullptr);
+    //queue.enqueueNDRangeKernel(transpose8, cl::NullRange, cl::NDRange(width, height / 8), cl::NDRange(8, 1), nullptr);
+    //queue.enqueueNDRangeKernel(oneDimDct, cl::NullRange, cl::NDRange(width / 8, height), cl::NullRange, nullptr);
+    //queue.enqueueNDRangeKernel(dctNormalize, cl::NullRange, cl::NDRange(width / 8, height/8), cl::NullRange, nullptr);
+}
 
-	error = queue.finish();
+void OpenCL::executeQuantization() const
+{
+    queue.enqueueNDRangeKernel(quantize, cl::NullRange, cl::NDRange(width, height), cl::NDRange(8, 8));
+}
 
-	error = ev.wait();
+void OpenCL::finishQueue() const
+{
+    queue.finish();
 }

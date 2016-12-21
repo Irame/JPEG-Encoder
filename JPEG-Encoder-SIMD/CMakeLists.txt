@@ -41,6 +41,7 @@ set(H_FILES
 set(CL_FILES
 	DctNormalize.cl
 	OneDimDct.cl
+	Quatize.cl
 	Transpose8.cl
 	TwoDimDct.cl
 ) # CL_FILES

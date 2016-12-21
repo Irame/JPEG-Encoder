@@ -210,12 +210,14 @@ void test2DCT()
 	}
 
 	OpenCL clDct(width, height);
-	clDct.writeBuffer(testImage.data());
+	clDct.enqueueWriteImage(testImage.data());
 	benchmark("Benchmark Arai2 DCT", 100000, [&testImage, &width, &size, &clDct]()
 	{
-		clDct.execute();
+		clDct.enqueueExecuteDCT();
+        clDct.finishQueue();
 	});
-	clDct.readBuffer(testImage.data());
+	clDct.enqueueReadImage(testImage.data());
+    clDct.finishQueue();
 
 	for (size_t i = 0; i < size; i++)
 	{
@@ -375,9 +377,10 @@ void testDCT()
 
 	std::cout << "Start arai2 DCT" << endl;
     OpenCL clDct(8, 8);
-	clDct.writeBuffer(testMatrixBytes);
-	clDct.execute();
-	clDct.readBuffer(testMatrixBytes);
+	clDct.enqueueWriteImage(testMatrixBytes);
+	clDct.enqueueExecuteDCT();
+	clDct.enqueueReadImage(testMatrixBytes);
+    clDct.finishQueue();
 	std::cout << endl;
 	for (size_t i = 0; i < 8; i++)
 	{
