@@ -1,0 +1,16 @@
+{
+  "DataCollection": [
+    {
+      "Id": "eabe5ec0-8323-4e44-900f-b0dddfb0c99a",
+      "Command": "--mode test"
+    },
+    {
+      "Id": "88f03344-61f0-47aa-b4c4-3512ac8f5e13",
+      "Command": "--mode benchmark"
+    },
+    {
+      "Id": "310c278f-527e-4a76-bb23-1ae66b0f985a",
+      "Command": "--mode convert"
+    }
+  ]
+}

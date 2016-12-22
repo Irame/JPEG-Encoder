@@ -12,12 +12,16 @@
 #include "PointerMatrix.h"
 #include "DCT.h"
 #include "QuantizationTables.h"
+#include "boost/program_options/options_description.hpp"
+#include "boost/program_options/parsers.hpp"
+#include "boost/program_options/variables_map.hpp"
 
 #define CL_HPP_TARGET_OPENCL_VERSION 120
 
 #include "OpenCL.h"
 
 using namespace std;
+namespace po = boost::program_options;
 
 #if MSVC
 #define COMPILER_PREFACE std::cout << "Built with msvc " << _MSC_VER << std::endl
@@ -108,7 +112,7 @@ void bitBufferTest(string filePath)
 	//cout << bitBuffer << endl;
 }
 
-void test2DCT()
+void benchmarkDCT()
 {
 	size_t widthInBlocks = (256 + 7) / 8;
 	size_t width = widthInBlocks * 8;
@@ -281,18 +285,44 @@ void test2DCT()
 	});
 }
 
+void printMatrix8x8(float* matrix)
+{
+    for (size_t i = 0; i < 8; i++)
+    {
+        for (size_t j = 0; j < 8; j++)
+        {
+            printf("%8.2f", matrix[i * 8 + j]);
+            if (j < 7) cout << " | ";
+        }
+        std::cout << endl;
+    }
+}
+
+bool matricesEqual(float* mat1, float* mat2)
+{
+    for (int i = 0; i < 64; i++)
+    {
+        if (abs(mat1[i] - mat2[i]) < 0.001)
+            return true;
+    }
+    return false;
+}
+
+void ceckTest(float* result, float* reference)
+{
+    if (!matricesEqual(result, reference)) {
+        cout << "Test failed!" << endl;
+        printMatrix8x8(result);
+    }
+    else {
+        cout << "Test successful!" << endl;
+    }
+}
+
 void testDCT()
 {
-	float rowOne[]		=	{ 140, 144, 147, 140, 140, 155, 179, 175 };
-	float rowTwo[]		=	{ 144, 152, 140, 147, 140, 148, 167, 179 };
-	float rowThree[]	=	{ 152, 155, 136, 167, 163, 162, 152, 172 };
-	float rowFour[]		=	{ 168, 145, 156, 160, 152, 155, 136, 160 };
-	float rowFive[]		=	{ 162, 148, 156, 148, 140, 136, 147, 162 };
-	float rowSix[]		=	{ 147, 167, 140, 155, 155, 140, 136, 162 };
-	float rowSeven[]	=	{ 136, 156, 123, 167, 162, 144, 140, 147 };
-	float rowEight[]	=	{ 148, 155, 136, 155, 152, 147, 147, 136 };
-
-	float testMatrixBytes[] = { 140, 144, 147, 140, 140, 155, 179, 175,
+	float testMatrixBytes[] = { 
+	 140, 144, 147, 140, 140, 155, 179, 175,
 	 144, 152, 140, 147, 140, 148, 167, 179,
 	 152, 155, 136, 167, 163, 162, 152, 172,
 	 168, 145, 156, 160, 152, 155, 136, 160,
@@ -301,12 +331,18 @@ void testDCT()
 	 136, 156, 123, 167, 162, 144, 140, 147,
 	 148, 155, 136, 155, 152, 147, 147, 136 };
 
-	float arr[64];
+    int32_t dctResultBytes[] = {
+        0x4339fff8, 0xc18ff9e3, 0x416c7824, 0xc10fac32, 0x41ba0015, 0xc113b983, 0xc15f81cf, 0xc1977f72,
+        0x41a44e43, 0xc2085f2d, 0x41d2a4b0, 0xc1109dd4, 0xc12eed8c, 0x412bb0dc, 0x415c5bfb, 0x40de8d74,
+        0xc1262488, 0xc1bc1cd3, 0xbfed40e0, 0x40c14b78, 0xc190989b, 0x404c9b20, 0xc1a3568f, 0xbf539428,
+        0xc101ad4f, 0xc0a15388, 0x41655078, 0xc169d07c, 0xc1037c40, 0xc02edf7c, 0xc0456874, 0x4106ddca,
+        0xc04fff8c, 0x411805e6, 0x40fc4f06, 0x3fa89490, 0xc12ffff8, 0x418f3c64, 0x41930e2c, 0x4173dbc4,
+        0x4076bf65, 0xc00dbd40, 0xc19155ee, 0x4107ff61, 0x41044d11, 0xc066f07c, 0x3f5e7628, 0xc0db99ca,
+        0x410e6ba6, 0x3f220c40, 0xc03ab4a0, 0x40690c2c, 0xbf961290, 0xc0ed7f67, 0xbf92bf58, 0xbff65830,
+        0x3d489070, 0xc0fa0408, 0xc01b2b3c, 0x3fcb9142, 0x3f99812c, 0x4087e78a, 0xc0cd5b69, 0x3ea12bac
+    };
 
-	for (int i = 0; i < 64; i++)
-	{
-		arr[i] = static_cast<float>(i+1);
-	}
+    float *dctResultBytesFloat = reinterpret_cast<float*>(dctResultBytes);
 
 	float resultBytes[64];
 	PointerMatrix result(resultBytes);
@@ -314,63 +350,25 @@ void testDCT()
     PointerMatrix result2(resultBytes2);
 	mat8x8 matResult;
 
-	//PointerMatrix testMatrix = PointerMatrix(arr);
-	PointerMatrix testMatrix = PointerMatrix(rowOne, rowTwo, rowThree, rowFour, rowFive, rowSix, rowSeven, rowEight);
-	auto kokMatrix = mat8x8(rowOne, rowTwo, rowThree, rowFour, rowFive, rowSix, rowSeven, rowEight);
-
-	std::cout << "Input Block:" << endl;
-	for (size_t i = 0; i < 8; i++)
-	{
-		for (size_t j = 0; j < 8; j++)
-		{
-			//std::cout << round(result[i][j]) << " | ";
-			printf("%8.2f | ", roundf(testMatrix[i][j]));
-		}
-		std::cout << endl;
-	}
-	std::cout << "================" << endl;
+	PointerMatrix testMatrix = PointerMatrix(testMatrixBytes);
 
 	std::cout << "Start direct DCT" << endl;
 	DCT::directDCT(testMatrix, result);
-	std::cout << endl;
-	for (size_t i = 0; i < 8; i++)
-	{
-		for (size_t j = 0; j < 8; j++)
-		{
-			printf("%8.2f | ", result[i][j]);
-		}
-		std::cout << endl;
-	}
+    ceckTest(resultBytes, dctResultBytesFloat);
 	std::cout << "End direct DCT" << endl;
 
 	std::cout << "================" << endl;
 
 	std::cout << "Start seperate DCT" << endl;
-	DCT::seperateDCT(testMatrix, result);
-	std::cout << endl;
-	for (size_t i = 0; i < 8; i++)
-	{
-		for (size_t j = 0; j < 8; j++)
-		{
-			printf("%8.2f | ", result[i][j]);
-		}
-		std::cout << endl;
-	}
+    DCT::seperateDCT(testMatrix, result);
+    ceckTest(resultBytes, dctResultBytesFloat);
 	std::cout << "End seperate DCT" << endl;
 
 	std::cout << "================" << endl;
 
 	std::cout << "Start arai DCT" << endl;
 	DCT::araiDCT(testMatrix, result);
-	std::cout << endl;
-	for (size_t i = 0; i < 8; i++)
-	{
-		for (size_t j = 0; j < 8; j++)
-		{
-			printf("%8.2f | ", result[i][j]);
-		}
-		std::cout << endl;
-	}
+    ceckTest(resultBytes, dctResultBytesFloat);
 	std::cout << "End arai DCT" << endl;
 
 	std::cout << "================" << endl;
@@ -379,17 +377,9 @@ void testDCT()
     OpenCL clDct(8, 8);
 	clDct.enqueueWriteImage(testMatrixBytes);
 	clDct.enqueueExecuteDCT();
-	clDct.enqueueReadImage(testMatrixBytes);
+	clDct.enqueueReadImage(resultBytes);
     clDct.finishQueue();
-	std::cout << endl;
-	for (size_t i = 0; i < 8; i++)
-	{
-		for (size_t j = 0; j < 8; j++)
-		{
-			printf("%8.2f | ", testMatrixBytes[i*8+j]);
-		}
-		std::cout << endl;
-	}
+    ceckTest(resultBytes, dctResultBytesFloat);
 	std::cout << "End arai2 DCT" << endl;
 
 	std::cout << "================" << endl;
@@ -398,46 +388,24 @@ void testDCT()
 #ifdef AVX512
     DCT::araiDCTAVX(testMatrix, testMatrix, result, result2);
     std::cout << endl;
-    for (size_t i = 0; i < 8; i++)
-    {
-        for (size_t j = 0; j < 8; j++)
-        {
-            printf("%8.2f | ", result[i][j]);
-        }
-        printf("| ");
-        for (size_t j = 0; j < 8; j++)
-        {
-            printf("%8.2f | ", result2[i][j]);
-        }
-        std::cout << endl;
+    if (!matricesEqual(resultBytes, dctResultBytesFloat) || !matricesEqual(resultBytes2, dctResultBytesFloat)) {
+        cout << "Test failed!" << endl;
+        printMatrix8x8(resultBytes);
+        printMatrix8x8(resultBytes2);
+    } else {
+        cout << "Test successful!" << endl;
     }
 #else
 	DCT::araiDCTAVX(testMatrix, result);
-	std::cout << endl;
-	for (size_t i = 0; i < 8; i++)
-	{
-		for (size_t j = 0; j < 8; j++)
-		{
-			printf("%8.2f | ", result[i][j]);
-		}
-		std::cout << endl;
-	}
+    ceckTest(resultBytes, dctResultBytesFloat);
 #endif
 	std::cout << "End arai DCT (AVX)" << endl;
 
 	std::cout << "================" << endl;
 
 	std::cout << "Start direct IDCT" << endl;
-	DCT::directIDCT(result, testMatrix);
-	std::cout << endl;
-	for (size_t i = 0; i < 8; i++)
-	{
-		for (size_t j = 0; j < 8; j++)
-		{
-			printf("%8.2f | ", testMatrix[i][j]);
-		}
-		std::cout << endl;
-	}
+	DCT::directIDCT(dctResultBytesFloat, result);
+    ceckTest(resultBytes, testMatrixBytes);
 	std::cout << "End direct IDCT" << endl;
 }
 
@@ -538,11 +506,47 @@ int main(int argc, char* argv[])
 	//std::cout << "Test EncodeJPEG" << endl;
 	//EncodeJPEG(srcFile, dstFile);
 		
-	std::cout << ">>> Test DCT" << endl;
-	testDCT();
-    
-    std::cout << endl << ">>> Benchmark DCT" << endl;
-    test2DCT();
+	//std::cout << ">>> Test DCT" << endl;
+	//testDCT();
+ //   
+ //   std::cout << endl << ">>> Benchmark DCT" << endl;
+ //   test2DCT();
+
+	string mode;
+	string srcFile;
+	string dstFile;
+	po::options_description desc("Allowed options");
+	desc.add_options()
+		("help", "produce help message")
+		("mode", po::value<string>(&mode), "choose the mode convert, test or benchmark")
+		("src-file", po::value<string>(&srcFile))
+		("dst-file", po::value<string>(&dstFile))
+	;
+
+	po::variables_map vm;
+	po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
+	po::notify(vm);
+
+
+	if (vm.count("help")) {
+		cout << desc << "\n";
+		return 1;
+	}
+
+	if (mode == "convert")
+	{
+		if (!vm.count("src-file") || !vm.count("dst-file"))
+			cout << "The convert mode needs src-file and dst-file." << endl; 
+		else
+			EncodeJPEG(srcFile, dstFile);
+	} else if (mode == "test") {
+        testDCT();
+	} else if (mode == "benchmark") {
+        benchmarkDCT();
+	} else {
+        cout << desc << "\n";
+        return 1;
+	}
 
 	return 0;
 }
