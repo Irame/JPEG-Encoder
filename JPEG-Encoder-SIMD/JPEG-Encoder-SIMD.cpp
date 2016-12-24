@@ -38,6 +38,11 @@ namespace po = boost::program_options;
 
 byte testValues[10000000];
 
+bool stringContains(string s, string value)
+{
+    return s.find(value) != string::npos;
+}
+
 void bitBufferTest(string filePath)
 {
 	BitBuffer bitBuffer;
@@ -112,7 +117,7 @@ void bitBufferTest(string filePath)
 	//cout << bitBuffer << endl;
 }
 
-void benchmarkDCT()
+void benchmarkDCT(string benchmarkNames)
 {
 	size_t widthInBlocks = (256 + 7) / 8;
 	size_t width = widthInBlocks * 8;
@@ -124,165 +129,175 @@ void benchmarkDCT()
 
 	vector<float> testImage(size);
 
-//	for (size_t i = 0; i < size; i++)
-//	{
-//		testImage[i] = static_cast<float>(i%256);
-//	}
-//
-//	benchmark("Benchmark Direct DCT", 231, [&testImage, &width, &size]()
-//	{
-//#pragma omp parallel for
-//		for (int x = 0; x < width; x += 8)
-//		{
-//			for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
-//			{
-//				PointerMatrix curBlock(
-//					&testImage[curOffset],
-//					&testImage[curOffset + width * 1],
-//					&testImage[curOffset + width * 2],
-//					&testImage[curOffset + width * 3],
-//					&testImage[curOffset + width * 4],
-//					&testImage[curOffset + width * 5],
-//					&testImage[curOffset + width * 6],
-//					&testImage[curOffset + width * 7]
-//				);
-//
-//				DCT::directDCT(curBlock, curBlock);
-//			}
-//		}
-//	});
+    if (benchmarkNames.empty() || stringContains(benchmarkNames, "direct")) {
+        for (size_t i = 0; i < size; i++)
+        {
+            testImage[i] = static_cast<float>(i % 256);
+        }
 
-//	for (size_t i = 0; i < size; i++)
-//	{
-//		testImage[i] = static_cast<float>(i % 256);
-//	}
-//
-//	benchmark("Benchmark Seperate DCT", 5903, [&testImage, &width, &size]()
-//	{
-//#pragma omp parallel for
-//		for (int x = 0; x < width; x += 8)
-//		{
-//			for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
-//			{
-//				PointerMatrix curBlock(
-//					&testImage[curOffset],
-//					&testImage[curOffset + width * 1],
-//					&testImage[curOffset + width * 2],
-//					&testImage[curOffset + width * 3],
-//					&testImage[curOffset + width * 4],
-//					&testImage[curOffset + width * 5],
-//					&testImage[curOffset + width * 6],
-//					&testImage[curOffset + width * 7]
-//					);
-//
-//				DCT::seperateDCT(curBlock, curBlock);
-//			}
-//		}
-//	});
+        benchmark("Benchmark Direct DCT", 444, [&testImage, &width, &size]()
+        {
+#pragma omp parallel for
+            for (int x = 0; x < width; x += 8)
+            {
+                for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
+                {
+                    PointerMatrix curBlock(
+                        &testImage[curOffset],
+                        &testImage[curOffset + width * 1],
+                        &testImage[curOffset + width * 2],
+                        &testImage[curOffset + width * 3],
+                        &testImage[curOffset + width * 4],
+                        &testImage[curOffset + width * 5],
+                        &testImage[curOffset + width * 6],
+                        &testImage[curOffset + width * 7]
+                    );
 
-//	for (size_t i = 0; i < size; i++)
-//	{
-//		testImage[i] = static_cast<float>(i % 256);
-//	}
-//
-//	benchmark("Benchmark Arai DCT", 47393, [&testImage, &width, &size]()
-//	{
-//#pragma omp parallel for
-//		for (int x = 0; x < width; x += 8)
-//		{
-//			for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
-//			{
-//				PointerMatrix curBlock(
-//					&testImage[curOffset],
-//					&testImage[curOffset + width * 1],
-//					&testImage[curOffset + width * 2],
-//					&testImage[curOffset + width * 3],
-//					&testImage[curOffset + width * 4],
-//					&testImage[curOffset + width * 5],
-//					&testImage[curOffset + width * 6],
-//					&testImage[curOffset + width * 7]
-//					);
-//
-//				DCT::araiDCT(curBlock, curBlock);
-//			}
-//		}
-//	});
+                    DCT::directDCT(curBlock, curBlock);
+                }
+            }
+        });
+    }
 
-	for (size_t i = 0; i < size; i++)
-	{
-		testImage[i] = static_cast<float>(i % 256);
-	}
+    if (benchmarkNames.empty() || stringContains(benchmarkNames, "seperate")) {
+        for (size_t i = 0; i < size; i++)
+        {
+            testImage[i] = static_cast<float>(i % 256);
+        }
 
-	OpenCL clDct(width, height);
-	clDct.enqueueWriteImage(testImage.data());
-	benchmark("Benchmark Arai2 DCT", 100000, [&testImage, &width, &size, &clDct]()
-	{
-		clDct.enqueueExecuteDCT();
+        benchmark("Benchmark Seperate DCT", 2680, [&testImage, &width, &size]()
+        {
+#pragma omp parallel for
+            for (int x = 0; x < width; x += 8)
+            {
+                for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
+                {
+                    PointerMatrix curBlock(
+                        &testImage[curOffset],
+                        &testImage[curOffset + width * 1],
+                        &testImage[curOffset + width * 2],
+                        &testImage[curOffset + width * 3],
+                        &testImage[curOffset + width * 4],
+                        &testImage[curOffset + width * 5],
+                        &testImage[curOffset + width * 6],
+                        &testImage[curOffset + width * 7]
+                    );
+
+                    DCT::seperateDCT(curBlock, curBlock);
+                }
+            }
+        });
+    }
+
+    if (benchmarkNames.empty() || stringContains(benchmarkNames, "arai")) {
+        for (size_t i = 0; i < size; i++)
+        {
+            testImage[i] = static_cast<float>(i % 256);
+        }
+
+        benchmark("Benchmark Arai DCT", 109890, [&testImage, &width, &size]()
+        {
+#pragma omp parallel for
+            for (int x = 0; x < width; x += 8)
+            {
+                for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
+                {
+                    PointerMatrix curBlock(
+                        &testImage[curOffset],
+                        &testImage[curOffset + width * 1],
+                        &testImage[curOffset + width * 2],
+                        &testImage[curOffset + width * 3],
+                        &testImage[curOffset + width * 4],
+                        &testImage[curOffset + width * 5],
+                        &testImage[curOffset + width * 6],
+                        &testImage[curOffset + width * 7]
+                    );
+
+                    DCT::araiDCT(curBlock, curBlock);
+                }
+            }
+        });
+    }
+
+    if (benchmarkNames.empty() || stringContains(benchmarkNames, "opencl")) {
+        for (size_t i = 0; i < size; i++)
+        {
+            testImage[i] = static_cast<float>(i % 256);
+        }
+
+        OpenCL clDct(width, height);
+        clDct.enqueueWriteImage(testImage.data());
+        benchmark("Benchmark Arai2 DCT", 129870, [&testImage, &width, &size, &clDct]()
+        {
+            clDct.enqueueExecuteDCT();
+            clDct.finishQueue();
+        });
+        clDct.enqueueReadImage(testImage.data());
         clDct.finishQueue();
-	});
-	clDct.enqueueReadImage(testImage.data());
-    clDct.finishQueue();
+    }
 
-	for (size_t i = 0; i < size; i++)
-	{
-		testImage[i] = static_cast<float>(i % 256);
-	}
+    if (benchmarkNames.empty() || stringContains(benchmarkNames, "avx")) {
+        for (size_t i = 0; i < size; i++)
+        {
+            testImage[i] = static_cast<float>(i % 256);
+        }
 
-	benchmark("Benchmark Arai DCT (AVX)", 150000, [&testImage, &width, &size]()
-	{
+        benchmark("Benchmark Arai DCT (AVX)", 370370, [&testImage, &width, &size]()
+        {
 #ifdef AVX512
 #pragma omp parallel for
-        for (int x = 0; x < width; x += 16)
-        {
-            for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
+            for (int x = 0; x < width; x += 16)
             {
-                PointerMatrix curBlock1(
-                    &testImage[curOffset],
-                    &testImage[curOffset + width * 1],
-                    &testImage[curOffset + width * 2],
-                    &testImage[curOffset + width * 3],
-                    &testImage[curOffset + width * 4],
-                    &testImage[curOffset + width * 5],
-                    &testImage[curOffset + width * 6],
-                    &testImage[curOffset + width * 7]
-                );
+                for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
+                {
+                    PointerMatrix curBlock1(
+                        &testImage[curOffset],
+                        &testImage[curOffset + width * 1],
+                        &testImage[curOffset + width * 2],
+                        &testImage[curOffset + width * 3],
+                        &testImage[curOffset + width * 4],
+                        &testImage[curOffset + width * 5],
+                        &testImage[curOffset + width * 6],
+                        &testImage[curOffset + width * 7]
+                    );
 
-                PointerMatrix curBlock2(
-                    &testImage[curOffset],
-                    &testImage[curOffset + 8 + width * 1],
-                    &testImage[curOffset + 8 + width * 2],
-                    &testImage[curOffset + 8 + width * 3],
-                    &testImage[curOffset + 8 + width * 4],
-                    &testImage[curOffset + 8 + width * 5],
-                    &testImage[curOffset + 8 + width * 6],
-                    &testImage[curOffset + 8 + width * 7]
-                );
+                    PointerMatrix curBlock2(
+                        &testImage[curOffset],
+                        &testImage[curOffset + 8 + width * 1],
+                        &testImage[curOffset + 8 + width * 2],
+                        &testImage[curOffset + 8 + width * 3],
+                        &testImage[curOffset + 8 + width * 4],
+                        &testImage[curOffset + 8 + width * 5],
+                        &testImage[curOffset + 8 + width * 6],
+                        &testImage[curOffset + 8 + width * 7]
+                    );
 
-                DCT::araiDCTAVX(curBlock1, curBlock2, curBlock1, curBlock2);
+                    DCT::araiDCTAVX(curBlock1, curBlock2, curBlock1, curBlock2);
+                }
             }
-        }
 #else
 #pragma omp parallel for
-        for (int x = 0; x < width; x += 8)
-        {
-            for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
+            for (int x = 0; x < width; x += 8)
             {
-                PointerMatrix curBlock(
-                    &testImage[curOffset],
-                    &testImage[curOffset + width * 1],
-                    &testImage[curOffset + width * 2],
-                    &testImage[curOffset + width * 3],
-                    &testImage[curOffset + width * 4],
-                    &testImage[curOffset + width * 5],
-                    &testImage[curOffset + width * 6],
-                    &testImage[curOffset + width * 7]
-                );
+                for (size_t curOffset = x; curOffset < size; curOffset += width * 8)
+                {
+                    PointerMatrix curBlock(
+                        &testImage[curOffset],
+                        &testImage[curOffset + width * 1],
+                        &testImage[curOffset + width * 2],
+                        &testImage[curOffset + width * 3],
+                        &testImage[curOffset + width * 4],
+                        &testImage[curOffset + width * 5],
+                        &testImage[curOffset + width * 6],
+                        &testImage[curOffset + width * 7]
+                    );
 
-                DCT::araiDCTAVX(curBlock, curBlock);
+                    DCT::araiDCTAVX(curBlock, curBlock);
+                }
             }
-        }
 #endif 
-	});
+        });
+    }
 }
 
 void printMatrix8x8(float* matrix)
@@ -319,7 +334,7 @@ void ceckTest(float* result, float* reference)
     }
 }
 
-void testDCT()
+void testDCT(string testNames)
 {
 	float testMatrixBytes[] = { 
 	 140, 144, 147, 140, 140, 155, 179, 175,
@@ -352,61 +367,69 @@ void testDCT()
 
 	PointerMatrix testMatrix = PointerMatrix(testMatrixBytes);
 
-	std::cout << "Start direct DCT" << endl;
-	DCT::directDCT(testMatrix, result);
-    ceckTest(resultBytes, dctResultBytesFloat);
-	std::cout << "End direct DCT" << endl;
-
-	std::cout << "================" << endl;
-
-	std::cout << "Start seperate DCT" << endl;
-    DCT::seperateDCT(testMatrix, result);
-    ceckTest(resultBytes, dctResultBytesFloat);
-	std::cout << "End seperate DCT" << endl;
-
-	std::cout << "================" << endl;
-
-	std::cout << "Start arai DCT" << endl;
-	DCT::araiDCT(testMatrix, result);
-    ceckTest(resultBytes, dctResultBytesFloat);
-	std::cout << "End arai DCT" << endl;
-
-	std::cout << "================" << endl;
-
-	std::cout << "Start arai2 DCT" << endl;
-    OpenCL clDct(8, 8);
-	clDct.enqueueWriteImage(testMatrixBytes);
-	clDct.enqueueExecuteDCT();
-	clDct.enqueueReadImage(resultBytes);
-    clDct.finishQueue();
-    ceckTest(resultBytes, dctResultBytesFloat);
-	std::cout << "End arai2 DCT" << endl;
-
-	std::cout << "================" << endl;
-
-	std::cout << "Start arai DCT (AVX)" << endl;
-#ifdef AVX512
-    DCT::araiDCTAVX(testMatrix, testMatrix, result, result2);
-    std::cout << endl;
-    if (!matricesEqual(resultBytes, dctResultBytesFloat) || !matricesEqual(resultBytes2, dctResultBytesFloat)) {
-        cout << "Test failed!" << endl;
-        printMatrix8x8(resultBytes);
-        printMatrix8x8(resultBytes2);
-    } else {
-        cout << "Test successful!" << endl;
+    if (testNames.empty() || stringContains(testNames, "direct")) {
+        std::cout << "Start direct DCT" << endl;
+        DCT::directDCT(testMatrix, result);
+        ceckTest(resultBytes, dctResultBytesFloat);
+        std::cout << "End direct DCT" << endl;
+        std::cout << "================" << endl;
     }
+
+    if (testNames.empty() || stringContains(testNames, "seperate")) {
+        std::cout << "Start seperate DCT" << endl;
+        DCT::seperateDCT(testMatrix, result);
+        ceckTest(resultBytes, dctResultBytesFloat);
+        std::cout << "End seperate DCT" << endl;
+        std::cout << "================" << endl;
+    }
+
+    if (testNames.empty() || stringContains(testNames, "arai")) {
+        std::cout << "Start arai DCT" << endl;
+        DCT::araiDCT(testMatrix, result);
+        ceckTest(resultBytes, dctResultBytesFloat);
+        std::cout << "End arai DCT" << endl;
+        std::cout << "================" << endl;
+    }
+
+    if (testNames.empty() || stringContains(testNames, "opencl")) {
+        std::cout << "Start arai2 DCT" << endl;
+        OpenCL clDct(8, 8);
+        clDct.enqueueWriteImage(testMatrixBytes);
+        clDct.enqueueExecuteDCT();
+        clDct.enqueueReadImage(resultBytes);
+        clDct.finishQueue();
+        ceckTest(resultBytes, dctResultBytesFloat);
+        std::cout << "End arai2 DCT" << endl;
+        std::cout << "================" << endl;
+    }
+
+    if (testNames.empty() || stringContains(testNames, "avx")) {
+        std::cout << "Start arai DCT (AVX)" << endl;
+#ifdef AVX512
+        DCT::araiDCTAVX(testMatrix, testMatrix, result, result2);
+        std::cout << endl;
+        if (!matricesEqual(resultBytes, dctResultBytesFloat) || !matricesEqual(resultBytes2, dctResultBytesFloat)) {
+            cout << "Test failed!" << endl;
+            printMatrix8x8(resultBytes);
+            printMatrix8x8(resultBytes2);
+        }
+        else {
+            cout << "Test successful!" << endl;
+        }
 #else
-	DCT::araiDCTAVX(testMatrix, result);
-    ceckTest(resultBytes, dctResultBytesFloat);
+        DCT::araiDCTAVX(testMatrix, result);
+        ceckTest(resultBytes, dctResultBytesFloat);
 #endif
-	std::cout << "End arai DCT (AVX)" << endl;
+        std::cout << "End arai DCT (AVX)" << endl;
+        std::cout << "================" << endl;
+    }
 
-	std::cout << "================" << endl;
-
-	std::cout << "Start direct IDCT" << endl;
-	DCT::directIDCT(dctResultBytesFloat, result);
-    ceckTest(resultBytes, testMatrixBytes);
-	std::cout << "End direct IDCT" << endl;
+    if (testNames.empty() || stringContains(testNames, "directidct")) {
+        std::cout << "Start direct IDCT" << endl;
+        DCT::directIDCT(dctResultBytesFloat, result);
+        ceckTest(resultBytes, testMatrixBytes);
+        std::cout << "End direct IDCT" << endl;
+    }
 }
 
 void EncodeJPEG(string srcFile, string dstFile)
@@ -478,49 +501,19 @@ int main(int argc, char* argv[])
 {
 	COMPILER_PREFACE;
 
-	//clTest();
-	//return 0;
-
-	//for (int i = 0; i < 10000000; i++)
-	//{
-	//	testValues[i] = rand() % 2;
-	//}
-
-	//benchmark("bitBufferTest", 1, [&]() {
-	//	bitBufferTest(argv[2]);
-	//});
-
-	//benchmark("testHuffmanEncoding", 1, [&]() {
-	//	testHuffmanEncoding();
-	//});
-	//return  0;
-
-	//if (argc < 3) {
-	//	std::cerr << "Usage: " << argv[0] << " <Source File> <Destination File>" << std::endl;
-	//	return 1;
-	//}
-	//
-	//std::string srcFile(argv[1]);
-	//std::string dstFile(argv[2]);
-
-	//std::cout << "Test EncodeJPEG" << endl;
-	//EncodeJPEG(srcFile, dstFile);
-		
-	//std::cout << ">>> Test DCT" << endl;
-	//testDCT();
- //   
- //   std::cout << endl << ">>> Benchmark DCT" << endl;
- //   test2DCT();
-
 	string mode;
 	string srcFile;
 	string dstFile;
+    string modules;
+    string names;
 	po::options_description desc("Allowed options");
 	desc.add_options()
 		("help", "produce help message")
 		("mode", po::value<string>(&mode), "choose the mode convert, test or benchmark")
 		("src-file", po::value<string>(&srcFile))
 		("dst-file", po::value<string>(&dstFile))
+        ("modules", po::value<string>(&modules))
+        ("names", po::value<string>(&names))
 	;
 
 	po::variables_map vm;
@@ -540,9 +533,15 @@ int main(int argc, char* argv[])
 		else
 			EncodeJPEG(srcFile, dstFile);
 	} else if (mode == "test") {
-        testDCT();
+        if (modules.empty() || stringContains(modules, "dct"))
+            testDCT(names);
+        if (stringContains(modules, "huffman"))
+            testHuffmanEncoding();
+        if (stringContains(modules, "bitBuffer"))
+            bitBufferTest(dstFile);
 	} else if (mode == "benchmark") {
-        benchmarkDCT();
+        if (modules.empty() || stringContains(modules, "dct"))
+            benchmarkDCT(names);
 	} else {
         cout << desc << "\n";
         return 1;
