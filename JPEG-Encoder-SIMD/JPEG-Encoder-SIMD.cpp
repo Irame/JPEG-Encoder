@@ -124,6 +124,8 @@ void bitBufferTest(string filePath)
 
 void benchmarkDCT(string benchmarkNames, int openclPlatform, int openclDevice)
 {
+	static chrono::milliseconds benchmarkTime(10000);
+
 	size_t widthInBlocks = (256 + 7) / 8;
 	size_t width = widthInBlocks * 8;
 
@@ -140,7 +142,7 @@ void benchmarkDCT(string benchmarkNames, int openclPlatform, int openclDevice)
             testImage[i] = static_cast<float>(i % 256);
         }
 
-        benchmark("Benchmark Direct DCT", 444, [&testImage, &width, &size]()
+        benchmark("Benchmark Direct DCT", benchmarkTime, [&testImage, &width, &size]()
         {
 #pragma omp parallel for
             for (int x = 0; x < width; x += 8)
@@ -170,7 +172,7 @@ void benchmarkDCT(string benchmarkNames, int openclPlatform, int openclDevice)
             testImage[i] = static_cast<float>(i % 256);
         }
 
-        benchmark("Benchmark Seperate DCT", 2680, [&testImage, &width, &size]()
+        benchmark("Benchmark Seperate DCT", benchmarkTime, [&testImage, &width, &size]()
         {
 #pragma omp parallel for
             for (int x = 0; x < width; x += 8)
@@ -200,7 +202,7 @@ void benchmarkDCT(string benchmarkNames, int openclPlatform, int openclDevice)
             testImage[i] = static_cast<float>(i % 256);
         }
 
-        benchmark("Benchmark Arai DCT", 109890, [&testImage, &width, &size]()
+        benchmark("Benchmark Arai DCT", benchmarkTime, [&testImage, &width, &size]()
         {
 #pragma omp parallel for
             for (int x = 0; x < width; x += 8)
@@ -231,7 +233,7 @@ void benchmarkDCT(string benchmarkNames, int openclPlatform, int openclDevice)
         }
 
         OpenCL clDct(width, height, openclPlatform, openclDevice);
-        benchmark("Benchmark Arai DCT (OpenCL)", 129870, [&testImage, &width, &size, &clDct]()
+        benchmark("Benchmark Arai DCT (OpenCL)", benchmarkTime, [&testImage, &width, &size, &clDct]()
         {
 			clDct.enqueueWriteImage(testImage.data());
 			clDct.enqueueExecuteDCT();
@@ -247,7 +249,7 @@ void benchmarkDCT(string benchmarkNames, int openclPlatform, int openclDevice)
             testImage[i] = static_cast<float>(i % 256);
         }
 
-        benchmark("Benchmark Arai DCT (AVX)", 370370, [&testImage, &width, &size]()
+        benchmark("Benchmark Arai DCT (AVX)", benchmarkTime, [&testImage, &width, &size]()
         {
 #ifdef AVX512
 #pragma omp parallel for

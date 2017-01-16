@@ -3,14 +3,17 @@
 #include <string>
 
 template <typename F>
-static void benchmark(std::string name, size_t count, F&& lambda)
+static void benchmark(std::string name, std::chrono::milliseconds dur, F&& lambda)
 {
 	auto start = std::chrono::high_resolution_clock::now();
 
-	for (size_t i = 0; i < count; i++)
+	int count = 0;
+	do
 	{
 		lambda();
+		count++;
 	}
+	while (std::chrono::high_resolution_clock::now() - start < dur);
 
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start);
 	long long durationAVG = duration.count() / count;
