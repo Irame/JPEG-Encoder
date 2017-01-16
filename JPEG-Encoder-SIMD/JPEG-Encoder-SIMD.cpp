@@ -122,7 +122,7 @@ void bitBufferTest(string filePath)
 	//cout << bitBuffer << endl;
 }
 
-void benchmarkDCT(string benchmarkNames, int openclPlatform)
+void benchmarkDCT(string benchmarkNames, int openclPlatform, int openclDevice)
 {
 	size_t widthInBlocks = (256 + 7) / 8;
 	size_t width = widthInBlocks * 8;
@@ -230,14 +230,14 @@ void benchmarkDCT(string benchmarkNames, int openclPlatform)
             testImage[i] = static_cast<float>(i % 256);
         }
 
-        OpenCL clDct(width, height, openclPlatform);
-        clDct.enqueueWriteImage(testImage.data());
+        OpenCL clDct(width, height, openclPlatform, openclDevice);
         benchmark("Benchmark Arai DCT (OpenCL)", 129870, [&testImage, &width, &size, &clDct]()
         {
-            clDct.enqueueExecuteDCT();
+			clDct.enqueueWriteImage(testImage.data());
+			clDct.enqueueExecuteDCT();
+			clDct.enqueueReadImage(testImage.data());
             clDct.finishQueue();
-        });
-        clDct.enqueueReadImage(testImage.data());
+		});
         clDct.finishQueue();
     }
 
@@ -339,7 +339,7 @@ void ceckTest(float* result, float* reference)
     }
 }
 
-void testDCT(string testNames, int openclPlatform)
+void testDCT(string testNames, int openclPlatform, int openclDevice)
 {
 	cout << "Start dct Test for: " << testNames << endl;
 	float testMatrixBytes[] = { 
@@ -399,7 +399,7 @@ void testDCT(string testNames, int openclPlatform)
 
     if (stringContainsOrEmpty(testNames, "opencl")) {
         std::cout << "Start arai2 DCT" << endl;
-        OpenCL clDct(8, 8, openclPlatform);
+        OpenCL clDct(8, 8, openclPlatform, openclDevice);
         clDct.enqueueWriteImage(testMatrixBytes);
         clDct.enqueueExecuteDCT();
         clDct.enqueueReadImage(resultBytes);
@@ -513,20 +513,27 @@ int main(int argc, char* argv[])
     string modules;
     string dctImps;
 	int openclPlatform;
+	int openclDevice;
 	po::options_description desc("Allowed options");
 	desc.add_options()
 		("help", "Display help message")
+		("opencl-info", "OpenCL Platform info")
 		("mode", po::value<string>(&mode), "Choose the mode: convert, test, benchmark")
 		("src-file", po::value<string>(&srcFile), "File to read (Mode: convert)")
 		("dst-file", po::value<string>(&dstFile), "File to write (Mode: convert)")
         ("modules", po::value<string>(&modules)->default_value("dct"), "Comma seperated List of modules to test/benchmark (Mode: test, benchmark)")
         ("dct-imps", po::value<string>(&dctImps), "Comma seperated List of dct-implementations to test/benchmark (Mode: test, benchmark)")
 		("opencl-platform", po::value<int>(&openclPlatform)->default_value(0), "OpenCL Platform number (zero based) (Mode: test[dct], benchmark[dct])")
+		("opencl-device", po::value<int>(&openclDevice)->default_value(0), "OpenCL Device number (zero based) (Mode: test[dct], benchmark[dct])")
 	;
 
 	po::variables_map vm;
 	po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
 	po::notify(vm);
+
+	if (vm.count("opencl-info")) {
+		OpenCL::ReadOpenCLPlatforms();
+	}
 
 
 	if (vm.count("help")) {
@@ -542,14 +549,15 @@ int main(int argc, char* argv[])
 			EncodeJPEG(srcFile, dstFile);
 	} else if (mode == "test") {
         if (stringContains(modules, "dct"))
-            testDCT(dctImps, openclPlatform);
+            testDCT(dctImps, openclPlatform, openclDevice);
         if (stringContains(modules, "huffman"))
             testHuffmanEncoding();
         if (stringContains(modules, "bitBuffer"))
             bitBufferTest(dstFile);
-	} else if (mode == "benchmark") {
-        if (stringContains(modules, "dct"))
-            benchmarkDCT(dctImps, openclPlatform);
+	}
+	else if (mode == "benchmark") {
+		if (stringContains(modules, "dct"))
+			benchmarkDCT(dctImps, openclPlatform, openclDevice);
 	} else {
         cout << desc << "\n";
         return 1;

@@ -18,6 +18,22 @@ std::string read_source(const char *filename)
 	return src;
 };
 
+void OpenCL::ReadOpenCLPlatforms() {
+	std::cout << "OpenCL Platform and Device Info:" << std::endl;
+	std::vector<cl::Platform> all_platforms;
+	cl::Platform::get(&all_platforms);
+	for (int i = 0; i < all_platforms.size(); i++)
+	{
+		std::cout << "[" << i << "] " << all_platforms[i].getInfo<CL_PLATFORM_NAME>() << std::endl;
+		std::vector<cl::Device> all_devices;
+		all_platforms[i].getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
+		for (int j = 0; j< all_devices.size(); j++)
+		{
+			std::cout << "\t" << "[" << j << "] " << all_devices[j].getInfo<CL_DEVICE_NAME>() << std::endl;
+		}
+	}
+}
+
 
 OpenCL::OpenCL(int width, int height, int platform, int device)
 {

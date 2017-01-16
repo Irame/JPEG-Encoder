@@ -27,6 +27,8 @@ public:
 
     OpenCL(int width, int height, int platform = 0, int device = 0);
 
+	static void ReadOpenCLPlatforms();
+	
 	void enqueueWriteImage(float* image) const;
 	void enqueueReadImage(float* image) const;
     void enqueueWriteQTable(const QTable& qTable) const;
