@@ -11,6 +11,10 @@
     {
       "Id": "310c278f-527e-4a76-bb23-1ae66b0f985a",
       "Command": "--mode convert"
+    },
+    {
+      "Id": "821d5212-dfd6-4030-9ef7-dac8b1036d2e",
+      "Command": "--help"
     }
   ]
 }

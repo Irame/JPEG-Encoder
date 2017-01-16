@@ -40,7 +40,12 @@ byte testValues[10000000];
 
 bool stringContains(string s, string value)
 {
-    return s.find(value) != string::npos;
+	return s.find(value) != string::npos;
+}
+
+bool stringContainsOrEmpty(string s, string value)
+{
+    return s.empty() || stringContains(s, value);
 }
 
 void bitBufferTest(string filePath)
@@ -117,7 +122,7 @@ void bitBufferTest(string filePath)
 	//cout << bitBuffer << endl;
 }
 
-void benchmarkDCT(string benchmarkNames)
+void benchmarkDCT(string benchmarkNames, int openclPlatform)
 {
 	size_t widthInBlocks = (256 + 7) / 8;
 	size_t width = widthInBlocks * 8;
@@ -129,7 +134,7 @@ void benchmarkDCT(string benchmarkNames)
 
 	vector<float> testImage(size);
 
-    if (benchmarkNames.empty() || stringContains(benchmarkNames, "direct")) {
+    if (stringContainsOrEmpty(benchmarkNames, "direct")) {
         for (size_t i = 0; i < size; i++)
         {
             testImage[i] = static_cast<float>(i % 256);
@@ -159,7 +164,7 @@ void benchmarkDCT(string benchmarkNames)
         });
     }
 
-    if (benchmarkNames.empty() || stringContains(benchmarkNames, "seperate")) {
+    if (stringContainsOrEmpty(benchmarkNames, "seperate")) {
         for (size_t i = 0; i < size; i++)
         {
             testImage[i] = static_cast<float>(i % 256);
@@ -189,7 +194,7 @@ void benchmarkDCT(string benchmarkNames)
         });
     }
 
-    if (benchmarkNames.empty() || stringContains(benchmarkNames, "arai")) {
+    if (stringContainsOrEmpty(benchmarkNames, "arai")) {
         for (size_t i = 0; i < size; i++)
         {
             testImage[i] = static_cast<float>(i % 256);
@@ -219,15 +224,15 @@ void benchmarkDCT(string benchmarkNames)
         });
     }
 
-    if (benchmarkNames.empty() || stringContains(benchmarkNames, "opencl")) {
+    if (stringContainsOrEmpty(benchmarkNames, "opencl")) {
         for (size_t i = 0; i < size; i++)
         {
             testImage[i] = static_cast<float>(i % 256);
         }
 
-        OpenCL clDct(width, height);
+        OpenCL clDct(width, height, openclPlatform);
         clDct.enqueueWriteImage(testImage.data());
-        benchmark("Benchmark Arai2 DCT", 129870, [&testImage, &width, &size, &clDct]()
+        benchmark("Benchmark Arai DCT (OpenCL)", 129870, [&testImage, &width, &size, &clDct]()
         {
             clDct.enqueueExecuteDCT();
             clDct.finishQueue();
@@ -236,7 +241,7 @@ void benchmarkDCT(string benchmarkNames)
         clDct.finishQueue();
     }
 
-    if (benchmarkNames.empty() || stringContains(benchmarkNames, "avx")) {
+    if (stringContainsOrEmpty(benchmarkNames, "avx")) {
         for (size_t i = 0; i < size; i++)
         {
             testImage[i] = static_cast<float>(i % 256);
@@ -334,8 +339,9 @@ void ceckTest(float* result, float* reference)
     }
 }
 
-void testDCT(string testNames)
+void testDCT(string testNames, int openclPlatform)
 {
+	cout << "Start dct Test for: " << testNames << endl;
 	float testMatrixBytes[] = { 
 	 140, 144, 147, 140, 140, 155, 179, 175,
 	 144, 152, 140, 147, 140, 148, 167, 179,
@@ -367,7 +373,7 @@ void testDCT(string testNames)
 
 	PointerMatrix testMatrix = PointerMatrix(testMatrixBytes);
 
-    if (testNames.empty() || stringContains(testNames, "direct")) {
+    if (stringContainsOrEmpty(testNames, "direct")) {
         std::cout << "Start direct DCT" << endl;
         DCT::directDCT(testMatrix, result);
         ceckTest(resultBytes, dctResultBytesFloat);
@@ -375,7 +381,7 @@ void testDCT(string testNames)
         std::cout << "================" << endl;
     }
 
-    if (testNames.empty() || stringContains(testNames, "seperate")) {
+    if (stringContainsOrEmpty(testNames, "seperate")) {
         std::cout << "Start seperate DCT" << endl;
         DCT::seperateDCT(testMatrix, result);
         ceckTest(resultBytes, dctResultBytesFloat);
@@ -383,7 +389,7 @@ void testDCT(string testNames)
         std::cout << "================" << endl;
     }
 
-    if (testNames.empty() || stringContains(testNames, "arai")) {
+    if (stringContainsOrEmpty(testNames, "arai")) {
         std::cout << "Start arai DCT" << endl;
         DCT::araiDCT(testMatrix, result);
         ceckTest(resultBytes, dctResultBytesFloat);
@@ -391,9 +397,9 @@ void testDCT(string testNames)
         std::cout << "================" << endl;
     }
 
-    if (testNames.empty() || stringContains(testNames, "opencl")) {
+    if (stringContainsOrEmpty(testNames, "opencl")) {
         std::cout << "Start arai2 DCT" << endl;
-        OpenCL clDct(8, 8);
+        OpenCL clDct(8, 8, openclPlatform);
         clDct.enqueueWriteImage(testMatrixBytes);
         clDct.enqueueExecuteDCT();
         clDct.enqueueReadImage(resultBytes);
@@ -403,7 +409,7 @@ void testDCT(string testNames)
         std::cout << "================" << endl;
     }
 
-    if (testNames.empty() || stringContains(testNames, "avx")) {
+    if (stringContainsOrEmpty(testNames, "avx")) {
         std::cout << "Start arai DCT (AVX)" << endl;
 #ifdef AVX512
         DCT::araiDCTAVX(testMatrix, testMatrix, result, result2);
@@ -424,7 +430,7 @@ void testDCT(string testNames)
         std::cout << "================" << endl;
     }
 
-    if (testNames.empty() || stringContains(testNames, "directidct")) {
+    if (stringContainsOrEmpty(testNames, "directidct")) {
         std::cout << "Start direct IDCT" << endl;
         DCT::directIDCT(dctResultBytesFloat, result);
         ceckTest(resultBytes, testMatrixBytes);
@@ -505,15 +511,17 @@ int main(int argc, char* argv[])
 	string srcFile;
 	string dstFile;
     string modules;
-    string names;
+    string dctImps;
+	int openclPlatform;
 	po::options_description desc("Allowed options");
 	desc.add_options()
-		("help", "produce help message")
-		("mode", po::value<string>(&mode), "choose the mode convert, test or benchmark")
-		("src-file", po::value<string>(&srcFile))
-		("dst-file", po::value<string>(&dstFile))
-        ("modules", po::value<string>(&modules))
-        ("names", po::value<string>(&names))
+		("help", "Display help message")
+		("mode", po::value<string>(&mode), "Choose the mode: convert, test, benchmark")
+		("src-file", po::value<string>(&srcFile), "File to read (Mode: convert)")
+		("dst-file", po::value<string>(&dstFile), "File to write (Mode: convert)")
+        ("modules", po::value<string>(&modules)->default_value("dct"), "Comma seperated List of modules to test/benchmark (Mode: test, benchmark)")
+        ("dct-imps", po::value<string>(&dctImps), "Comma seperated List of dct-implementations to test/benchmark (Mode: test, benchmark)")
+		("opencl-platform", po::value<int>(&openclPlatform)->default_value(0), "OpenCL Platform number (zero based) (Mode: test[dct], benchmark[dct])")
 	;
 
 	po::variables_map vm;
@@ -533,15 +541,15 @@ int main(int argc, char* argv[])
 		else
 			EncodeJPEG(srcFile, dstFile);
 	} else if (mode == "test") {
-        if (modules.empty() || stringContains(modules, "dct"))
-            testDCT(names);
+        if (stringContains(modules, "dct"))
+            testDCT(dctImps, openclPlatform);
         if (stringContains(modules, "huffman"))
             testHuffmanEncoding();
         if (stringContains(modules, "bitBuffer"))
             bitBufferTest(dstFile);
 	} else if (mode == "benchmark") {
-        if (modules.empty() || stringContains(modules, "dct"))
-            benchmarkDCT(names);
+        if (stringContains(modules, "dct"))
+            benchmarkDCT(dctImps, openclPlatform);
 	} else {
         cout << desc << "\n";
         return 1;

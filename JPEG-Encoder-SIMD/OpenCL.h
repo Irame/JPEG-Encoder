@@ -25,7 +25,7 @@ private:
     cl::Kernel quantize;
 public:
 
-    OpenCL(int width, int height);
+    OpenCL(int width, int height, int platform = 0, int device = 0);
 
 	void enqueueWriteImage(float* image) const;
 	void enqueueReadImage(float* image) const;

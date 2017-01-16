@@ -19,7 +19,7 @@ std::string read_source(const char *filename)
 };
 
 
-OpenCL::OpenCL(int width, int height)
+OpenCL::OpenCL(int width, int height, int platform, int device)
 {
 	this->width = width;
 	this->height = height;
@@ -33,7 +33,7 @@ OpenCL::OpenCL(int width, int height)
 		std::cout << " No platforms found. Check OpenCL installation!\n";
 		exit(1);
 	}
-	cl::Platform default_platform = all_platforms[1];
+	cl::Platform default_platform = all_platforms[platform];
 	std::cout << "Using platform: " << default_platform.getInfo<CL_PLATFORM_NAME>() << "\n";
 
 	//get default device of the default platform
@@ -43,7 +43,7 @@ OpenCL::OpenCL(int width, int height)
 		std::cout << " No devices found. Check OpenCL installation!\n";
 		exit(1);
 	}
-	cl::Device default_device = all_devices[0];
+	cl::Device default_device = all_devices[device];
 	std::cout << "Using device: " << default_device.getInfo<CL_DEVICE_NAME>() << "\n";
 
 
